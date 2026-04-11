@@ -331,13 +331,59 @@ export const earlyWarning = {
 
 // ===================== NAV LINKS =====================
 export const navLinks = [
-  { name: "Beranda", href: "/" },
   { name: "Prediksi Cuaca", href: "/prediksi-cuaca" },
-  { name: "Lapor Bencana", href: "/lapor-bencana" },
-  { name: "About", href: "/about" },
+  { name: "Prediksi Banjir", href: "/prediksi-banjir" },
+  { name: "Peta Bencana", href: "/peta-bencana" },
+  { name: "Pengaduan Bencana", href: "/pengaduan-bencana" },
+  { name: "Berita", href: "/berita" },
+  { name: "FAQ", href: "/faq" },
 ];
 
-// ===================== WEATHER ICON MAP =====================
+// ===================== FAQ DATA =====================
+export const faqData = [
+  {
+    question:
+      "Apakah saya harus membuat akun untuk menggunakan aplikasi Jember Siaga?",
+    answer:
+      "Ya, pengguna perlu login terlebih dahulu untuk dapat menggunakan fitur-fitur yang tersedia pada aplikasi Jember Siaga. Dengan melakukan login, pengguna dapat mengakses layanan seperti mengirim laporan bencana, melihat riwayat pengaduan, serta menerima informasi yang lebih personal dari aplikasi.",
+  },
+  {
+    question:
+      "Bagaimana cara melaporkan bencana melalui aplikasi Jember Siaga?",
+    answer:
+      "Untuk melaporkan bencana, pengguna dapat membuka aplikasi Jember Siaga kemudian memilih menu Pengaduan Bencana. Setelah itu isi informasi yang diminta seperti lokasi, jenis bencana, dan deskripsi kejadian, lalu kirim laporan agar dapat ditindaklanjuti oleh petugas.",
+  },
+  {
+    question: "Bagaimana cara mengetahui prediksi cuaca di aplikasi?",
+    answer:
+      "Untuk mengetahui kondisi cuaca, pengguna dapat membuka menu Prediksi Cuaca pada aplikasi. Informasi cuaca akan ditampilkan berdasarkan data terbaru sehingga pengguna dapat mengetahui perkiraan cuaca di wilayahnya.",
+  },
+  {
+    question:
+      "Bagaimana cara mengetahui status laporan yang sudah dikirim?",
+    answer:
+      "Setelah laporan dikirim, pengguna dapat melihat perkembangan atau status laporan melalui menu Riwayat Pengaduan pada aplikasi. Pada menu tersebut akan ditampilkan informasi mengenai proses verifikasi atau penanganan laporan.",
+  },
+  {
+    question:
+      "Bagaimana cara menghubungi call center melalui aplikasi?",
+    answer:
+      "Untuk menghubungi call center, pengguna dapat membuka aplikasi Jember Siaga lalu memilih menu Call Center. Pada menu tersebut akan ditampilkan nomor layanan yang dapat dihubungi sehingga pengguna dapat langsung melakukan panggilan untuk mendapatkan bantuan atau informasi terkait bencana.",
+  },
+  {
+    question:
+      "Apakah aplikasi dapat memberikan notifikasi peringatan banjir?",
+    answer:
+      "Ya, aplikasi Jember Siaga dapat memberikan notifikasi peringatan dini kepada pengguna jika terdapat potensi banjir atau informasi bencana di wilayah sekitar. Notifikasi ini membantu pengguna agar dapat lebih siap menghadapi kemungkinan terjadinya bencana.",
+  },
+  {
+    question:
+      "Bagaimana cara mengirim foto saat melakukan pengaduan bencana?",
+    answer:
+      "Saat mengisi formulir pengaduan bencana, pengguna dapat memilih opsi unggah foto. Pengguna bisa mengambil foto langsung melalui kamera atau memilih gambar dari galeri ponsel sebagai bukti kondisi di lokasi kejadian.",
+  },
+];
+
 export const getWeatherIcon = (type: string) => {
   switch (type) {
     case "sunny":
