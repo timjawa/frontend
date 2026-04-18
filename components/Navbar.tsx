@@ -4,32 +4,26 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { navLinks } from "@/data/dummyData";
 import { HiMenu, HiX } from "react-icons/hi";
-import { WiDayCloudyGusts } from "react-icons/wi";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Live clock
+  // Format tanggal & jam
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date();
+
       setCurrentTime(
         now.toLocaleTimeString("id-ID", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
           hour12: false,
-        }).replace(/\./g, " : ")
+        }).replace(/:/g, " : ")
       );
+
       setCurrentDate(
         now
           .toLocaleDateString("id-ID", {
@@ -41,6 +35,7 @@ export default function Navbar() {
           .toUpperCase()
       );
     };
+
     updateDateTime();
     const interval = setInterval(updateDateTime, 1000);
     return () => clearInterval(interval);
@@ -48,81 +43,93 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Top Info Bar */}
-      <div className="bg-primary-dark text-white/70 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-8">
-          <span className="font-medium tracking-wide">{currentDate}</span>
-          <span className="font-medium tracking-wide">
+
+      {/* TOP BAR */}
+      <div className="bg-[#f8f9fa] text-xs shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-10">
+          <span className="tracking-[0.05em] font-semibold text-slate-500">
+            {currentDate}
+          </span>
+          <span className="tracking-wide font-medium text-slate-500">
             WAKTU INDONESIA BARAT{" "}
-            <span className="text-secondary-light font-bold ml-2">
+            <span className="font-bold ml-3 text-[#1f2a56]">
               {currentTime}
             </span>
           </span>
         </div>
       </div>
 
-      {/* Main Navbar */}
-      <nav
-        className={`transition-all duration-300 ${
-          scrolled
-            ? "bg-primary/95 backdrop-blur-md shadow-lg"
-            : "bg-primary"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 bg-white/15 rounded-full flex items-center justify-center group-hover:bg-white/25 transition-colors">
-                <WiDayCloudyGusts className="text-white text-xl" />
+      {/* NAVBAR */}
+      <nav className="bg-[#1f2a56]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-[72px]">
+
+            {/* LOGO */}
+            <Link href="/" className="flex items-center gap-4">
+              <div className="relative w-11 h-12 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="Logo Jember" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const fallback = parent.querySelector('.fallback-logo');
+                      if (fallback) {
+                        (fallback as HTMLElement).style.display = 'flex';
+                      }
+                    }
+                  }}
+                />
+                <div className="fallback-logo hidden w-10 h-10 bg-white/10 rounded-full items-center justify-center border border-white/20">
+                  <div className="text-white text-xl font-bold">J</div>
+                </div>
               </div>
-              <span className="text-white font-bold text-lg tracking-tight">
-                JEMBER <span className="text-secondary-light">SIAGA</span>
+              <span className="text-white font-[700] text-[17px] tracking-wide">
+                JEMBER SIAGA
               </span>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-0.5">
+            {/* DESKTOP MENU */}
+            <div className="hidden lg:flex items-center gap-7">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-white/80 hover:text-white hover:bg-white/10 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  className="text-white/90 text-[14px] font-[500] hover:text-white transition-colors duration-200"
                 >
                   {link.name}
                 </Link>
               ))}
             </div>
 
-            {/* Mobile Toggle */}
+            {/* MOBILE BUTTON */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
-              aria-label="Toggle menu"
+              className="lg:hidden text-white"
             >
-              {isOpen ? <HiX size={24} /> : <HiMenu size={24} />}
+              {isOpen ? <HiX size={26} /> : <HiMenu size={26} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* MOBILE MENU */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          className={`lg:hidden bg-[#1f2a56] px-6 transition-all duration-300 ${
+            isOpen ? "max-h-96 py-4" : "max-h-0 overflow-hidden"
           }`}
         >
-          <div className="px-4 pb-4 space-y-1 bg-primary-dark/50 backdrop-blur-md">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="block text-white/80 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg text-sm font-medium transition-all"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className="block text-white py-2 text-sm"
+            >
+              {link.name}
+            </Link>
+          ))}
         </div>
       </nav>
     </header>

@@ -1,39 +1,35 @@
+"use client";
+
 import Link from "next/link";
-import { navLinks } from "@/data/dummyData";
 import { WiDayCloudyGusts } from "react-icons/wi";
-import {
-  HiOutlineMapPin,
-  HiOutlineEnvelope,
-  HiOutlinePhone,
-} from "react-icons/hi2";
-import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
+import { HiOutlineGlobeAlt, HiOutlineEnvelope, HiOutlinePhone } from "react-icons/hi2";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 
 export default function Footer() {
   return (
     <footer className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {/* Brand */}
-          <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-white/15 rounded-lg flex items-center justify-center">
+          <div>
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="w-9 h-9 bg-white/15 rounded-full flex items-center justify-center">
                 <WiDayCloudyGusts className="text-white text-xl" />
               </div>
               <span className="font-bold text-lg">
-                JEMBER <span className="text-secondary-light">SIAGA</span>
+                Jember <span className="text-secondary-light">Siaga</span>
               </span>
             </Link>
-            <p className="text-white/60 text-sm leading-relaxed mb-4">
-              Sistem informasi cuaca dan kebencanaan terpadu untuk wilayah
-              Kabupaten Jember. Memberikan informasi real-time untuk
-              kesiapsiagaan bencana.
+            <p className="text-white/60 text-sm leading-relaxed mb-5 max-w-sm">
+              Platform pusat informasi dan koordinasi penanggulangan bencana
+              Kabupaten Jember. Kami berkomitmen untuk memberikan data akurat
+              demi keselamatan seluruh warga.
             </p>
             <div className="flex gap-3">
               {[
-                { icon: FaFacebook, href: "#" },
-                { icon: FaInstagram, href: "#" },
-                { icon: FaTwitter, href: "#" },
-                { icon: FaYoutube, href: "#" },
+                { icon: HiOutlineGlobeAlt, href: "#" },
+                { icon: HiOutlineEnvelope, href: "#" },
+                { icon: HiOutlinePhone, href: "#" },
               ].map((social, i) => (
                 <a
                   key={i}
@@ -41,19 +37,24 @@ export default function Footer() {
                   className="w-9 h-9 bg-white/10 hover:bg-secondary rounded-lg flex items-center justify-center transition-all duration-200"
                   aria-label="Social media"
                 >
-                  <social.icon className="text-sm" />
+                  <social.icon className="text-base" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Navigasi Cepat */}
           <div>
             <h4 className="font-semibold text-sm mb-4 text-white/90">
-              Navigasi
+              Navigasi Cepat
             </h4>
             <ul className="space-y-2.5">
-              {navLinks.map((link) => (
+              {[
+                { name: "Beranda", href: "/" },
+                { name: "Prediksi Cuaca", href: "/prediksi-cuaca" },
+                { name: "Prediksi Banjir", href: "/prediksi-banjir" },
+                { name: "Berita", href: "/berita" },
+              ].map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -66,47 +67,26 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Layanan */}
+          {/* Dukungan */}
           <div>
             <h4 className="font-semibold text-sm mb-4 text-white/90">
-              Layanan
+              Dukungan
             </h4>
             <ul className="space-y-2.5">
               {[
-                "Prakiraan Cuaca",
-                "Peringatan Dini",
-                "Lapor Bencana",
-                "Peta Rawan Bencana",
-                "Data Historis",
-              ].map((item) => (
-                <li key={item}>
+                { name: "Peta Bencana", href: "/peta-bencana" },
+                { name: "Pengaduan Bencana", href: "/pengaduan-bencana" },
+                { name: "FAQ", href: "/faq" },
+              ].map((link) => (
+                <li key={link.name}>
                   <Link
-                    href="#"
+                    href={link.href}
                     className="text-white/50 hover:text-white text-sm transition-colors"
                   >
-                    {item}
+                    {link.name}
                   </Link>
                 </li>
               ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="font-semibold text-sm mb-4 text-white/90">Kontak</h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 text-sm text-white/50">
-                <HiOutlineMapPin className="text-secondary-light mt-0.5 flex-shrink-0" />
-                <span>Jl. Sumatera No. 1, Kabupaten Jember, Jawa Timur</span>
-              </li>
-              <li className="flex items-center gap-3 text-sm text-white/50">
-                <HiOutlinePhone className="text-secondary-light flex-shrink-0" />
-                <span>(0331) 123456</span>
-              </li>
-              <li className="flex items-center gap-3 text-sm text-white/50">
-                <HiOutlineEnvelope className="text-secondary-light flex-shrink-0" />
-                <span>info@jembersiaga.go.id</span>
-              </li>
             </ul>
           </div>
         </div>
@@ -116,11 +96,16 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-white/40">
-            <p>© 2026 Jember Siaga. Seluruh hak cipta dilindungi.</p>
-            <p>
-              Didukung oleh{" "}
-              <span className="text-white/60">BPBD Kabupaten Jember</span>
-            </p>
+            <p>© 2024 Jember Siaga. Seluruh Hak Cipta Dilindungi.</p>
+            <button
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-secondary flex items-center justify-center transition-all"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              aria-label="Back to top"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 11V3M7 3L3 7M7 3l4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
