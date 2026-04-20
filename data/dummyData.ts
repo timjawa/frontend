@@ -333,7 +333,7 @@ export const earlyWarning = {
 export const navLinks = [
   { name: "Prediksi Cuaca", href: "/prediksi-cuaca" },
   { name: "Prediksi Banjir", href: "/prediksi-banjir" },
-  { name: "Peta Bencana", href: "/peta-bencana" },
+  { name: "Peta Bencana", href: "/peta" },
   { name: "Pengaduan Bencana", href: "/pengaduan-bencana" },
   { name: "Berita", href: "/berita" },
   { name: "FAQ", href: "/faq" },
