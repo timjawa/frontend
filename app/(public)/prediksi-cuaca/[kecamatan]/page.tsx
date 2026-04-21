@@ -4,6 +4,7 @@ import { useState, useRef, use } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import DatePicker from "@/components/ui/DatePicker";
 import {
   allKecamatanNames,
   getHourlyWeather,
@@ -11,7 +12,7 @@ import {
   HourlyWeather,
 } from "@/data/prediksiCuacaData";
 import { getWeatherIcon } from "@/data/dummyData";
-import { HiOutlineCalendar, HiArrowTopRightOnSquare } from "react-icons/hi2";
+import { HiArrowTopRightOnSquare } from "react-icons/hi2";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { WiDaySunny, WiCloud } from "react-icons/wi";
 
@@ -59,7 +60,7 @@ export default function KecamatanDetailPage({
       <Navbar />
       <main className="flex-1">
         {/* Hero — matches homepage HeroSection: from-slate-50 to-white */}
-        <section className="pt-28 pb-8 bg-gradient-to-b from-slate-50 to-white">
+        <section className="pt-36 pb-8 bg-gradient-to-b from-slate-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Title */}
             <div className="text-center mb-8">
@@ -102,18 +103,11 @@ export default function KecamatanDetailPage({
 
             {/* Date & Source Row */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <HiOutlineCalendar className="text-secondary text-lg" />
-                  <span className="text-slate-600 font-medium">Tanggal:</span>
-                </div>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-sm font-medium cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors"
-                />
-              </div>
+              <DatePicker
+                id="kecamatan-date-picker"
+                value={selectedDate}
+                onChange={(val) => setSelectedDate(val)}
+              />
               <span className="text-xs text-slate-400 font-medium">
                 Sumber: BMKG
               </span>

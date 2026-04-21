@@ -4,7 +4,7 @@ import { HiShieldCheck } from "react-icons/hi2";
 
 export default function HeroSection() {
   return (
-    <section className="pt-28 pb-8 bg-gradient-to-b from-slate-50 to-white">
+    <section className="pt-36 pb-8 bg-gradient-to-b from-slate-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-6 items-center">
           {/* Left: Status Card */}

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import DatePicker from "@/components/ui/DatePicker";
 import {
   allKecamatanPredictions,
   timeSlots,
@@ -11,7 +12,7 @@ import {
   WeatherSlot,
 } from "@/data/prediksiCuacaData";
 import { getWeatherIcon } from "@/data/dummyData";
-import { HiOutlineSearch, HiOutlineCalendar } from "react-icons/hi";
+import { HiOutlineSearch } from "react-icons/hi";
 import { HiInformationCircle } from "react-icons/hi2";
 import {
   WiHumidity,
@@ -59,7 +60,7 @@ export default function PrediksiCuacaPage() {
       <Navbar />
       <main className="flex-1">
         {/* Hero — same light gradient as homepage HeroSection */}
-        <section className="pt-28 pb-8 bg-gradient-to-b from-slate-50 to-white">
+        <section className="pt-36 pb-8 bg-gradient-to-b from-slate-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="relative bg-gradient-to-br from-accent to-accent-dark rounded-2xl p-8 sm:p-10 overflow-hidden">
               {/* Background decorations — same as HeroSection */}
@@ -119,23 +120,15 @@ export default function PrediksiCuacaPage() {
         </section>
 
         {/* Filter Bar */}
-        <section className="py-3 bg-white border-b border-border sticky top-[5.75rem] z-30">
+        <section className="py-3 bg-white/95 backdrop-blur-md border-b border-border sticky top-[7rem] z-30 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               {/* Date Picker */}
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <HiOutlineCalendar className="text-secondary text-lg" />
-                  <span className="text-slate-600 font-medium">Tanggal:</span>
-                </div>
-                <input
-                  id="date-picker"
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-sm font-medium cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-secondary transition-colors"
-                />
-              </div>
+              <DatePicker
+                id="date-picker"
+                value={selectedDate}
+                onChange={(val) => setSelectedDate(val)}
+              />
 
               {/* Time Slot Filters */}
               <div className="flex items-center gap-1.5 flex-wrap">

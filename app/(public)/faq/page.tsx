@@ -18,7 +18,7 @@ export default function FaqPage() {
       <Navbar />
       <main className="flex-1">
         {/* Hero — consistent with homepage: from-slate-50 to-white */}
-        <section className="pt-28 pb-8 bg-gradient-to-b from-slate-50 to-white">
+        <section className="pt-36 pb-8 bg-gradient-to-b from-slate-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-2xl md:text-3xl font-bold text-primary leading-tight">
