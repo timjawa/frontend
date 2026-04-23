@@ -1,14 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 // ⚠️ WAJIB pakai dynamic import + ssr: false
 // Leaflet error kalau dirender di server karena
 // butuh objek 'window' yang hanya ada di browser
 const MapView = dynamic(
-  () => import("@/components/MapView"),
+  () => import("@/components/maps/MapView"),
   {
     ssr: false,
     loading: () => (

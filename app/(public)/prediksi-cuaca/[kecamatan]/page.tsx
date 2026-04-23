@@ -2,8 +2,8 @@
 
 import { useState, useRef, use } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import DatePicker from "@/components/ui/DatePicker";
 import {
   allKecamatanNames,
