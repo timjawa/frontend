@@ -7,18 +7,22 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
-  // Check if the path is an admin protected route
-  const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
+  // Protect all /admin routes
+  // if (pathname.startsWith('/admin')) {
+  //   if (!token) {
+  //     // Redirect to /login (clean URL)
+  //     return NextResponse.redirect(new URL('/login', request.url));
+  //   }
+  // }
 
-  if (isProtected && !token) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+  // Redirect to dashboard if trying to access login while already logged in
+  if (pathname.startsWith('/login') && token) {
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/data-banjir/:path*', '/pengguna/:path*', '/settings/:path*'],
+  matcher: ['/admin/:path*', '/login'],
 };
