@@ -1,19 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import { weatherPredictions, getWeatherIcon } from "@/data/dummyData";
+import { getWeatherIcon } from "@/data/dummyData";
 
 const tabs = ["Hari Ini", "Besok", "Lusa"];
 const timeLabels = [
-  { key: "pagi", label: "Pagi", time: "06:00" },
-  { key: "siang", label: "Siang", time: "12:00" },
-  { key: "sore", label: "Sore", time: "15:00" },
-  { key: "malam", label: "Malam", time: "18:00" },
-  { key: "dini_hari", label: "Dini Hari", time: "00:00" },
+  { key: "pagi",     label: "Pagi",      range: [5, 9] },
+  { key: "siang",    label: "Siang",     range: [9, 14] },
+  { key: "sore",     label: "Sore",      range: [14, 18] },
+  { key: "malam",    label: "Malam",     range: [18, 24] },
+  { key: "dini_hari",label: "Dini Hari", range: [0, 5] },
 ];
 
-export default function WeatherTable() {
+const mapConditionToIcon = (description: string) => {
+  const desc = description?.toLowerCase() || '';
+  if (desc.includes('petir') || desc.includes('thunder')) return 'thunderstorm';
+  if (desc.includes('hujan lebat')) return 'rain';
+  if (desc.includes('hujan') || desc.includes('rain')) return 'light-rain';
+  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
+  if (desc.includes('cerah berawan') || desc.includes('partly')) return 'partly-cloudy';
+  if (desc.includes('cerah') || desc.includes('clear') || desc.includes('sunny')) return 'sunny';
+  if (desc.includes('kabut') || desc.includes('asap')) return 'cloudy';
+  return 'partly-cloudy';
+};
+
+const parseWaktuLokal = (waktu: string) => {
+  const str = String(waktu || '');
+  const parts = str.includes('T') ? str.split('T') : str.split(' ');
+  return { date: parts[0] || '', hour: parts[1] ? parseInt(parts[1].split(':')[0], 10) : -1 };
+};
+
+
+export default function WeatherTable({ data = {} }: { data?: Record<string, any[]> }) {
   const [activeTab, setActiveTab] = useState(0);
+
+  // Mengambil data kecamatan dari props
+  const kecamatanList = Object.keys(data || {});
 
   return (
     <section className="py-10 bg-surface">
@@ -54,50 +76,75 @@ export default function WeatherTable() {
                       className="text-center px-4 py-3.5 text-sm font-semibold min-w-[130px]"
                     >
                       <div>{t.label}</div>
-                      <div className="text-xs font-normal text-white/70">
-                        {t.time}
-                      </div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {weatherPredictions.map((row, idx) => (
-                  <tr
-                    key={row.kecamatan}
-                    className={`border-b border-border/50 hover:bg-accent/30 transition-colors ${
-                      idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-                    }`}
-                  >
-                    <td className="px-5 py-4 font-semibold text-primary text-sm sticky left-0 bg-inherit z-10">
-                      {row.kecamatan}
+                {kecamatanList.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-10 text-slate-500">
+                      Belum ada data perkiraan cuaca.
                     </td>
-                    {timeLabels.map((t) => {
-                      const data = row[t.key as keyof typeof row] as {
-                        suhu: string;
-                        cuaca: string;
-                        icon: string;
-                      };
-                      const IconComp = getWeatherIcon(data.icon);
-                      return (
-                        <td
-                          key={t.key}
-                          className="px-4 py-4 text-center"
-                        >
-                          <div className="flex flex-col items-center gap-1">
-                            <IconComp className="text-secondary text-2xl" />
-                            <span className="font-bold text-primary text-sm">
-                              {data.suhu}
-                            </span>
-                            <span className="text-xs text-slate-500 leading-tight">
-                              {data.cuaca}
-                            </span>
-                          </div>
-                        </td>
-                      );
-                    })}
                   </tr>
-                ))}
+                ) : (
+                  kecamatanList.map((kecamatanName, idx) => {
+                    // Ambil array ramalan untuk kecamatan ini
+                    const forecasts = data[kecamatanName] || [];
+                    
+                    // Filter berdasarkan tab (0: hari ini, 1: besok, dst)
+                    const targetDate = new Date();
+                    targetDate.setDate(targetDate.getDate() + activeTab);
+                    const targetDateString = targetDate.toISOString().split('T')[0];
+                    
+                    return (
+                      <tr
+                        key={kecamatanName}
+                        className={`border-b border-border/50 hover:bg-accent/30 transition-colors ${
+                          idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"
+                        }`}
+                      >
+                        <td className="px-5 py-4 font-semibold text-primary text-sm sticky left-0 bg-inherit z-10">
+                          {kecamatanName}
+                        </td>
+                        {timeLabels.map((t) => {
+                          const [minHour, maxHour] = t.range;
+                          const midHour = Math.floor((minHour + maxHour) / 2);
+                          const candidates = forecasts.filter((f: { waktu_lokal: string }) => {
+                            const { date, hour } = parseWaktuLokal(f.waktu_lokal);
+                            return date === targetDateString && hour >= minHour && hour < maxHour;
+                          });
+                          const matchingForecast = candidates.sort((a: { waktu_lokal: string }, b: { waktu_lokal: string }) =>
+                            Math.abs(parseWaktuLokal(a.waktu_lokal).hour - midHour) -
+                            Math.abs(parseWaktuLokal(b.waktu_lokal).hour - midHour)
+                          )[0];
+
+                          const suhu = matchingForecast ? Math.round(matchingForecast.suhu) + '°C' : '--';
+                          const cuacaDesc = matchingForecast ? matchingForecast.deskripsi_cuaca : '-';
+                          const iconName = mapConditionToIcon(cuacaDesc);
+                          const IconComp = getWeatherIcon(iconName);
+
+                          return (
+                            <td
+                              key={t.key}
+                              className="px-4 py-4 text-center"
+                            >
+                              <div className="flex flex-col items-center gap-1">
+                                <IconComp className="text-secondary text-2xl" />
+                                <span className="font-bold text-primary text-sm">
+                                  {suhu}
+                                </span>
+                                <span className="text-xs text-slate-500 leading-tight capitalize">
+                                  {cuacaDesc}
+                                </span>
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>

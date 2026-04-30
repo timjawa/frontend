@@ -1,34 +1,109 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DatePicker from "@/components/ui/DatePicker";
-import {
-  allKecamatanPredictions,
-  timeSlots,
-  KecamatanPrediction,
-  WeatherSlot,
-} from "@/data/prediksiCuacaData";
+import { timeSlots, KecamatanPrediction, WeatherSlot } from "@/data/prediksiCuacaData";
 import { getWeatherIcon } from "@/data/dummyData";
 import { HiOutlineSearch } from "react-icons/hi";
 import { HiInformationCircle } from "react-icons/hi2";
-import {
-  WiHumidity,
-  WiStrongWind,
-  WiThermometer,
-  WiCloud,
-  WiDaySunny,
-} from "react-icons/wi";
+import { WiHumidity, WiStrongWind, WiThermometer, WiCloud, WiDaySunny } from "react-icons/wi";
+import { fetchWeatherForecast } from "@/services/weather";
+
+// Helper: map cuaca description to icon key
+const mapConditionToIcon = (description: string) => {
+  const desc = description?.toLowerCase() || '';
+  if (desc.includes('petir') || desc.includes('thunder')) return 'thunderstorm';
+  if (desc.includes('hujan lebat') || desc.includes('heavy rain')) return 'rain';
+  if (desc.includes('hujan') || desc.includes('rain')) return 'light-rain';
+  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
+  if (desc.includes('cerah berawan') || desc.includes('partly')) return 'partly-cloudy';
+  if (desc.includes('cerah') || desc.includes('clear') || desc.includes('sunny')) return 'sunny';
+  if (desc.includes('kabut') || desc.includes('asap') || desc.includes('fog')) return 'cloudy';
+  return 'partly-cloudy';
+};
+
+// Helper: parse "2026-05-01 06:00:00" → { date: "2026-05-01", hour: 6 }
+const parseWaktuLokal = (waktu: string) => {
+  const str = String(waktu || '');
+  const parts = str.includes('T') ? str.split('T') : str.split(' ');
+  const date = parts[0] || '';
+  const hour = parts[1] ? parseInt(parts[1].split(':')[0], 10) : -1;
+  return { date, hour };
+};
 
 export default function PrediksiCuacaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTimeSlot, setActiveTimeSlot] = useState<string | null>(null);
+  const [allKecamatanPredictions, setAllKecamatanPredictions] = useState<KecamatanPrediction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Date picker state — defaults to today
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetchWeatherForecast();
+        const data = res?.data || {};
+
+        // Map backend data to the frontend structure
+        const mappedData: KecamatanPrediction[] = Object.keys(data).map(kecamatan => {
+          const forecasts = data[kecamatan] || [];
+
+          // Find the best forecast for a given date & hour range
+          const getSlotData = (hourRange: number[]): WeatherSlot => {
+            const [minHour, maxHour] = hourRange;
+
+            const candidates = forecasts.filter((f: { waktu_lokal: string }) => {
+              const { date, hour } = parseWaktuLokal(f.waktu_lokal);
+              return date === selectedDate && hour >= minHour && hour < maxHour;
+            });
+
+            // Pick the one closest to the midpoint of the range
+            const midHour = Math.floor((minHour + maxHour) / 2);
+            const match = candidates.sort((a: { waktu_lokal: string }, b: { waktu_lokal: string }) => {
+              return Math.abs(parseWaktuLokal(a.waktu_lokal).hour - midHour) -
+                     Math.abs(parseWaktuLokal(b.waktu_lokal).hour - midHour);
+            })[0];
+
+            if (match) {
+              return {
+                suhu: Math.round(match.suhu) + '°C',
+                kelembapan: (match.kelembapan || 0) + '%',
+                angin: (match.kecepatan_angin || 0) + ' m/s',
+                cuaca: match.deskripsi_cuaca || 'Tidak diketahui',
+                icon: mapConditionToIcon(match.deskripsi_cuaca)
+              };
+            }
+            return { suhu: '--', kelembapan: '--', angin: '--', cuaca: '-', icon: 'partly-cloudy' };
+          };
+
+          return {
+            kecamatan,
+            slot1: getSlotData([5, 9]),    // Pagi 05:00–09:00
+            slot2: getSlotData([9, 14]),   // Siang 09:00–14:00
+            slot3: getSlotData([14, 18]),  // Sore 14:00–18:00
+            slot4: getSlotData([18, 24]),  // Malam 18:00–24:00
+            slot5: getSlotData([0, 5]),    // Dini Hari 00:00–05:00
+          };
+        });
+
+        setAllKecamatanPredictions(mappedData);
+      } catch (error) {
+        console.error("Gagal memuat data cuaca:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [selectedDate]);
+
 
   // Format the selected date in Indonesian
   const formattedDate = new Date(selectedDate + "T00:00:00").toLocaleDateString(
@@ -48,7 +123,7 @@ export default function PrediksiCuacaPage() {
     return allKecamatanPredictions.filter((p) =>
       p.kecamatan.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, allKecamatanPredictions]);
 
   // Determine which time slots to show
   const visibleSlots = activeTimeSlot
@@ -59,11 +134,10 @@ export default function PrediksiCuacaPage() {
     <>
       <Navbar />
       <main className="flex-1">
-        {/* Hero — same light gradient as homepage HeroSection */}
+        {/* Hero */}
         <section className="pt-36 pb-8 bg-gradient-to-b from-slate-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="relative bg-gradient-to-br from-accent to-accent-dark rounded-2xl p-8 sm:p-10 overflow-hidden">
-              {/* Background decorations — same as HeroSection */}
               <div className="absolute top-4 right-4 opacity-20">
                 <WiCloud className="text-primary text-[100px]" />
               </div>
@@ -81,7 +155,6 @@ export default function PrediksiCuacaPage() {
                   masyarakat dalam menghadapi perubahan cuaca.
                 </p>
 
-                {/* Search Bar */}
                 <div className="mt-6 max-w-xl mx-auto">
                   <div className="relative flex items-center">
                     <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none" />
@@ -91,24 +164,17 @@ export default function PrediksiCuacaPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-12 pr-14 py-3.5 rounded-xl bg-white text-slate-700 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-secondary border border-border shadow-sm transition-all duration-200"
-                      id="search-kecamatan"
                     />
-                    {searchQuery ? (
+                    {searchQuery && (
                       <button
                         onClick={() => setSearchQuery("")}
                         className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                        aria-label="Clear search"
                       >
                         ✕
                       </button>
-                    ) : (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center">
-                        {/* <HiOutlineSearch className="text-white text-sm" /> */}
-                      </div>
                     )}
                   </div>
-                  {/* Live search result count */}
-                  {searchQuery && (
+                  {searchQuery && !isLoading && (
                     <p className="mt-2 text-xs text-slate-500">
                       {filteredPredictions.length} kecamatan ditemukan
                     </p>
@@ -123,18 +189,14 @@ export default function PrediksiCuacaPage() {
         <section className="py-3 bg-white/95 backdrop-blur-md border-b border-border sticky top-[7rem] z-30 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              {/* Date Picker */}
               <DatePicker
                 id="date-picker"
                 value={selectedDate}
                 onChange={(val) => setSelectedDate(val)}
               />
 
-              {/* Time Slot Filters */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs text-slate-500 mr-1 font-medium">
-                  Jam:
-                </span>
+                <span className="text-xs text-slate-500 mr-1 font-medium">Jam:</span>
                 <button
                   onClick={() => setActiveTimeSlot(null)}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
@@ -148,11 +210,7 @@ export default function PrediksiCuacaPage() {
                 {timeSlots.map((slot) => (
                   <button
                     key={slot.key}
-                    onClick={() =>
-                      setActiveTimeSlot(
-                        activeTimeSlot === slot.key ? null : slot.key
-                      )
-                    }
+                    onClick={() => setActiveTimeSlot(activeTimeSlot === slot.key ? null : slot.key)}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                       activeTimeSlot === slot.key
                         ? "bg-primary text-white shadow-md"
@@ -179,42 +237,23 @@ export default function PrediksiCuacaPage() {
                         Kecamatan
                       </th>
                       {visibleSlots.map((slot) => (
-                        <th
-                          key={slot.key}
-                          className="text-center px-4 py-3.5 text-sm font-semibold min-w-[160px]"
-                        >
+                        <th key={slot.key} className="text-center px-4 py-3.5 text-sm font-semibold min-w-[160px]">
                           {slot.label}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPredictions.length === 0 ? (
+                    {isLoading ? (
                       <tr>
-                        <td
-                          colSpan={visibleSlots.length + 1}
-                          className="text-center py-16 text-slate-400"
-                        >
-                          <div className="flex flex-col items-center gap-3">
-                            <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center">
-                              <HiOutlineSearch className="text-2xl text-slate-300" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-slate-500">
-                                Kecamatan &quot;{searchQuery}&quot; tidak
-                                ditemukan
-                              </p>
-                              <p className="text-xs text-slate-400 mt-1">
-                                Coba kata kunci lain atau hapus pencarian
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => setSearchQuery("")}
-                              className="mt-1 text-xs text-secondary hover:text-secondary-light font-medium transition-colors"
-                            >
-                              Hapus Pencarian
-                            </button>
-                          </div>
+                        <td colSpan={visibleSlots.length + 1} className="text-center py-16 text-slate-400">
+                          Memuat data prakiraan cuaca...
+                        </td>
+                      </tr>
+                    ) : filteredPredictions.length === 0 ? (
+                      <tr>
+                        <td colSpan={visibleSlots.length + 1} className="text-center py-16 text-slate-400">
+                          Tidak ada data yang ditemukan.
                         </td>
                       </tr>
                     ) : (
@@ -237,19 +276,11 @@ export default function PrediksiCuacaPage() {
                             </Link>
                           </td>
                           {visibleSlots.map((slot) => {
-                            const data = row[
-                              slot.key as keyof KecamatanPrediction
-                            ] as WeatherSlot;
+                            const data = row[slot.key as keyof KecamatanPrediction] as WeatherSlot;
                             const IconComp = getWeatherIcon(data.icon);
                             return (
-                              <td
-                                key={slot.key}
-                                className="px-4 py-4 text-center"
-                              >
-                                <WeatherCell
-                                  data={data}
-                                  IconComp={IconComp}
-                                />
+                              <td key={slot.key} className="px-4 py-4 text-center">
+                                <WeatherCell data={data} IconComp={IconComp} />
                               </td>
                             );
                           })}
@@ -261,15 +292,14 @@ export default function PrediksiCuacaPage() {
               </div>
             </div>
 
-            {/* Result count */}
-            <div className="mt-3 text-xs text-slate-400 text-right">
-              Menampilkan {filteredPredictions.length} dari{" "}
-              {allKecamatanPredictions.length} kecamatan
-            </div>
+            {!isLoading && (
+              <div className="mt-3 text-xs text-slate-400 text-right">
+                Menampilkan {filteredPredictions.length} dari {allKecamatanPredictions.length} kecamatan
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Info Banner — same style as homepage InfoBanner */}
         <section className="py-3 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-gradient-to-r from-secondary to-primary rounded-xl px-5 py-4 flex items-start gap-3 shadow-md">
@@ -292,7 +322,6 @@ export default function PrediksiCuacaPage() {
   );
 }
 
-// Weather Cell Component — matches the WeatherTable component style
 function WeatherCell({
   data,
   IconComp,
@@ -303,7 +332,7 @@ function WeatherCell({
   return (
     <div className="flex flex-col items-center gap-1">
       <IconComp className="text-secondary text-2xl" />
-      <span className="font-bold text-primary text-sm">{data.cuaca}</span>
+      <span className="font-bold text-primary text-sm capitalize line-clamp-1" title={data.cuaca}>{data.cuaca}</span>
       <div className="flex flex-col gap-0.5 text-[11px] text-slate-500">
         <div className="flex items-center gap-1 justify-center">
           <WiThermometer className="text-red-400 text-sm" />

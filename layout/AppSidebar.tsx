@@ -27,48 +27,17 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Overview", path: "/admin/dashboard", pro: false }],
+    path: "/admin/dashboard"
   },
   {
-    icon: <GridIcon />,
+    icon: <ListIcon />,
     name: "Contoh Design",
     path: "/admin/design",
   },
   {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/admin/calendar",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/admin/profile",
-  },
-  {
     icon: <PageIcon />,
     name: "Berita",
-    subItems: [
-      { name: "Daftar Berita", path: "/admin/berita", pro: false },
-      { name: "Tambah Berita", path: "/admin/berita/create", pro: false },
-    ],
-  },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/admin/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/admin/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
-    subItems: [
-      { name: "Blank Page", path: "/admin/blank", pro: false },
-      { name: "404 Error", path: "/admin/error-404", pro: false },
-    ],
+    path: "/admin/berita",
   },
 ];
 
