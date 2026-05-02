@@ -4,16 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
   TableIcon,
-  UserCircleIcon,
+  ChatIcon,
+  DocsIcon,
+  FolderIcon,
+  GroupIcon,
 } from "../icons/index";
+import { HiOutlineMap, HiOutlineCloud } from "react-icons/hi2";
 import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
@@ -23,32 +23,60 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
+const monitoringItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
     path: "/admin/dashboard"
   },
   {
-    icon: <ListIcon />,
-    name: "Contoh Design",
-    path: "/admin/design",
+    icon: <HiOutlineMap className="w-5 h-5" />,
+    name: "Peta Bencana",
+    path: "/admin/peta-bencana",
   },
   {
-    icon: <PageIcon />,
-    name: "Berita",
-    path: "/admin/berita",
+    icon: <HiOutlineCloud className="w-5 h-5" />,
+    name: "Cuaca & Hidrologi",
+    subItems: [
+      { name: "Cuaca Realtime", path: "/admin/cuaca/realtime" },
+      { name: "Prediksi Cuaca", path: "/admin/cuaca/prediksi" },
+      { name: "Tinggi Air", path: "/admin/cuaca/tinggi-air" },
+    ],
+  },
+];
+
+const operasionalItems: NavItem[] = [
+  {
+    icon: <ChatIcon />,
+    name: "Manajemen Pengaduan",
+    path: "/admin/pengaduan",
+  },
+  {
+    icon: <DocsIcon />,
+    name: "Laporan",
+    path: "/admin/laporan",
+  },
+  {
+    icon: <FolderIcon />,
+    name: "Informasi & Edukasi",
+    subItems: [
+      { name: "Berita", path: "/admin/berita" },
+      { name: "Edukasi Siaga", path: "/admin/edukasi" },
+      { name: "FAQ", path: "/admin/faq" },
+    ],
   },
 ];
 
 const othersItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/admin/line-chart", pro: false },
-      { name: "Bar Chart", path: "/admin/bar-chart", pro: false },
-    ],
+    icon: <TableIcon />,
+    name: "Data Kecamatan",
+    path: "/admin/kecamatan",
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Pengguna JESI",
+    path: "/admin/pengguna",
   },
 ];
 
@@ -58,7 +86,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "others"
+    menuType: string
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -183,7 +211,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
+    type: string;
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -197,14 +225,19 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+    const menuGroups = [
+      { type: "monitoring", items: monitoringItems },
+      { type: "operasional", items: operasionalItems },
+      { type: "others", items: othersItems },
+    ];
+    
+    menuGroups.forEach(({ type, items }) => {
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "others",
+                type,
                 index,
               });
               submenuMatched = true;
@@ -233,7 +266,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
+  const handleSubmenuToggle = (index: number, menuType: string) => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -296,15 +329,15 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
+                  "MONITORING"
                 ) : (
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(monitoringItems, "monitoring")}
             </div>
 
-            <div className="">
+            <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered
@@ -313,7 +346,24 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  "OPERASIONAL"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(operasionalItems, "operasional")}
+            </div>
+
+            <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "OTHERS"
                 ) : (
                   <HorizontaLDots />
                 )}
