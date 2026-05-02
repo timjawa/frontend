@@ -1,82 +1,80 @@
+"use client";
+
 import React from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
-import { HiEllipsisVertical, HiMagnifyingGlass } from "react-icons/hi2";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 import AdminButton from "@/components/admin/ui/AdminButton";
 import { HiPlus } from "react-icons/hi";
 import Link from "next/link";
-import BeritaTableAction from "./BeritaTableAction";
+import FaqTableAction from "./FaqTableAction";
 
-export default function BeritaPage() {
+export default function FaqPage() {
   const tableRows = [
     {
       id: 1,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Banjir Bandang di Desa Kalibaru",
-      cat: "Banjir",
-      status: "Published",
-      views: 1245,
+      question: "Bagaimana cara melaporkan keadaan darurat?",
+      category: "Umum",
+      order: 1,
+      status: "Aktif",
       sv: "success" as const,
     },
     {
       id: 2,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Tanah Longsor Menutup Akses Jalan Provinsi",
-      cat: "Longsor",
-      status: "Draft",
-      views: 0,
-      sv: "default" as const,
+      question: "Apakah layanan call center tersedia 24 jam?",
+      category: "Layanan",
+      order: 2,
+      status: "Aktif",
+      sv: "success" as const,
     },
     {
       id: 3,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Kebakaran Hutan di Lereng Argopuro",
-      cat: "Kebakaran",
-      status: "Archived",
-      views: 342,
-      sv: "info" as const,
+      question: "Berapa lama respon tim saat terjadi bencana?",
+      category: "Bencana",
+      order: 3,
+      status: "Tidak Aktif",
+      sv: "danger" as const,
     },
     {
       id: 4,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Puting Beliung Rusak Puluhan Rumah Warga",
-      cat: "Angin Kencang",
-      status: "Published",
-      views: 892,
+      question: "Dimana letak posko evakuasi terdekat?",
+      category: "Fasilitas",
+      order: 4,
+      status: "Aktif",
       sv: "success" as const,
     },
     {
       id: 5,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Peringatan Dini Cuaca Ekstrem Jember",
-      cat: "Cuaca",
-      status: "Published",
-      views: 2150,
+      question: "Bagaimana cara menjadi relawan?",
+      category: "Relawan",
+      order: 5,
+      status: "Aktif",
       sv: "success" as const,
     },
   ];
+
   return (
     <div>
-      <PageBreadcrumb pageTitle="Manajemen Berita" />
+      <PageBreadcrumb pageTitle="Manajemen FAQ" />
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
           {/* Table header bar */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
             <h3 className="text-base font-bold text-[#1B2E4B]">
-              Daftar Berita
+              Daftar FAQ
             </h3>
             <div className="flex items-center gap-3">
-              <Link href="/admin/berita/create">
+              <Link href="/admin/faq/create">
                 <AdminButton size="sm" variant="primary" className="flex items-center gap-2">
                   <HiPlus className="w-4 h-4" />
-                  Tambah Berita
+                  Tambah FAQ
                 </AdminButton>
               </Link>
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari berita..."
+                  placeholder="Cari FAQ..."
                   className="pl-9 pr-4 py-2 text-sm rounded-xl bg-slate-50 ring-1 ring-slate-200 focus:ring-2 focus:ring-[#1B2E4B] focus:bg-white outline-none transition-all w-52"
                 />
               </div>
@@ -95,19 +93,16 @@ export default function BeritaPage() {
                     No
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Foto
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Judul Berita
+                    Pertanyaan
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Kategori
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Status
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-center">
+                    Urutan
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Views
+                    Status
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">
                     Aksi
@@ -123,25 +118,20 @@ export default function BeritaPage() {
                     <td className="px-6 py-4 font-semibold text-[#1B2E4B]">
                       {row.id}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-12 w-16 overflow-hidden rounded-md border border-gray-200">
-                        <img
-                          src={row.foto}
-                          alt="Cover"
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
+                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[300px] truncate">{row.question}</td>
+                    <td className="px-6 py-4 text-slate-500">{row.category}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex w-7 h-7 items-center justify-center rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">
+                        {row.order}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[200px] truncate">{row.title}</td>
-                    <td className="px-6 py-4 text-slate-500">{row.cat}</td>
                     <td className="px-6 py-4">
                       <AdminBadge variant={row.sv} dot>
                         {row.status}
                       </AdminBadge>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">{row.views}</td>
                     <td className="px-6 py-4 text-right">
-                      <BeritaTableAction id={row.id} />
+                      <FaqTableAction id={row.id} />
                     </td>
                   </tr>
                 ))}
@@ -154,7 +144,7 @@ export default function BeritaPage() {
             <p className="text-sm text-slate-500">
               Menampilkan{" "}
               <span className="font-semibold text-slate-700">1–5</span> dari{" "}
-              <span className="font-semibold text-slate-700">24</span> data
+              <span className="font-semibold text-slate-700">12</span> data
             </p>
             <div className="flex items-center gap-1.5">
               <button
@@ -177,7 +167,7 @@ export default function BeritaPage() {
               ))}
               <span className="px-1 text-slate-300">…</span>
               <button className="w-9 h-9 rounded-lg text-sm font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
-                8
+                3
               </button>
               <button className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
                 Selanjutnya →
@@ -185,7 +175,7 @@ export default function BeritaPage() {
             </div>
           </div>
         </div>
-        </div>
+      </div>
     </div>
   );
 }

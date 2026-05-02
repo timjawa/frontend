@@ -1,0 +1,358 @@
+"use client";
+
+import React, { useState, useRef } from "react";
+import InputField from "./input/InputField";
+import TextArea from "./input/TextArea";
+import FileInput from "./input/FileInput";
+import Select from "./Select";
+import Radio from "./input/Radio";
+import Label from "./Label";
+import AdminButton from "@/components/admin/ui/AdminButton";
+
+// Removed ReactQuill - using textarea instead for React 19 compatibility
+
+interface BeritaFormData {
+  title: string;
+  slug: string;
+  category: string;
+  teaser: string;
+  content: string;
+  coverImage: File | null;
+  source: string;
+  tags: string;
+  status: 'draft' | 'published' | 'archived';
+}
+
+const BeritaForm: React.FC = () => {
+  const [formData, setFormData] = useState<BeritaFormData>({
+    title: "",
+    slug: "",
+    category: "",
+    teaser: "",
+    content: "",
+    coverImage: null,
+    source: "",
+    tags: "",
+    status: "draft"
+  });
+
+  const [dragActive, setDragActive] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Category options
+  const categoryOptions = [
+    { value: "umum", label: "Umum" },
+    { value: "banjir", label: "Banjir" },
+    { value: "longsor", label: "Longsor" },
+    { value: "kebakaran", label: "Kebakaran" },
+    { value: "angin_kencang", label: "Angin Kencang" },
+    { value: "gempa", label: "Gempa" },
+    { value: "cuaca", label: "Cuaca" }
+  ];
+
+  // Status options for radio buttons
+  const statusOptions = [
+    { value: "draft", label: "Draft" },
+    { value: "published", label: "Published" },
+    { value: "archived", label: "Archived" }
+  ];
+
+  
+  // Auto-generate slug from title
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  // Handle title change and auto-generate slug
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      title,
+      slug: generateSlug(title)
+    }));
+  };
+
+  // Handle slug manual change
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      slug: e.target.value
+    }));
+  };
+
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        coverImage: file
+      }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        setFormData(prev => ({
+          ...prev,
+          coverImage: file
+        }));
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const handleInputChange = (field: keyof BeritaFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form data:", formData);
+    // Here you would typically send the data to your API
+  };
+
+  const onButtonClick = () => {
+    inputRef.current?.click();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Judul Berita */}
+      <div>
+        <Label htmlFor="title">Judul Berita *</Label>
+        <InputField
+          id="title"
+          name="title"
+          placeholder="Masukkan judul berita"
+          defaultValue={formData.title}
+          onChange={handleTitleChange}
+          required
+        />
+      </div>
+
+      {/* Slug */}
+      <div>
+        <Label htmlFor="slug">Slug</Label>
+        <InputField
+          id="slug"
+          name="slug"
+          placeholder="Slug akan otomatis terisi"
+          defaultValue={formData.slug}
+          onChange={handleSlugChange}
+          hint="Slug akan otomatis dibuat dari judul berita"
+        />
+      </div>
+
+      {/* Kategori */}
+      <div>
+        <Label htmlFor="category">Kategori *</Label>
+        <Select
+          options={categoryOptions}
+          placeholder="Pilih kategori"
+          onChange={(value) => handleInputChange('category', value)}
+          defaultValue={formData.category}
+        />
+      </div>
+
+      {/* Ringkasan (Teaser) */}
+      <div>
+        <Label htmlFor="teaser">Ringkasan (Teaser)</Label>
+        <TextArea
+          placeholder="Masukkan ringkasan berita"
+          rows={3}
+          value={formData.teaser}
+          onChange={(value) => handleInputChange('teaser', value)}
+        />
+      </div>
+
+      {/* Isi Berita dengan Textarea (sementara) */}
+      <div>
+        <Label htmlFor="content">Isi Berita *</Label>
+        <TextArea
+          placeholder="Tulis isi berita di sini..."
+          rows={8}
+          value={formData.content}
+          onChange={(value) => handleInputChange('content', value)}
+          hint="Anda dapat menggunakan format text biasa. Rich text editor akan segera hadir."
+        />
+      </div>
+
+      {/* Foto Cover */}
+      <div>
+        <Label>Foto Cover</Label>
+        <div
+          className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+            dragActive
+              ? "border-brand-500 bg-brand-50 dark:bg-brand-500/10"
+              : "border-gray-300 dark:border-gray-700"
+          }`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          
+          {previewImage ? (
+            <div className="space-y-4">
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="mx-auto max-h-48 rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={onButtonClick}
+                className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400"
+              >
+                Ganti gambar
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                <svg
+                  className="h-6 w-6 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={onButtonClick}
+                  className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                >
+                  Klik untuk upload
+                </button>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  atau drag and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  PNG, JPG, GIF (maks. 10MB)
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Sumber Berita */}
+      <div>
+        <Label htmlFor="source">Sumber Berita</Label>
+        <InputField
+          id="source"
+          name="source"
+          placeholder="Masukkan sumber berita (URL atau nama sumber)"
+          defaultValue={formData.source}
+          onChange={(e) => handleInputChange('source', e.target.value)}
+        />
+      </div>
+
+      {/* Tags */}
+      <div>
+        <Label htmlFor="tags">Tags</Label>
+        <InputField
+          id="tags"
+          name="tags"
+          placeholder="Masukkan tags (pisahkan dengan koma)"
+          defaultValue={formData.tags}
+          onChange={(e) => handleInputChange('tags', e.target.value)}
+          hint="Contoh: bencana, alam, darurat"
+        />
+      </div>
+
+      {/* Status Publikasi */}
+      <div>
+        <Label>Status Publikasi</Label>
+        <div className="space-y-3">
+          {statusOptions.map((option) => (
+            <Radio
+              key={option.value}
+              id={`status-${option.value}`}
+              name="status"
+              value={option.value}
+              checked={formData.status === option.value}
+              onChange={(value) => handleInputChange('status', value as 'draft' | 'published' | 'archived')}
+              label={option.label}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-end space-x-3 pt-4">
+        <AdminButton
+          type="button"
+          variant="outline"
+          onClick={() => {}}
+        >
+          Batal
+        </AdminButton>
+        <AdminButton
+          type="submit"
+          variant="primary"
+        >
+          Simpan Berita
+        </AdminButton>
+      </div>
+    </form>
+  );
+};
+
+export default BeritaForm;

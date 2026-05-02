@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/sections/HeroSection";
 import WeatherCards from "@/components/sections/WeatherCards";
 import InfoBanner from "@/components/ui/InfoBanner";
+import { fetchRealtimeWeather, fetchWeatherForecast } from "@/services/weather";
 
 // Lazy load below-the-fold sections for performance
 const WeatherTable = dynamic(() => import("@/components/sections/WeatherTable"), {
@@ -16,15 +17,30 @@ const ReportSection = dynamic(() => import("@/components/sections/ReportSection"
 const NewsSection = dynamic(() => import("@/components/sections/NewsSection"));
 const Footer = dynamic(() => import("@/components/layout/Footer"));
 
-export default function Home() {
+export default async function Home() {
+  let realtimeData = [];
+  let forecastData = {};
+  
+  try {
+    const [realtimeRes, forecastRes] = await Promise.all([
+      fetchRealtimeWeather(),
+      fetchWeatherForecast()
+    ]);
+    
+    realtimeData = realtimeRes?.data || [];
+    forecastData = forecastRes?.data || {};
+  } catch (error) {
+    console.error("Gagal memuat data cuaca di halaman Home", error);
+  }
+
   return (
     <>
       <Navbar />
       <main className="flex-1">
         <HeroSection />
-        <WeatherCards />
+        <WeatherCards data={realtimeData} />
         <InfoBanner />
-        <WeatherTable />
+        <WeatherTable data={forecastData} />
         <EarlyWarning />
         <ActionCards />
         <ReportSection />

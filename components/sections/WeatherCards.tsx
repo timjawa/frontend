@@ -1,13 +1,26 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { weatherLocations, getWeatherIcon } from "@/data/dummyData";
+import { getWeatherIcon } from "@/data/dummyData";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
-export default function WeatherCards() {
+// Helper function to map openweather icon/description to our local icons
+const mapConditionToIcon = (description: string) => {
+  const desc = description?.toLowerCase() || '';
+  if (desc.includes('hujan') || desc.includes('rain')) return 'rain';
+  if (desc.includes('petir') || desc.includes('thunder')) return 'thunderstorm';
+  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
+  if (desc.includes('cerah') || desc.includes('clear')) return 'sunny';
+  return 'partly-cloudy';
+};
+
+export default function WeatherCards({ data = [] }: { data?: any[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // Jika data dari backend kosong, fallback sementara
+  const displayData = data && data.length > 0 ? data : [];
 
   const checkScroll = () => {
     const el = scrollRef.current;
@@ -23,7 +36,7 @@ export default function WeatherCards() {
       el.addEventListener("scroll", checkScroll);
       return () => el.removeEventListener("scroll", checkScroll);
     }
-  }, []);
+  }, [displayData]);
 
   const scroll = (direction: "left" | "right") => {
     const el = scrollRef.current;
@@ -34,6 +47,8 @@ export default function WeatherCards() {
       behavior: "smooth",
     });
   };
+
+  if (displayData.length === 0) return null;
 
   return (
     <section className="py-8 bg-white">
@@ -72,8 +87,11 @@ export default function WeatherCards() {
           ref={scrollRef}
           className="flex gap-4 overflow-x-auto hide-scrollbar pb-2"
         >
-          {weatherLocations.map((loc) => {
-            const IconComp = getWeatherIcon(loc.icon);
+          {displayData.map((loc) => {
+            const iconName = mapConditionToIcon(loc.deskripsi || '');
+            const IconComp = getWeatherIcon(iconName);
+            const suhu = loc.suhu ? Math.round(loc.suhu) : '--';
+            
             return (
               <div
                 key={loc.id}
@@ -83,16 +101,16 @@ export default function WeatherCards() {
                   <div className="w-14 h-14 mx-auto bg-white rounded-xl flex items-center justify-center shadow-sm mb-3 group-hover:shadow-md transition-shadow">
                     <IconComp className="text-secondary text-3xl" />
                   </div>
-                  <h3 className="font-semibold text-primary text-sm mb-1">
-                    {loc.name}
+                  <h3 className="font-semibold text-primary text-sm mb-1 line-clamp-1">
+                    {loc.kecamatan?.nama || 'Unknown'}
                   </h3>
                   <p className="text-2xl font-bold text-primary mb-1">
-                    {loc.temp}
+                    {suhu}°C
                   </p>
-                  <p className="text-xs text-slate-500">{loc.condition}</p>
+                  <p className="text-xs text-slate-500 capitalize line-clamp-1">{loc.deskripsi || 'Tidak diketahui'}</p>
                   <div className="mt-3 flex items-center justify-center gap-1 text-xs text-slate-400">
                     <span>💧</span>
-                    <span>{loc.humidity}</span>
+                    <span>{loc.kelembapan || 0}%</span>
                   </div>
                 </div>
               </div>

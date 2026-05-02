@@ -298,11 +298,11 @@ export const allKecamatanPredictions: KecamatanPrediction[] = [
 ];
 
 export const timeSlots = [
-  { key: "slot1", label: "06:00" },
-  { key: "slot2", label: "12:00" },
-  { key: "slot3", label: "18:02" },
-  { key: "slot4", label: "19:00" },
-  { key: "slot5", label: "00:00" },
+  { key: "slot1", label: "Pagi", time: "06:00", range: [5, 8] },
+  { key: "slot2", label: "Siang", time: "12:00", range: [9, 14] },
+  { key: "slot3", label: "Sore", time: "15:00", range: [14, 18] },
+  { key: "slot4", label: "Malam", time: "20:00", range: [18, 23] },
+  { key: "slot5", label: "Dini Hari", time: "00:00", range: [0, 5] },
 ];
 
 // ===================== ALL KECAMATAN LIST =====================
