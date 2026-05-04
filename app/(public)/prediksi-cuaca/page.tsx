@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DatePicker from "@/components/ui/DatePicker";
 import { timeSlots, KecamatanPrediction, WeatherSlot } from "@/data/prediksiCuacaData";
-import { getWeatherIcon } from "@/data/dummyData";
+import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiOutlineSearch } from "react-icons/hi";
 import { HiInformationCircle } from "react-icons/hi2";
 import { WiHumidity, WiStrongWind, WiThermometer, WiCloud, WiDaySunny } from "react-icons/wi";
@@ -277,10 +277,9 @@ export default function PrediksiCuacaPage() {
                           </td>
                           {visibleSlots.map((slot) => {
                             const data = row[slot.key as keyof KecamatanPrediction] as WeatherSlot;
-                            const IconComp = getWeatherIcon(data.icon);
                             return (
                               <td key={slot.key} className="px-4 py-4 text-center">
-                                <WeatherCell data={data} IconComp={IconComp} />
+                                <WeatherCell data={data} iconType={data.icon} />
                               </td>
                             );
                           })}
@@ -324,14 +323,14 @@ export default function PrediksiCuacaPage() {
 
 function WeatherCell({
   data,
-  IconComp,
+  iconType,
 }: {
   data: WeatherSlot;
-  IconComp: React.ComponentType<{ className?: string }>;
+  iconType: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <IconComp className="text-secondary text-2xl" />
+      <WeatherIcon type={iconType} size={32} />
       <span className="font-bold text-primary text-sm capitalize line-clamp-1" title={data.cuaca}>{data.cuaca}</span>
       <div className="flex flex-col gap-0.5 text-[11px] text-slate-500">
         <div className="flex items-center gap-1 justify-center">

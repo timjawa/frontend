@@ -11,7 +11,7 @@ import {
   getKecamatanWarning,
   HourlyWeather,
 } from "@/data/prediksiCuacaData";
-import { getWeatherIcon } from "@/data/dummyData";
+import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiArrowTopRightOnSquare } from "react-icons/hi2";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { WiDaySunny, WiCloud } from "react-icons/wi";
@@ -177,11 +177,10 @@ export default function KecamatanDetailPage({
 
 // Hourly Weather Card — matches WeatherTable cell styling
 function HourlyCard({ data }: { data: HourlyWeather }) {
-  const IconComp = getWeatherIcon(data.icon);
   return (
     <div className="flex-shrink-0 w-[140px] bg-surface border border-border rounded-2xl p-4 flex flex-col items-center gap-2 hover:bg-accent/30 hover:border-secondary/20 transition-all duration-200">
       <span className="text-sm font-bold text-primary">{data.jam} WIB</span>
-      <IconComp className="text-secondary text-3xl" />
+      <WeatherIcon type={data.icon} size={48} />
       <span className="text-xs text-slate-500 font-medium text-center leading-tight">
         {data.cuaca}
       </span>
