@@ -1,112 +1,176 @@
+"use client";
+
 import React from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
-import { HiEllipsisVertical, HiMagnifyingGlass } from "react-icons/hi2";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 import AdminButton from "@/components/admin/ui/AdminButton";
 import { HiPlus } from "react-icons/hi";
 import Link from "next/link";
-import BeritaTableAction from "./BeritaTableAction";
+import KecamatanTableAction from "./KecamatanTableAction";
 
-export default function BeritaPage() {
+export default function KecamatanPage() {
   const tableRows = [
     {
-      id: 1,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Banjir Bandang di Desa Kalibaru",
-      cat: "Banjir",
-      status: "Published",
-      views: 1245,
+      id: "1",
+      nama: "Ajung",
+      kodeWilayah: "35.09.22.2001",
+      latitude: -8.2300,
+      longitude: 113.6500,
+      elevasi: 60,
+      levelRawan: "rendah",
       sv: "success" as const,
     },
     {
-      id: 2,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Tanah Longsor Menutup Akses Jalan Provinsi",
-      cat: "Longsor",
-      status: "Draft",
-      views: 0,
-      sv: "default" as const,
+      id: "2",
+      nama: "Ambulu",
+      kodeWilayah: "35.09.07.2001",
+      latitude: -8.3500,
+      longitude: 113.6000,
+      elevasi: 12,
+      levelRawan: "sedang",
+      sv: "warning" as const,
     },
     {
-      id: 3,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Kebakaran Hutan di Lereng Argopuro",
-      cat: "Kebakaran",
-      status: "Archived",
-      views: 342,
-      sv: "info" as const,
-    },
-    {
-      id: 4,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Puting Beliung Rusak Puluhan Rumah Warga",
-      cat: "Angin Kencang",
-      status: "Published",
-      views: 892,
+      id: "3",
+      nama: "Arjasa",
+      kodeWilayah: "35.09.23.2001",
+      latitude: -8.1000,
+      longitude: 113.7000,
+      elevasi: 200,
+      levelRawan: "rendah",
       sv: "success" as const,
     },
     {
-      id: 5,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Peringatan Dini Cuaca Ekstrem Jember",
-      cat: "Cuaca",
-      status: "Published",
-      views: 2150,
+      id: "4",
+      nama: "Balung",
+      kodeWilayah: "35.09.05.2001",
+      latitude: -8.2800,
+      longitude: 113.5500,
+      elevasi: 40,
+      levelRawan: "sedang",
+      sv: "warning" as const,
+    },
+    {
+      id: "5",
+      nama: "Bangsalsari",
+      kodeWilayah: "35.09.16.2001",
+      latitude: -8.2000,
+      longitude: 113.5000,
+      elevasi: 85,
+      levelRawan: "sedang",
+      sv: "warning" as const,
+    },
+    {
+      id: "6",
+      nama: "Gumukmas",
+      kodeWilayah: "35.09.04.2001",
+      latitude: -8.3000,
+      longitude: 113.4500,
+      elevasi: 10,
+      levelRawan: "tinggi",
+      sv: "danger" as const,
+    },
+    {
+      id: "7",
+      nama: "Jelbuk",
+      kodeWilayah: "35.09.24.2001",
+      latitude: -8.0800,
+      longitude: 113.6500,
+      elevasi: 325,
+      levelRawan: "rendah",
+      sv: "success" as const,
+    },
+    {
+      id: "8",
+      nama: "Jenggawah",
+      kodeWilayah: "35.09.12.2001",
+      latitude: -8.2500,
+      longitude: 113.7000,
+      elevasi: 95,
+      levelRawan: "sedang",
+      sv: "warning" as const,
+    },
+    {
+      id: "9",
+      nama: "Jombang",
+      kodeWilayah: "35.09.01.2001",
+      latitude: -8.3200,
+      longitude: 113.5000,
+      elevasi: 35,
+      levelRawan: "rendah",
+      sv: "success" as const,
+    },
+    {
+      id: "10",
+      nama: "Kalisat",
+      kodeWilayah: "35.09.18.2001",
+      latitude: -8.1000,
+      longitude: 113.8000,
+      elevasi: 250,
+      levelRawan: "rendah",
       sv: "success" as const,
     },
   ];
+
+  const levelRawanColors = {
+    "rendah": "success",
+    "sedang": "warning",
+    "tinggi": "danger"
+  } as const;
+
   return (
     <div>
-      <PageBreadcrumb pageTitle="Manajemen Berita" />
+      <PageBreadcrumb pageTitle="Manajemen Kecamatan" />
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
           {/* Table header bar */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-bold text-[#1B2E4B]">Daftar Berita</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Kelola seluruh artikel berita bencana</p>
+              <h3 className="text-base font-bold text-[#1B2E4B]">Data Kecamatan Jember</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Kelola data wilayah kecamatan se-Kabupaten Jember</p>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari berita..."
+                  placeholder="Cari kecamatan..."
                   className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white outline-none transition-all w-48"
                 />
               </div>
               <Link
-                href="/admin/berita/create"
+                href="create"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 dark:shadow-none whitespace-nowrap"
               >
                 <HiPlus className="w-4 h-4" />
-                Tambah Berita
+                Tambah Kecamatan
               </Link>
             </div>
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto ">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-slate-50/80">
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 w-12 text-center">
                     No
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Foto
+                    Nama Kecamatan
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Judul Berita
+                    Kode Wilayah
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Kategori
+                    Koordinat
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Status
+                    Elevasi
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Views
+                    Level Rawan
                   </th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">
                     Aksi
@@ -114,33 +178,43 @@ export default function BeritaPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {tableRows.map((row) => (
+                {tableRows.map((row, index) => (
                   <tr
                     key={row.id}
                     className="hover:bg-blue-50/40 transition-colors"
                   >
+                    <td className="px-6 py-4 text-center text-slate-500 font-medium">
+                      {index + 1}
+                    </td>
                     <td className="px-6 py-4 font-semibold text-[#1B2E4B]">
-                      {row.id}
+                      {row.nama}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="h-12 w-16 overflow-hidden rounded-md border border-gray-200">
-                        <img
-                          src={row.foto}
-                          alt="Cover"
-                          className="h-full w-full object-cover"
-                        />
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium font-mono">
+                        {row.kodeWilayah}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">
+                      <div className="text-xs font-mono">
+                        <div>Lat: {row.latitude.toFixed(4)}</div>
+                        <div>Lng: {row.longitude.toFixed(4)}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[200px] truncate">{row.title}</td>
-                    <td className="px-6 py-4 text-slate-500">{row.cat}</td>
+                    <td className="px-6 py-4 text-slate-600">
+                      <span className="flex items-center gap-1">
+                        {row.elevasi} mdpl
+                      </span>
+                    </td>
                     <td className="px-6 py-4">
-                      <AdminBadge variant={row.sv} dot>
-                        {row.status}
+                      <AdminBadge 
+                        variant={levelRawanColors[row.levelRawan as keyof typeof levelRawanColors] || "info"} 
+                        dot
+                      >
+                        {row.levelRawan.charAt(0).toUpperCase() + row.levelRawan.slice(1)}
                       </AdminBadge>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">{row.views}</td>
                     <td className="px-6 py-4 text-right">
-                      <BeritaTableAction id={row.id} />
+                      <KecamatanTableAction id={row.id} />
                     </td>
                   </tr>
                 ))}
@@ -152,8 +226,8 @@ export default function BeritaPage() {
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-slate-50/50">
             <p className="text-sm text-slate-500">
               Menampilkan{" "}
-              <span className="font-semibold text-slate-700">1–5</span> dari{" "}
-              <span className="font-semibold text-slate-700">24</span> data
+              <span className="font-semibold text-slate-700">1–10</span> dari{" "}
+              <span className="font-semibold text-slate-700">31</span> data
             </p>
             <div className="flex items-center gap-1.5">
               <button
@@ -162,7 +236,7 @@ export default function BeritaPage() {
               >
                 ← Sebelumnya
               </button>
-              {[1, 2, 3].map((n) => (
+              {[1, 2, 3, 4].map((n) => (
                 <button
                   key={n}
                   className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${
@@ -174,17 +248,13 @@ export default function BeritaPage() {
                   {n}
                 </button>
               ))}
-              <span className="px-1 text-slate-300">…</span>
-              <button className="w-9 h-9 rounded-lg text-sm font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
-                8
-              </button>
               <button className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
                 Selanjutnya →
               </button>
             </div>
           </div>
         </div>
-        </div>
+      </div>
     </div>
   );
 }

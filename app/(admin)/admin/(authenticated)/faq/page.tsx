@@ -60,27 +60,26 @@ export default function FaqPage() {
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
           {/* Table header bar */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
-            <h3 className="text-base font-bold text-[#1B2E4B]">
-              Daftar FAQ
-            </h3>
-            <div className="flex items-center gap-3">
-              <Link href="/admin/faq/create">
-                <AdminButton size="sm" variant="primary" className="flex items-center gap-2">
-                  <HiPlus className="w-4 h-4" />
-                  Tambah FAQ
-                </AdminButton>
-              </Link>
+            <div>
+              <h3 className="text-base font-bold text-[#1B2E4B]">Daftar FAQ</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Kelola pertanyaan yang sering diajukan</p>
+            </div>
+            <div className="flex items-center gap-2.5">
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Cari FAQ..."
-                  className="pl-9 pr-4 py-2 text-sm rounded-xl bg-slate-50 ring-1 ring-slate-200 focus:ring-2 focus:ring-[#1B2E4B] focus:bg-white outline-none transition-all w-52"
+                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white outline-none transition-all w-48"
                 />
               </div>
-              <AdminButton size="sm" variant="outline">
-                Filter
-              </AdminButton>
+              <Link
+                href="/admin/faq/create"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 dark:shadow-none whitespace-nowrap"
+              >
+                <HiPlus className="w-4 h-4" />
+                Tambah FAQ
+              </Link>
             </div>
           </div>
 
