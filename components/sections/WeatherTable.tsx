@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getWeatherIcon } from "@/data/dummyData";
+import { WeatherIcon } from "@/utils/weatherIcons";
 
 const tabs = ["Hari Ini", "Besok", "Lusa"];
 const timeLabels = [
@@ -122,7 +122,6 @@ export default function WeatherTable({ data = {} }: { data?: Record<string, any[
                           const suhu = matchingForecast ? Math.round(matchingForecast.suhu) + '°C' : '--';
                           const cuacaDesc = matchingForecast ? matchingForecast.deskripsi_cuaca : '-';
                           const iconName = mapConditionToIcon(cuacaDesc);
-                          const IconComp = getWeatherIcon(iconName);
 
                           return (
                             <td
@@ -130,7 +129,7 @@ export default function WeatherTable({ data = {} }: { data?: Record<string, any[
                               className="px-4 py-4 text-center"
                             >
                               <div className="flex flex-col items-center gap-1">
-                                <IconComp className="text-secondary text-2xl" />
+                                <WeatherIcon type={iconName} size={32} />
                                 <span className="font-bold text-primary text-sm">
                                   {suhu}
                                 </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { getWeatherIcon } from "@/data/dummyData";
+import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
 // Helper function to map openweather icon/description to our local icons
@@ -89,7 +89,6 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
         >
           {displayData.map((loc) => {
             const iconName = mapConditionToIcon(loc.deskripsi || '');
-            const IconComp = getWeatherIcon(iconName);
             const suhu = loc.suhu ? Math.round(loc.suhu) : '--';
             
             return (
@@ -99,7 +98,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
               >
                 <div className="text-center">
                   <div className="w-14 h-14 mx-auto bg-white rounded-xl flex items-center justify-center shadow-sm mb-3 group-hover:shadow-md transition-shadow">
-                    <IconComp className="text-secondary text-3xl" />
+                    <WeatherIcon type={iconName} size={40} />
                   </div>
                   <h3 className="font-semibold text-primary text-sm mb-1 line-clamp-1">
                     {loc.kecamatan?.nama || 'Unknown'}
