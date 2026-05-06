@@ -26,7 +26,7 @@ export default function FAQDetailPage({ params }: FAQDetailPageProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Detail FAQ" />
+        <PageBreadcrumb pageTitle="Detail FAQ" className="mb-0" />
         <div className="flex gap-3">
           <Link
             href="/admin/faq"

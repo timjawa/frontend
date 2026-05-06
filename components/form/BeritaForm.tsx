@@ -23,21 +23,26 @@ interface BeritaFormData {
   status: 'draft' | 'published' | 'archived';
 }
 
-const BeritaForm: React.FC = () => {
+interface BeritaFormProps {
+  isEdit?: boolean;
+  initialData?: any;
+}
+
+const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) => {
   const [formData, setFormData] = useState<BeritaFormData>({
-    title: "",
-    slug: "",
-    category: "",
-    teaser: "",
-    content: "",
+    title: initialData?.title || "",
+    slug: initialData?.slug || "",
+    category: initialData?.category || "",
+    teaser: initialData?.teaser || "",
+    content: initialData?.content || "",
     coverImage: null,
-    source: "",
-    tags: "",
-    status: "draft"
+    source: initialData?.source || "",
+    tags: initialData?.tags || "",
+    status: initialData?.status || "draft"
   });
 
   const [dragActive, setDragActive] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(initialData?.coverImage || null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Category options
@@ -242,15 +247,15 @@ const BeritaForm: React.FC = () => {
           
           {previewImage ? (
             <div className="space-y-4">
-              <img
+               <img
                 src={previewImage}
                 alt="Preview"
-                className="mx-auto max-h-48 rounded-lg"
+                className="mx-auto max-h-48 rounded-lg object-contain"
               />
               <button
                 type="button"
                 onClick={onButtonClick}
-                className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium"
               >
                 Ganti gambar
               </button>
@@ -276,14 +281,14 @@ const BeritaForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={onButtonClick}
-                  className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                  className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium"
                 >
                   Klik untuk upload
                 </button>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   atau drag and drop
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   PNG, JPG, GIF (maks. 10MB)
                 </p>
               </div>
@@ -336,11 +341,11 @@ const BeritaForm: React.FC = () => {
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end space-x-3 pt-4">
+      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-800">
         <AdminButton
           type="button"
           variant="outline"
-          onClick={() => {}}
+          onClick={() => window.history.back()}
         >
           Batal
         </AdminButton>
@@ -348,7 +353,7 @@ const BeritaForm: React.FC = () => {
           type="submit"
           variant="primary"
         >
-          Simpan Berita
+          {isEdit ? "Perbarui Berita" : "Simpan Berita"}
         </AdminButton>
       </div>
     </form>

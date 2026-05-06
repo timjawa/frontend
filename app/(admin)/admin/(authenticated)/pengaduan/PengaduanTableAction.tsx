@@ -19,7 +19,7 @@ export default function PengaduanTableAction({ id }: { id: number }) {
 
       <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 right-0 top-full">
         <div className="py-1">
-          <DropdownItem tag="a" href={`${id}`} className="flex items-center gap-2">
+          <DropdownItem tag="a" href={`/admin/pengaduan/${id}`} className="flex items-center gap-2">
             <HiOutlineEye className="w-4 h-4" />
             Detail
           </DropdownItem>

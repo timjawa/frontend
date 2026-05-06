@@ -32,7 +32,7 @@ export default function DetailBeritaPage({ params }: { params: { id: string } })
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Detail Berita" />
+        <PageBreadcrumb pageTitle="Detail Berita" className="mb-0" />
         <div className="flex gap-3">
           <Link
             href="/admin/berita"

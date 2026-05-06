@@ -81,7 +81,7 @@ export default function PengaduanDetailPage({ params }: PengaduanDetailPageProps
     <div>
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Detail Pengaduan" />
+        <PageBreadcrumb pageTitle="Detail Pengaduan" className="mb-0" />
         <div className="flex gap-3">
           <Link
             href="/admin/pengaduan"

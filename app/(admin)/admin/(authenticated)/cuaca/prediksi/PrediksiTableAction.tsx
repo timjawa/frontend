@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-import { HiEllipsisVertical, HiOutlineEye, HiOutlinePencil, HiOutlineTrash } from "react-icons/hi2";
+import { HiEllipsisVertical, HiOutlineEye } from "react-icons/hi2";
 
-export default function KecamatanTableAction({ id }: { id: string }) {
+export default function PrediksiTableAction({ id }: { id: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -19,17 +19,9 @@ export default function KecamatanTableAction({ id }: { id: string }) {
 
       <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 right-0 top-full">
         <div className="py-1">
-          <DropdownItem tag="a" href={`/admin/kecamatan/${id}`} className="flex items-center gap-2">
+          <DropdownItem tag="a" href={`/admin/cuaca/prediksi/${id}`} className="flex items-center gap-2">
             <HiOutlineEye className="w-4 h-4" />
             Detail
-          </DropdownItem>
-          <DropdownItem tag="a" href={`/admin/kecamatan/${id}/edit`} className="flex items-center gap-2">
-            <HiOutlinePencil className="w-4 h-4" />
-            Edit
-          </DropdownItem>
-          <DropdownItem tag="button" onClick={() => console.log('Delete', id)} className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
-            <HiOutlineTrash className="w-4 h-4" />
-            Hapus
           </DropdownItem>
         </div>
       </Dropdown>

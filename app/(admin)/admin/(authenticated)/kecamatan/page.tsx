@@ -8,6 +8,12 @@ import AdminButton from "@/components/admin/ui/AdminButton";
 import { HiPlus } from "react-icons/hi";
 import Link from "next/link";
 import KecamatanTableAction from "./KecamatanTableAction";
+import {
+  HiOutlineMapPin,
+  HiOutlineExclamationTriangle,
+  HiOutlineShieldCheck,
+  HiOutlineCheckBadge,
+} from "react-icons/hi2";
 
 export default function KecamatanPage() {
   const tableRows = [
@@ -122,6 +128,53 @@ export default function KecamatanPage() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Manajemen Kecamatan" />
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0">
+            <HiOutlineMapPin className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Total Kecamatan</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{tableRows.length}</p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 shrink-0">
+            <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Rawan Tinggi</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {tableRows.filter((r) => r.levelRawan === "tinggi").length}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 shrink-0">
+            <HiOutlineShieldCheck className="w-5 h-5 text-yellow-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Rawan Sedang</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {tableRows.filter((r) => r.levelRawan === "sedang").length}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 shrink-0">
+            <HiOutlineCheckBadge className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Rawan Rendah</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {tableRows.filter((r) => r.levelRawan === "rendah").length}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
           {/* Table header bar */}
@@ -140,7 +193,7 @@ export default function KecamatanPage() {
                 />
               </div>
               <Link
-                href="create"
+                href="/admin/kecamatan/create"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 dark:shadow-none whitespace-nowrap"
               >
                 <HiPlus className="w-4 h-4" />

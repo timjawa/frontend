@@ -72,7 +72,7 @@ export default function KecamatanDetailPage({ params }: KecamatanDetailPageProps
     <div>
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Detail Kecamatan" />
+        <PageBreadcrumb pageTitle="Detail Kecamatan" className="mb-0" />
         <div className="flex gap-3">
           <Link
             href="/admin/kecamatan"

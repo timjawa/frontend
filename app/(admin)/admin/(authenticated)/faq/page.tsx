@@ -8,6 +8,12 @@ import AdminButton from "@/components/admin/ui/AdminButton";
 import { HiPlus } from "react-icons/hi";
 import Link from "next/link";
 import FaqTableAction from "./FaqTableAction";
+import {
+  HiOutlineQuestionMarkCircle,
+  HiOutlineCheckCircle,
+  HiOutlineXCircle,
+  HiOutlineTag,
+} from "react-icons/hi2";
 
 export default function FaqPage() {
   const tableRows = [
@@ -56,6 +62,53 @@ export default function FaqPage() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Manajemen FAQ" />
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0">
+            <HiOutlineQuestionMarkCircle className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Total FAQ</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{tableRows.length}</p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 shrink-0">
+            <HiOutlineCheckCircle className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Aktif</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {tableRows.filter((r) => r.status === "Aktif").length}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 shrink-0">
+            <HiOutlineXCircle className="w-5 h-5 text-red-400" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Tidak Aktif</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {tableRows.filter((r) => r.status === "Tidak Aktif").length}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-500/10 shrink-0">
+            <HiOutlineTag className="w-5 h-5 text-purple-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Kategori</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {new Set(tableRows.map((r) => r.category)).size}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
           {/* Table header bar */}
