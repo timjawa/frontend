@@ -2,7 +2,7 @@ import { HiInformationCircle } from "react-icons/hi2";
 
 export default function InfoBanner() {
   return (
-    <section className="py-3 bg-white">
+    <section className="py-3" style={{ backgroundColor: '#F3F8FF' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-secondary to-primary rounded-xl px-5 py-4 flex items-start gap-3 shadow-md">
           <div className="flex-shrink-0 mt-0.5">

@@ -5,7 +5,6 @@ import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import {
   HiEllipsisVertical,
-  HiOutlineEye,
   HiOutlinePencil,
   HiOutlineTrash,
   HiOutlineExclamationTriangle,
@@ -18,7 +17,7 @@ interface Props {
   onDeleted?: (id: string) => void;
 }
 
-export default function KecamatanTableAction({ id, onDeleted }: Props) {
+export default function KontakDaruratTableAction({ id, onDeleted }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -29,7 +28,7 @@ export default function KecamatanTableAction({ id, onDeleted }: Props) {
     setDeleteError(null);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${API_BASE}/kecamatan/${id}`, {
+      const res = await fetch(`${API_BASE}/kontak-darurat/${id}`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -40,7 +39,7 @@ export default function KecamatanTableAction({ id, onDeleted }: Props) {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal menghapus kecamatan.");
+        throw new Error(json.message || "Gagal menghapus kontak darurat.");
       }
 
       setShowConfirm(false);
@@ -62,13 +61,9 @@ export default function KecamatanTableAction({ id, onDeleted }: Props) {
           <HiEllipsisVertical className="w-5 h-5" />
         </button>
 
-        <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 right-0 top-full">
+        <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 right-0 top-full z-50">
           <div className="py-1">
-            <DropdownItem tag="a" href={`/admin/kecamatan/${id}`} className="flex items-center gap-2">
-              <HiOutlineEye className="w-4 h-4" />
-              Detail
-            </DropdownItem>
-            <DropdownItem tag="a" href={`/admin/kecamatan/${id}/edit`} className="flex items-center gap-2">
+            <DropdownItem tag="a" href={`/admin/kontak-darurat/${id}/edit`} className="flex items-center gap-2">
               <HiOutlinePencil className="w-4 h-4" />
               Edit
             </DropdownItem>
@@ -88,25 +83,22 @@ export default function KecamatanTableAction({ id, onDeleted }: Props) {
         </Dropdown>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => !deleting && setShowConfirm(false)}
           />
 
-          {/* Modal */}
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in-95">
             <div className="flex flex-col items-center text-center gap-3 mb-5">
               <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
                 <HiOutlineExclamationTriangle className="w-7 h-7 text-red-500" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">Hapus Kecamatan?</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Hapus Kontak?</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Tindakan ini tidak dapat dibatalkan. Data kecamatan dan semua relasi terkait akan dihapus permanen.
+                  Tindakan ini tidak dapat dibatalkan. Data kontak darurat akan dihapus permanen.
                 </p>
               </div>
             </div>

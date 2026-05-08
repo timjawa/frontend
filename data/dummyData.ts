@@ -173,11 +173,11 @@ export const actionTips = [
     title: "Sebelum Terjadi Banjir",
     icon: "🛡️",
     items: [
-      "Kenali tanda-tanda akan datangnya banjir di wilayah Anda",
-      "Siapkan tas siaga bencana berisi obat-obatan, dokumen penting, dan makanan",
-      "Hafalkan jalur evakuasi dan titik kumpul yang aman",
-      "Pastikan saluran air dan drainase di sekitar rumah tidak tersumbat",
-      "Simpan nomor darurat yang bisa dihubungi",
+      "Ketahui wilayah-wilayah rawan bencana.",
+      "Pantau risiko bencana di **JeSi**.",
+      "Koordinasikan protokol bencana dengan tetangga.",
+      "Dokumentasikan surat dan dokumen berharga dalam bentuk soft copy.",
+      "Ketahui kebutuhan khusus anggota keluarga.",
     ],
   },
   {
