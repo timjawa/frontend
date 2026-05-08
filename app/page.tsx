@@ -36,7 +36,7 @@ export default async function Home() {
   return (
     <>
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1" style={{ backgroundColor: '#F3F8FF' }}>
         <HeroSection />
         <WeatherCards data={realtimeData} />
         <InfoBanner />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
@@ -12,6 +13,20 @@ const mapConditionToIcon = (description: string) => {
   if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
   if (desc.includes('cerah') || desc.includes('clear')) return 'sunny';
   return 'partly-cloudy';
+};
+
+// Format time as HH.MM
+const formatTime = (dateStr?: string) => {
+  if (!dateStr) {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}.${String(now.getMinutes()).padStart(2, '0')}`;
+  }
+  try {
+    const d = new Date(dateStr);
+    return `${String(d.getHours()).padStart(2, '0')}.${String(d.getMinutes()).padStart(2, '0')}`;
+  } catch {
+    return '--:--';
+  }
 };
 
 export default function WeatherCards({ data = [] }: { data?: any[] }) {
@@ -51,7 +66,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
   if (displayData.length === 0) return null;
 
   return (
-    <section className="py-8 bg-white">
+    <section className="py-8" style={{ backgroundColor: '#F3F8FF' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-primary">Cuaca Hari Ini</h2>
@@ -89,29 +104,53 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
         >
           {displayData.map((loc) => {
             const iconName = mapConditionToIcon(loc.deskripsi || '');
-            const suhu = loc.suhu ? Math.round(loc.suhu) : '--';
+            const time = formatTime(loc.updated_at || loc.created_at);
             
             return (
               <div
                 key={loc.id}
-                className="flex-shrink-0 w-[200px] bg-gradient-to-br from-accent to-white border border-border rounded-2xl p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                className="flex-shrink-0 w-[220px] relative overflow-hidden rounded-2xl p-5 cursor-pointer group hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                style={{ backgroundColor: '#DFEAF6' }}
               >
-                <div className="text-center">
-                  <div className="w-14 h-14 mx-auto bg-white rounded-xl flex items-center justify-center shadow-sm mb-3 group-hover:shadow-md transition-shadow">
-                    <WeatherIcon type={iconName} size={40} />
-                  </div>
-                  <h3 className="font-semibold text-primary text-sm mb-1 line-clamp-1">
+                {/* Shield watermarks at corners */}
+                <Image
+                  src="/icons/shield.svg"
+                  alt=""
+                  width={90}
+                  height={90}
+                  className="absolute -top-4 -right-4 pointer-events-none select-none"
+                  aria-hidden="true"
+                />
+                <Image
+                  src="/icons/shield.svg"
+                  alt=""
+                  width={110}
+                  height={110}
+                  className="absolute -bottom-5 -left-5 pointer-events-none select-none"
+                  aria-hidden="true"
+                />
+
+                {/* Top row: location name + time */}
+                <div className="flex justify-between items-start mb-8 relative z-10">
+                  <h3 className="font-semibold text-primary text-sm leading-tight max-w-[130px]">
                     {loc.kecamatan?.nama || 'Unknown'}
                   </h3>
-                  <p className="text-2xl font-bold text-primary mb-1">
-                    {suhu}°C
-                  </p>
-                  <p className="text-xs text-slate-500 capitalize line-clamp-1">{loc.deskripsi || 'Tidak diketahui'}</p>
-                  <div className="mt-3 flex items-center justify-center gap-1 text-xs text-slate-400">
-                    <span>💧</span>
-                    <span>{loc.kelembapan || 0}%</span>
+                  <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                    {time}
+                  </span>
+                </div>
+
+                {/* Center: weather icon */}
+                <div className="flex justify-center mb-8 relative z-10">
+                  <div className="group-hover:scale-110 transition-transform duration-300">
+                    <WeatherIcon type={iconName} size={80} />
                   </div>
                 </div>
+
+                {/* Bottom: condition text */}
+                <p className="text-center text-sm text-primary font-medium relative z-10 capitalize">
+                  {loc.deskripsi || 'Tidak diketahui'}
+                </p>
               </div>
             );
           })}

@@ -38,7 +38,7 @@ export default function WeatherTable({ data = {} }: { data?: Record<string, any[
   const kecamatanList = Object.keys(data || {});
 
   return (
-    <section className="py-10 bg-surface">
+    <section className="py-10" style={{ backgroundColor: '#F3F8FF' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold text-primary mb-6">
           Prediksi Cuaca

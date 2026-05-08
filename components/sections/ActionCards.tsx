@@ -1,8 +1,24 @@
+import Image from "next/image";
 import { actionTips } from "@/data/dummyData";
+
+// Render text with **bold** markers (e.g., **JeSi**)
+function renderBoldText(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <span key={i} className="font-bold text-primary">
+          {part.slice(2, -2)}
+        </span>
+      );
+    }
+    return part;
+  });
+}
 
 export default function ActionCards() {
   return (
-    <section className="py-12 bg-surface">
+    <section className="py-12" style={{ backgroundColor: '#F3F8FF' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-primary mb-2">
@@ -18,24 +34,45 @@ export default function ActionCards() {
           {actionTips.map((tip, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl border border-border p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+              className="relative overflow-hidden rounded-2xl border border-blue-100 p-7 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+              style={{ backgroundColor: '#DFEAF6' }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl">{tip.icon}</span>
-                <h3 className="font-bold text-primary text-base group-hover:text-secondary transition-colors">
-                  {tip.title}
-                </h3>
-              </div>
-              <ul className="space-y-2.5">
+              {/* Shield watermarks at corners */}
+              <Image
+                src="/icons/shield.svg"
+                alt=""
+                width={100}
+                height={100}
+                className="absolute -top-4 -right-4 pointer-events-none select-none"
+                aria-hidden="true"
+              />
+              <Image
+                src="/icons/shield.svg"
+                alt=""
+                width={120}
+                height={120}
+                className="absolute -bottom-6 -left-6 pointer-events-none select-none"
+                aria-hidden="true"
+              />
+
+              {/* Title */}
+              <h3 className="font-bold text-primary text-lg text-center mb-5 relative z-10 group-hover:text-secondary transition-colors">
+                {tip.title}
+              </h3>
+
+              {/* Numbered list */}
+              <ol className="space-y-3 relative z-10">
                 {tip.items.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
-                    <span className="w-5 h-5 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                      {i + 1}
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                    <span className="font-semibold text-slate-500 min-w-[20px]">
+                      {i + 1}.
                     </span>
-                    <span className="leading-relaxed">{item}</span>
+                    <span className="leading-relaxed">
+                      {renderBoldText(item)}
+                    </span>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
           ))}
         </div>
