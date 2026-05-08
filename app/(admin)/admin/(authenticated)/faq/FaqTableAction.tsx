@@ -5,7 +5,13 @@ import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { HiEllipsisVertical, HiOutlineEye, HiOutlinePencil, HiOutlineTrash } from "react-icons/hi2";
 
-export default function FaqTableAction({ id }: { id: number }) {
+export default function FaqTableAction({ 
+  id, 
+  onDelete 
+}: { 
+  id: string; 
+  onDelete?: () => void; 
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -27,7 +33,7 @@ export default function FaqTableAction({ id }: { id: number }) {
             <HiOutlinePencil className="w-4 h-4" />
             Edit
           </DropdownItem>
-          <DropdownItem tag="button" onClick={() => console.log('Delete', id)} className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
+          <DropdownItem tag="button" onClick={() => { onDelete?.(); setIsOpen(false); }} className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
             <HiOutlineTrash className="w-4 h-4" />
             Delete
           </DropdownItem>

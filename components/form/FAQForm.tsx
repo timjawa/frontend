@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "./input/InputField";
 import TextArea from "./input/TextArea";
 import Select from "./Select";
 import Switch from "./switch/Switch";
 import Label from "./Label";
+import api from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 interface FAQFormData {
   question: string;
@@ -18,16 +20,34 @@ interface FAQFormData {
 interface FAQFormProps {
   isEdit?: boolean;
   initialData?: any;
+  id?: string;
 }
 
-const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData }) => {
+const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<FAQFormData>({
-    question: initialData?.question || "",
-    answer: initialData?.answer || "",
-    category: initialData?.category || "",
-    order: initialData?.order || 0,
-    isActive: initialData?.isActive ?? true
+    question: initialData?.pertanyaan || "",
+    answer: initialData?.jawaban || "",
+    category: initialData?.kategori || "umum",
+    order: initialData?.urutan || 1,
+    isActive: initialData?.is_active ?? true
   });
+
+  // Ensure initialData updates when it arrives (useful for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        question: initialData.pertanyaan || "",
+        answer: initialData.jawaban || "",
+        category: initialData.kategori || "umum",
+        order: initialData.urutan || 1,
+        isActive: initialData.is_active ?? true
+      });
+    }
+  }, [initialData]);
 
   // Category options
   const categoryOptions = [
@@ -46,14 +66,42 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData }) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("FAQ Form data:", formData);
-    // Here you would typically send the data to your API
+    setLoading(true);
+    setError(null);
+
+    const payload = {
+      pertanyaan: formData.question,
+      jawaban: formData.answer,
+      kategori: formData.category,
+      urutan: formData.order,
+      is_active: formData.isActive,
+    };
+
+    try {
+      if (isEdit && id) {
+        await api.put(`/api/faq/${id}`, payload);
+      } else {
+        await api.post("/api/faq", payload);
+      }
+      router.push("/admin/faq");
+      router.refresh();
+    } catch (err: any) {
+      console.error("Error saving FAQ:", err);
+      setError(err.response?.data?.message || "Gagal menyimpan FAQ");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+          {error}
+        </div>
+      )}
       {/* Pertanyaan */}
       <div>
         <Label htmlFor="question">Pertanyaan *</Label>
@@ -61,7 +109,7 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData }) => {
           id="question"
           name="question"
           placeholder="Masukkan pertanyaan FAQ"
-          defaultValue={formData.question}
+          value={formData.question}
           onChange={(e) => handleInputChange('question', e.target.value)}
         />
       </div>

@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
 import { HiMagnifyingGlass } from "react-icons/hi2";
-import AdminButton from "@/components/admin/ui/AdminButton";
-import { HiPlus } from "react-icons/hi";
 import Link from "next/link";
 import FaqTableAction from "./FaqTableAction";
+import api from "@/lib/api";
 import {
   HiOutlineQuestionMarkCircle,
   HiOutlineCheckCircle,
@@ -15,49 +14,64 @@ import {
   HiOutlineTag,
 } from "react-icons/hi2";
 
+interface Faq {
+  id: string;
+  pertanyaan: string;
+  jawaban: string;
+  kategori: string;
+  urutan: number;
+  is_active: boolean;
+}
+
 export default function FaqPage() {
-  const tableRows = [
-    {
-      id: 1,
-      question: "Bagaimana cara melaporkan keadaan darurat?",
-      category: "Umum",
-      order: 1,
-      status: "Aktif",
-      sv: "success" as const,
-    },
-    {
-      id: 2,
-      question: "Apakah layanan call center tersedia 24 jam?",
-      category: "Layanan",
-      order: 2,
-      status: "Aktif",
-      sv: "success" as const,
-    },
-    {
-      id: 3,
-      question: "Berapa lama respon tim saat terjadi bencana?",
-      category: "Bencana",
-      order: 3,
-      status: "Tidak Aktif",
-      sv: "danger" as const,
-    },
-    {
-      id: 4,
-      question: "Dimana letak posko evakuasi terdekat?",
-      category: "Fasilitas",
-      order: 4,
-      status: "Aktif",
-      sv: "success" as const,
-    },
-    {
-      id: 5,
-      question: "Bagaimana cara menjadi relawan?",
-      category: "Relawan",
-      order: 5,
-      status: "Aktif",
-      sv: "success" as const,
-    },
-  ];
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const fetchFaqs = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/api/faq");
+      if (response.data.success) {
+        setFaqs(response.data.data);
+      } else {
+        setError("Gagal memuat data FAQ");
+      }
+    } catch (err) {
+      console.error("Error fetching FAQs:", err);
+      setError("Terjadi kesalahan saat memuat data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Apakah Anda yakin ingin menghapus FAQ ini?")) {
+      try {
+        const response = await api.delete(`/api/faq/${id}`);
+        if (response.data.success) {
+          setFaqs(faqs.filter((f) => f.id !== id));
+        } else {
+          alert("Gagal menghapus FAQ");
+        }
+      } catch (err) {
+        console.error("Error deleting FAQ:", err);
+        alert("Terjadi kesalahan saat menghapus");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -71,7 +85,7 @@ export default function FaqPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Total FAQ</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{tableRows.length}</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{faqs.length}</p>
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
@@ -81,7 +95,7 @@ export default function FaqPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Aktif</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {tableRows.filter((r) => r.status === "Aktif").length}
+              {faqs.filter((r) => r.is_active).length}
             </p>
           </div>
         </div>
@@ -92,7 +106,7 @@ export default function FaqPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Tidak Aktif</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {tableRows.filter((r) => r.status === "Tidak Aktif").length}
+              {faqs.filter((r) => !r.is_active).length}
             </p>
           </div>
         </div>
@@ -103,11 +117,17 @@ export default function FaqPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Kategori</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {new Set(tableRows.map((r) => r.category)).size}
+              {new Set(faqs.map((r) => r.kategori)).size}
             </p>
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
@@ -162,31 +182,38 @@ export default function FaqPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {tableRows.map((row) => (
+                {faqs.map((row, index) => (
                   <tr
                     key={row.id}
                     className="hover:bg-blue-50/40 transition-colors"
                   >
                     <td className="px-6 py-4 font-semibold text-[#1B2E4B]">
-                      {row.id}
+                      {index + 1}
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[300px] truncate">{row.question}</td>
-                    <td className="px-6 py-4 text-slate-500">{row.category}</td>
+                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[300px] truncate">{row.pertanyaan}</td>
+                    <td className="px-6 py-4 text-slate-500">{row.kategori}</td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex w-7 h-7 items-center justify-center rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">
-                        {row.order}
+                        {row.urutan}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <AdminBadge variant={row.sv} dot>
-                        {row.status}
+                      <AdminBadge variant={row.is_active ? "success" : "danger"} dot>
+                        {row.is_active ? "Aktif" : "Tidak Aktif"}
                       </AdminBadge>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <FaqTableAction id={row.id} />
+                      <FaqTableAction id={row.id} onDelete={() => handleDelete(row.id)} />
                     </td>
                   </tr>
                 ))}
+                {faqs.length === 0 && !loading && (
+                    <tr>
+                        <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
+                            Tidak ada data FAQ tersedia
+                        </td>
+                    </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -195,39 +222,15 @@ export default function FaqPage() {
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-slate-50/50">
             <p className="text-sm text-slate-500">
               Menampilkan{" "}
-              <span className="font-semibold text-slate-700">1–5</span> dari{" "}
-              <span className="font-semibold text-slate-700">12</span> data
+              <span className="font-semibold text-slate-700">1–{faqs.length}</span> dari{" "}
+              <span className="font-semibold text-slate-700">{faqs.length}</span> data
             </p>
-            <div className="flex items-center gap-1.5">
-              <button
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 text-slate-400 bg-white cursor-not-allowed opacity-50"
-                disabled
-              >
-                ← Sebelumnya
-              </button>
-              {[1, 2, 3].map((n) => (
-                <button
-                  key={n}
-                  className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${
-                    n === 1
-                      ? "bg-[#1B2E4B] text-white shadow-md shadow-[#1B2E4B]/20"
-                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
-              <span className="px-1 text-slate-300">…</span>
-              <button className="w-9 h-9 rounded-lg text-sm font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
-                3
-              </button>
-              <button className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
-                Selanjutnya →
-              </button>
-            </div>
+            {/* Pagination buttons can be implemented dynamically if needed */}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+import { HiPlus } from "react-icons/hi";
