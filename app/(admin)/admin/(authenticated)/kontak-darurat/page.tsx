@@ -5,25 +5,23 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
 import { HiMagnifyingGlass } from "react-icons/hi2";
 import Link from "next/link";
-import KecamatanTableAction from "./KecamatanTableAction";
+import KontakDaruratTableAction from "./KontakDaruratTableAction";
 import {
-  HiOutlineMapPin,
-  HiOutlineExclamationTriangle,
-  HiOutlineShieldCheck,
+  HiOutlinePhone,
   HiOutlineCheckBadge,
+  HiOutlineExclamationTriangle,
   HiPlus,
 } from "react-icons/hi2";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-interface Kecamatan {
+interface KontakDarurat {
   id: string;
   nama: string;
-  kode_wilayah: string;
-  latitude: number;
-  longitude: number;
-  elevasi: number | null;
-  level_rawan: "rendah" | "sedang" | "tinggi";
+  nomor: string;
+  kategori: string;
+  keterangan: string | null;
+  is_active: boolean;
 }
 
 interface PaginateMeta {
@@ -35,21 +33,25 @@ interface PaginateMeta {
   to: number | null;
 }
 
-const levelRawanColors = {
-  rendah: "success",
-  sedang: "warning",
-  tinggi: "danger",
-} as const;
+const kategoriColors: Record<string, "info" | "warning" | "danger" | "success" | "brand"> = {
+  polisi: "info",
+  pemadam: "danger",
+  ambulans: "success",
+  bpbd: "warning",
+  sar: "brand",
+  pln: "warning",
+  lainnya: "info",
+};
 
-export default function KecamatanPage() {
-  const [data, setData] = useState<Kecamatan[]>([]);
+export default function KontakDaruratPage() {
+  const [data, setData] = useState<KontakDarurat[]>([]);
   const [meta, setMeta] = useState<PaginateMeta | null>(null);
+  const [summary, setSummary] = useState<{total_kontak: number, total_aktif: number} | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ tinggi: number; sedang: number; rendah: number } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -58,8 +60,8 @@ export default function KecamatanPage() {
       const params = new URLSearchParams({ page: String(page), per_page: "10" });
       if (search) params.append("search", search);
 
-      const res = await fetch(`${API_BASE}/kecamatan?${params.toString()}`);
-      if (!res.ok) throw new Error("Gagal mengambil data kecamatan.");
+      const res = await fetch(`${API_BASE}/kontak-darurat?${params.toString()}`);
+      if (!res.ok) throw new Error("Gagal mengambil data kontak darurat.");
       const json = await res.json();
 
       setData(json.data ?? []);
@@ -72,11 +74,8 @@ export default function KecamatanPage() {
         to: json.to,
       });
 
-      // Fetch statistics for all data
-      const statsRes = await fetch(`${API_BASE}/kecamatan/stats`);
-      if (statsRes.ok) {
-        const statsJson = await statsRes.json();
-        setStats(statsJson);
+      if (json.summary) {
+        setSummary(json.summary);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
@@ -89,48 +88,32 @@ export default function KecamatanPage() {
     fetchData();
   }, [fetchData]);
 
-  // Handle search submit (Enter or button)
   const handleSearch = () => {
     setPage(1);
     setSearch(searchInput);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     setData((prev) => prev.filter((k) => k.id !== id));
     if (meta) setMeta({ ...meta, total: meta.total - 1 });
-
-    // Refresh stats after delete
-    try {
-      const statsRes = await fetch(`${API_BASE}/kecamatan/stats`);
-      if (statsRes.ok) {
-        const statsJson = await statsRes.json();
-        setStats(statsJson);
-      }
-    } catch (err) {
-      console.error("Failed to refresh stats:", err);
-    }
   };
-
-  const totalRawanTinggi = stats?.tinggi ?? 0;
-  const totalRawanSedang = stats?.sedang ?? 0;
-  const totalRawanRendah = stats?.rendah ?? 0;
 
   const pages = meta ? Array.from({ length: meta.last_page }, (_, i) => i + 1) : [];
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Manajemen Kecamatan" />
+      <PageBreadcrumb pageTitle="Manajemen Kontak Darurat" />
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
           <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0">
-            <HiOutlineMapPin className="w-5 h-5 text-blue-500" />
+            <HiOutlinePhone className="w-5 h-5 text-blue-500" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Total Kecamatan</p>
+            <p className="text-xs text-gray-500 mb-0.5">Total Kontak</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {loading ? "—" : meta?.total ?? data.length}
+              {loading ? "—" : summary?.total_kontak ?? meta?.total ?? data.length}
             </p>
           </div>
         </div>
@@ -139,31 +122,9 @@ export default function KecamatanPage() {
             <HiOutlineCheckBadge className="w-5 h-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Rawan Rendah</p>
+            <p className="text-xs text-gray-500 mb-0.5">Aktif</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {loading ? "—" : totalRawanRendah}
-            </p>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 shrink-0">
-            <HiOutlineShieldCheck className="w-5 h-5 text-yellow-500" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-0.5">Rawan Sedang</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {loading ? "—" : totalRawanSedang}
-            </p>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 shrink-0">
-            <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-0.5">Rawan Tinggi</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {loading ? "—" : totalRawanTinggi}
+              {loading ? "—" : summary?.total_aktif ?? data.filter((d) => d.is_active).length}
             </p>
           </div>
         </div>
@@ -171,18 +132,18 @@ export default function KecamatanPage() {
 
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
-          {/* Table header bar */}
+          {/* Table header */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-bold text-[#1B2E4B]">Data Kecamatan Jember</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Kelola data wilayah kecamatan se-Kabupaten Jember</p>
+              <h3 className="text-base font-bold text-[#1B2E4B]">Data Kontak Darurat</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Kelola informasi kontak penting/darurat</p>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari kecamatan..."
+                  placeholder="Cari kontak..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -190,11 +151,11 @@ export default function KecamatanPage() {
                 />
               </div>
               <Link
-                href="/admin/kecamatan/create"
+                href="/admin/kontak-darurat/create"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 dark:shadow-none whitespace-nowrap"
               >
                 <HiPlus className="w-4 h-4" />
-                Tambah Kecamatan
+                Tambah Kontak
               </Link>
             </div>
           </div>
@@ -205,11 +166,10 @@ export default function KecamatanPage() {
               <thead>
                 <tr className="bg-slate-50/80">
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 w-12 text-center">No</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Nama Kecamatan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Kode Wilayah</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Koordinat</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Elevasi</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Level Rawan</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Nama Instansi</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Nomor Telepon</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Kategori</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Aksi</th>
                 </tr>
               </thead>
@@ -217,7 +177,7 @@ export default function KecamatanPage() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      {Array.from({ length: 7 }).map((__, j) => (
+                      {Array.from({ length: 6 }).map((__, j) => (
                         <td key={j} className="px-6 py-4">
                           <div className="h-4 bg-slate-100 rounded-md w-full" />
                         </td>
@@ -226,16 +186,16 @@ export default function KecamatanPage() {
                   ))
                 ) : error ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-red-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-red-500">
                       <HiOutlineExclamationTriangle className="w-8 h-8 mx-auto mb-2" />
                       {error}
                     </td>
                   </tr>
                 ) : data.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
-                      <HiOutlineMapPin className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-                      <p>Tidak ada data kecamatan ditemukan.</p>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                      <HiOutlinePhone className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                      <p>Tidak ada data kontak ditemukan.</p>
                     </td>
                   </tr>
                 ) : (
@@ -244,31 +204,27 @@ export default function KecamatanPage() {
                       <td className="px-6 py-4 text-center text-slate-500 font-medium">
                         {meta ? (meta.from ?? 1) + index : index + 1}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-[#1B2E4B]">{row.nama}</td>
+                      <td className="px-6 py-4 font-semibold text-[#1B2E4B]">
+                        {row.nama}
+                        {row.keterangan && <p className="text-xs text-slate-400 font-normal mt-0.5">{row.keterangan}</p>}
+                      </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium font-mono">
-                          {row.kode_wilayah}
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 text-gray-800 text-sm font-bold font-mono tracking-wider">
+                          {row.nomor}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        <div className="text-xs font-mono">
-                          <div>Lat: {Number(row.latitude).toFixed(4)}</div>
-                          <div>Lng: {Number(row.longitude).toFixed(4)}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {row.elevasi != null ? `${Number(row.elevasi).toFixed(0)} mdpl` : "—"}
+                      <td className="px-6 py-4">
+                        <AdminBadge variant={kategoriColors[row.kategori] ?? "info"}>
+                          {row.kategori.toUpperCase()}
+                        </AdminBadge>
                       </td>
                       <td className="px-6 py-4">
-                        <AdminBadge
-                          variant={levelRawanColors[row.level_rawan] ?? "info"}
-                          dot
-                        >
-                          {row.level_rawan.charAt(0).toUpperCase() + row.level_rawan.slice(1)}
+                        <AdminBadge variant={row.is_active ? "success" : "danger"} dot>
+                          {row.is_active ? "Aktif" : "Tidak Aktif"}
                         </AdminBadge>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <KecamatanTableAction id={row.id} onDeleted={handleDelete} />
+                        <KontakDaruratTableAction id={row.id} onDeleted={handleDelete} />
                       </td>
                     </tr>
                   ))

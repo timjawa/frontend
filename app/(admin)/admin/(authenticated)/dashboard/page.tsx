@@ -1,35 +1,46 @@
 import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
+import { SiagaMetrics } from "@/components/dashboard/SiagaMetrics";
+import LaporanTrendChart from "@/components/dashboard/LaporanTrendChart";
+import StatusLaporanChart from "@/components/dashboard/StatusLaporanChart";
+import PeringkatanDiniPanel from "@/components/dashboard/PeringkatanDiniPanel";
+import LaporanTerbaruTable from "@/components/dashboard/LaporanTerbaruTable";
 
 export const metadata: Metadata = {
   title: "Dashboard Admin | Jember Siaga",
-  description: "Dashboard administrasi Jember Siaga - Sistem Informasi Cuaca & Kebencanaan",
+  description:
+    "Dashboard administrasi Jember Siaga – Sistem Informasi Cuaca & Kebencanaan Kabupaten Jember",
 };
 
 export default function DashboardPage() {
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
-      <div className="col-span-12 space-y-6 xl:col-span-7">
-        <EcommerceMetrics />
-        <MonthlySalesChart />
-      </div>
 
-      <div className="col-span-12 xl:col-span-5">
-        <MonthlyTarget />
-      </div>
-
+      {/* ── Metric Cards ── */}
       <div className="col-span-12">
-        <StatisticsChart />
+        <SiagaMetrics />
       </div>
 
-      <div className="col-span-12">
-        <RecentOrders />
+      {/* ── Trend Chart ── */}
+      <div className="col-span-12 xl:col-span-8">
+        <LaporanTrendChart />
       </div>
+
+      {/* ── Status Donut ── */}
+      <div className="col-span-12 xl:col-span-4">
+        <StatusLaporanChart />
+      </div>
+
+      {/* ── Peringatan Dini ── */}
+      <div className="col-span-12">
+        <PeringkatanDiniPanel />
+      </div>
+
+      {/* ── Laporan Terbaru ── */}
+      <div className="col-span-12">
+        <LaporanTerbaruTable />
+      </div>
+
     </div>
   );
 }

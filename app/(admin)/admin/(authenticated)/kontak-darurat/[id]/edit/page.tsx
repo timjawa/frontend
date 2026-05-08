@@ -1,26 +1,53 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-export default function CreateKecamatanPage() {
+export default function EditKontakDaruratPage() {
   const router = useRouter();
+  const { id } = useParams();
+
   const [formData, setFormData] = useState({
     nama: "",
-    kode_wilayah: "",
-    latitude: "",
-    longitude: "",
-    elevasi: "",
-    level_rawan: "rendah",
+    nomor: "",
+    kategori: "lainnya",
+    keterangan: "",
+    is_active: "1",
   });
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const fetchDetail = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/kontak-darurat/${id}`);
+      if (!res.ok) throw new Error("Gagal mengambil data kontak darurat.");
+      const json = await res.json();
+      const data = json.data;
+
+      setFormData({
+        nama: data.nama,
+        nomor: data.nomor,
+        kategori: data.kategori,
+        keterangan: data.keterangan || "",
+        is_active: data.is_active ? "1" : "0",
+      });
+    } catch (err: unknown) {
+      setServerError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,19 +57,13 @@ export default function CreateKecamatanPage() {
 
     try {
       const token = localStorage.getItem("auth_token");
-      const payload: Record<string, unknown> = {
-        nama: formData.nama,
-        kode_wilayah: formData.kode_wilayah,
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        level_rawan: formData.level_rawan,
+      const payload = {
+        ...formData,
+        is_active: formData.is_active === "1",
       };
-      if (formData.elevasi !== "") {
-        payload.elevasi = parseFloat(formData.elevasi);
-      }
 
-      const res = await fetch(`${API_BASE}/kecamatan`, {
-        method: "POST",
+      const res = await fetch(`${API_BASE}/kontak-darurat/${id}`, {
+        method: "PUT",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -66,10 +87,10 @@ export default function CreateKecamatanPage() {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal menyimpan data kecamatan.");
+        throw new Error(json.message || "Gagal memperbarui data kontak darurat.");
       }
 
-      router.push("/admin/kecamatan");
+      router.push("/admin/kontak-darurat");
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
@@ -77,7 +98,7 @@ export default function CreateKecamatanPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
@@ -87,12 +108,20 @@ export default function CreateKecamatanPage() {
       errors[field] ? "border-red-400 bg-red-50" : "border-gray-200 dark:border-gray-700"
     }`;
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Tambah Kecamatan" className="mb-0" />
+        <PageBreadcrumb pageTitle="Edit Kontak Darurat" className="mb-0" />
         <Link
-          href="/admin/kecamatan"
+          href="/admin/kontak-darurat"
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" />
@@ -102,9 +131,9 @@ export default function CreateKecamatanPage() {
 
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Tambah Kecamatan</h3>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Edit Kontak Darurat</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Masukkan data detail untuk menambahkan kecamatan baru ke dalam sistem.
+            Perbarui data detail untuk nomor kontak penting ini.
           </p>
         </div>
 
@@ -117,10 +146,10 @@ export default function CreateKecamatanPage() {
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* Nama Kecamatan */}
+            {/* Nama Instansi */}
             <div className="space-y-2">
               <label htmlFor="nama" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nama Kecamatan <span className="text-red-500">*</span>
+                Nama Instansi/Layanan <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -129,110 +158,95 @@ export default function CreateKecamatanPage() {
                 value={formData.nama}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: Gumukmas"
+                placeholder="Contoh: BPBD Kabupaten Jember"
                 className={inputClass("nama")}
               />
               {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
             </div>
 
-            {/* Kode Wilayah */}
+            {/* Nomor Telepon */}
             <div className="space-y-2">
-              <label htmlFor="kode_wilayah" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Kode Wilayah <span className="text-red-500">*</span>
+              <label htmlFor="nomor" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nomor Telepon <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                id="kode_wilayah"
-                name="kode_wilayah"
-                value={formData.kode_wilayah}
+                id="nomor"
+                name="nomor"
+                value={formData.nomor}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: 35.09.04.2001"
-                className={inputClass("kode_wilayah")}
+                placeholder="Contoh: 112 atau 0331-XXXXXX"
+                className={inputClass("nomor")}
               />
-              {errors.kode_wilayah && <p className="text-xs text-red-500">{errors.kode_wilayah}</p>}
+              {errors.nomor && <p className="text-xs text-red-500">{errors.nomor}</p>}
             </div>
 
-            {/* Latitude */}
+            {/* Kategori */}
             <div className="space-y-2">
-              <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Latitude <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="latitude"
-                name="latitude"
-                value={formData.latitude}
-                onChange={handleChange}
-                required
-                placeholder="-8.3000000"
-                className={inputClass("latitude")}
-              />
-              {errors.latitude && <p className="text-xs text-red-500">{errors.latitude}</p>}
-            </div>
-
-            {/* Longitude */}
-            <div className="space-y-2">
-              <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Longitude <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="longitude"
-                name="longitude"
-                value={formData.longitude}
-                onChange={handleChange}
-                required
-                placeholder="113.4500000"
-                className={inputClass("longitude")}
-              />
-              {errors.longitude && <p className="text-xs text-red-500">{errors.longitude}</p>}
-            </div>
-
-            {/* Elevasi */}
-            <div className="space-y-2">
-              <label htmlFor="elevasi" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Elevasi (mdpl)
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="elevasi"
-                name="elevasi"
-                value={formData.elevasi}
-                onChange={handleChange}
-                placeholder="Contoh: 10.00"
-                className={inputClass("elevasi")}
-              />
-              {errors.elevasi && <p className="text-xs text-red-500">{errors.elevasi}</p>}
-            </div>
-
-            {/* Level Rawan */}
-            <div className="space-y-2">
-              <label htmlFor="level_rawan" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Tingkat Kerawanan <span className="text-red-500">*</span>
+              <label htmlFor="kategori" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Kategori <span className="text-red-500">*</span>
               </label>
               <select
-                id="level_rawan"
-                name="level_rawan"
-                value={formData.level_rawan}
+                id="kategori"
+                name="kategori"
+                value={formData.kategori}
                 onChange={handleChange}
                 required
-                className={`${inputClass("level_rawan")} appearance-none`}
+                className={`${inputClass("kategori")} appearance-none`}
               >
-                <option value="rendah">Rendah (Hijau)</option>
-                <option value="sedang">Sedang (Kuning)</option>
-                <option value="tinggi">Tinggi (Merah)</option>
+                <option value="polisi">Polisi</option>
+                <option value="pemadam">Pemadam Kebakaran</option>
+                <option value="ambulans">Ambulans / Rumah Sakit</option>
+                <option value="bpbd">BPBD</option>
+                <option value="sar">Tim SAR</option>
+                <option value="pln">PLN</option>
+                <option value="lainnya">Lainnya</option>
               </select>
-              {errors.level_rawan && <p className="text-xs text-red-500">{errors.level_rawan}</p>}
+              {errors.kategori && <p className="text-xs text-red-500">{errors.kategori}</p>}
             </div>
+
+            {/* Status Aktif */}
+            <div className="space-y-2">
+              <label htmlFor="is_active" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Status <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="is_active"
+                name="is_active"
+                value={formData.is_active}
+                onChange={handleChange}
+                required
+                className={`${inputClass("is_active")} appearance-none`}
+              >
+                <option value="1">Aktif</option>
+                <option value="0">Tidak Aktif</option>
+              </select>
+              {errors.is_active && <p className="text-xs text-red-500">{errors.is_active}</p>}
+            </div>
+
+            {/* Keterangan */}
+            <div className="space-y-2 md:col-span-2">
+              <label htmlFor="keterangan" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Keterangan Tambahan
+              </label>
+              <textarea
+                id="keterangan"
+                name="keterangan"
+                value={formData.keterangan}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Informasi tambahan terkait layanan ini (opsional)"
+                className={inputClass("keterangan")}
+              />
+              {errors.keterangan && <p className="text-xs text-red-500">{errors.keterangan}</p>}
+            </div>
+
           </div>
 
           <div className="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
             <Link
-              href="/admin/kecamatan"
+              href="/admin/kontak-darurat"
               className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
             >
               Batal
@@ -247,7 +261,7 @@ export default function CreateKecamatanPage() {
               ) : (
                 <HiOutlineCheck className="w-4 h-4" />
               )}
-              {loading ? "Menyimpan..." : "Simpan Data"}
+              {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
         </form>

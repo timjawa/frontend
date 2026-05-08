@@ -40,7 +40,6 @@ const monitoringItems: NavItem[] = [
     subItems: [
       { name: "Cuaca Realtime", path: "/admin/cuaca/realtime" },
       { name: "Prediksi Cuaca", path: "/admin/cuaca/prediksi" },
-      { name: "Tinggi Air", path: "/admin/cuaca/tinggi-air" },
     ],
   },
 ];
@@ -63,6 +62,7 @@ const operasionalItems: NavItem[] = [
       { name: "Berita", path: "/admin/berita" },
       { name: "Edukasi Siaga", path: "/admin/edukasi" },
       { name: "FAQ", path: "/admin/faq" },
+      { name: "Kontak Darurat", path: "/admin/kontak-darurat" },
     ],
   },
 ];
