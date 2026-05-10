@@ -65,9 +65,9 @@ export function SiagaMetrics() {
                 {m.value}
               </h4>
             </div>
-            <Badge color={m.badgeColor}>
+            <Badge color={m.badgeColor} size="sm">
               {m.trend === "up" ? <ArrowUpIcon /> : <ArrowDownIcon className={`text-${m.badgeColor}-500`} />}
-              {m.badgeValue}
+              <span className="whitespace-nowrap">{m.badgeValue}</span>
             </Badge>
           </div>
         </div>

@@ -1,123 +1,211 @@
 "use client";
-import React from "react";
+import { ApexOptions } from "apexcharts";
+import dynamic from "next/dynamic";
+import { MoreDotIcon } from "@/icons";
+import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { useState } from "react";
+import { Dropdown } from "../ui/dropdown/Dropdown";
 
-interface CuacaItem {
-  kecamatan: string;
-  suhu: number;
-  kelembapan: number;
-  curah_hujan: number;
-  kecepatan_angin: number;
-  deskripsi: string;
-  weather_code: number;
-}
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const cuacaData: CuacaItem[] = [
-  { kecamatan: "Kaliwates", suhu: 29, kelembapan: 78, curah_hujan: 0, kecepatan_angin: 14, deskripsi: "Cerah Berawan", weather_code: 2 },
-  { kecamatan: "Sumbersari", suhu: 28, kelembapan: 82, curah_hujan: 2.4, kecepatan_angin: 18, deskripsi: "Hujan Ringan", weather_code: 61 },
-  { kecamatan: "Patrang", suhu: 27, kelembapan: 85, curah_hujan: 5.1, kecepatan_angin: 22, deskripsi: "Hujan Sedang", weather_code: 63 },
-  { kecamatan: "Ambulu", suhu: 26, kelembapan: 91, curah_hujan: 12.8, kecepatan_angin: 35, deskripsi: "Hujan Lebat", weather_code: 65 },
-  { kecamatan: "Tempurejo", suhu: 24, kelembapan: 95, curah_hujan: 28.4, kecepatan_angin: 48, deskripsi: "Badai Hujan", weather_code: 95 },
-];
-
-function weatherEmoji(code: number): string {
-  if (code === 0) return "☀️";
-  if (code <= 2) return "🌤️";
-  if (code <= 3) return "☁️";
-  if (code <= 50) return "🌫️";
-  if (code <= 62) return "🌦️";
-  if (code <= 67) return "🌧️";
-  if (code <= 77) return "❄️";
-  if (code <= 82) return "🌦️";
-  return "⛈️";
-}
-
-function rainBarColor(mm: number): string {
-  if (mm === 0) return "bg-green-400";
-  if (mm < 5) return "bg-yellow-400";
-  if (mm < 15) return "bg-orange-500";
-  return "bg-red-500";
-}
+// Data dummy riwayat cuaca 7 hari terakhir per kecamatan
+const dummyHistoricalData: Record<string, { tanggal: string, suhu_avg: number, hujan_avg: number }[]> = {
+  "Kaliwates": [
+    { tanggal: "2026-05-01", suhu_avg: 29.5, hujan_avg: 5.0 },
+    { tanggal: "2026-05-02", suhu_avg: 30.1, hujan_avg: 12.0 },
+    { tanggal: "2026-05-03", suhu_avg: 28.5, hujan_avg: 45.0 },
+    { tanggal: "2026-05-04", suhu_avg: 27.0, hujan_avg: 60.0 },
+    { tanggal: "2026-05-05", suhu_avg: 26.5, hujan_avg: 20.0 },
+    { tanggal: "2026-05-06", suhu_avg: 29.0, hujan_avg: 0.0 },
+    { tanggal: "2026-05-07", suhu_avg: 31.0, hujan_avg: 0.0 },
+  ],
+  "Sumbersari": [
+    { tanggal: "2026-05-01", suhu_avg: 28.5, hujan_avg: 10.0 },
+    { tanggal: "2026-05-02", suhu_avg: 29.0, hujan_avg: 15.0 },
+    { tanggal: "2026-05-03", suhu_avg: 27.5, hujan_avg: 50.0 },
+    { tanggal: "2026-05-04", suhu_avg: 26.5, hujan_avg: 55.0 },
+    { tanggal: "2026-05-05", suhu_avg: 26.0, hujan_avg: 25.0 },
+    { tanggal: "2026-05-06", suhu_avg: 28.0, hujan_avg: 5.0 },
+    { tanggal: "2026-05-07", suhu_avg: 30.0, hujan_avg: 0.0 },
+  ],
+  "Patrang": [
+    { tanggal: "2026-05-01", suhu_avg: 27.5, hujan_avg: 20.0 },
+    { tanggal: "2026-05-02", suhu_avg: 28.0, hujan_avg: 25.0 },
+    { tanggal: "2026-05-03", suhu_avg: 26.5, hujan_avg: 60.0 },
+    { tanggal: "2026-05-04", suhu_avg: 25.5, hujan_avg: 65.0 },
+    { tanggal: "2026-05-05", suhu_avg: 25.0, hujan_avg: 35.0 },
+    { tanggal: "2026-05-06", suhu_avg: 27.0, hujan_avg: 10.0 },
+    { tanggal: "2026-05-07", suhu_avg: 29.0, hujan_avg: 5.0 },
+  ],
+  "Ambulu": [
+    { tanggal: "2026-05-01", suhu_avg: 30.5, hujan_avg: 0.0 },
+    { tanggal: "2026-05-02", suhu_avg: 31.0, hujan_avg: 5.0 },
+    { tanggal: "2026-05-03", suhu_avg: 29.5, hujan_avg: 30.0 },
+    { tanggal: "2026-05-04", suhu_avg: 28.5, hujan_avg: 40.0 },
+    { tanggal: "2026-05-05", suhu_avg: 28.0, hujan_avg: 15.0 },
+    { tanggal: "2026-05-06", suhu_avg: 30.0, hujan_avg: 0.0 },
+    { tanggal: "2026-05-07", suhu_avg: 32.0, hujan_avg: 0.0 },
+  ],
+};
 
 export default function CuacaWidget() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const kecamatanList = Object.keys(dummyHistoricalData);
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>(kecamatanList[0]);
+
+  const currentData = dummyHistoricalData[selectedKecamatan] || [];
+  
+  // Format tanggal (contoh: "02 Mei")
+  const DAYS = currentData.map(d => {
+    const date = new Date(d.tanggal);
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+  });
+  
+  const suhuData = currentData.map(d => d.suhu_avg);
+  const curahHujanData = currentData.map(d => d.hujan_avg);
+
+  const options: ApexOptions = {
+    colors: ["#f79009", "#0ea5e9"], // Orange untuk suhu, Biru untuk hujan
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "area",
+      height: 315,
+      toolbar: { show: false },
+    },
+    stroke: {
+      curve: "smooth",
+      width: [3, 0],
+    },
+    fill: {
+      type: ["solid", "gradient"],
+      opacity: [1, 0.4],
+      gradient: {
+        shadeIntensity: 1,
+        inverseColors: false,
+        opacityFrom: 0.5,
+        opacityTo: 0,
+        stops: [0, 90, 100]
+      }
+    },
+    labels: DAYS,
+    markers: {
+      size: [4, 0],
+    },
+    xaxis: {
+      type: "category",
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: { colors: "#64748b" }
+      }
+    },
+    yaxis: [
+      {
+        title: {
+          text: "Suhu (°C)",
+          style: { color: "#f79009", fontWeight: 600 }
+        },
+        labels: {
+          style: { colors: "#f79009" }
+        }
+      },
+      {
+        opposite: true,
+        title: {
+          text: "Curah Hujan (mm)",
+          style: { color: "#0ea5e9", fontWeight: 600 }
+        },
+        labels: {
+          style: { colors: "#0ea5e9" }
+        }
+      }
+    ],
+    legend: {
+      show: true,
+      position: "top",
+      horizontalAlign: "left",
+      fontFamily: "Outfit",
+    },
+    grid: {
+      borderColor: "#f1f5f9",
+      strokeDashArray: 4,
+    },
+    tooltip: {
+      theme: "light",
+      shared: true,
+      intersect: false,
+      y: [
+        { formatter: (y) => (y !== undefined ? `${y} °C` : y) },
+        { formatter: (y) => (y !== undefined ? `${y} mm` : y) }
+      ]
+    }
+  };
+
+  const series = [
+    {
+      name: "Suhu Rata-rata",
+      type: "line",
+      data: suhuData
+    },
+    {
+      name: "Curah Hujan",
+      type: "area",
+      data: curahHujanData
+    }
+  ];
+
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 pb-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 pb-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+      <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Cuaca Realtime
+            Statistik Cuaca 7 Hari Terakhir
           </h3>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-            Kondisi cuaca per kecamatan · 07 Mei 2026, 20:00 WIB
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Riwayat suhu dan curah hujan {selectedKecamatan ? `di Kecamatan ${selectedKecamatan}` : "Kabupaten Jember"}
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700 dark:bg-sky-500/15 dark:text-sky-400">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-500" />
-          Live
-        </span>
+        <div className="flex items-center gap-2">
+          {/* Dropdown Kecamatan */}
+          {kecamatanList.length > 0 && (
+            <select
+              value={selectedKecamatan}
+              onChange={(e) => setSelectedKecamatan(e.target.value)}
+              className="rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            >
+              {kecamatanList.map((kec) => (
+                <option key={kec} value={kec}>{kec}</option>
+              ))}
+            </select>
+          )}
+
+          <div className="relative inline-block ml-2">
+            <button onClick={() => setIsOpen(!isOpen)} className="dropdown-toggle">
+              <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
+            </button>
+            <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 p-2">
+              <DropdownItem
+                onItemClick={() => setIsOpen(false)}
+                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                Unduh PDF
+              </DropdownItem>
+            </Dropdown>
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-gray-100 dark:border-gray-800">
-              {["Kecamatan", "Cuaca", "Suhu", "Kelembapan", "Curah Hujan", "Angin"].map((h) => (
-                <th
-                  key={h}
-                  className="whitespace-nowrap pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 first:pl-0"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-            {cuacaData.map((c) => {
-              const maxRain = 30;
-              const pct = Math.min((c.curah_hujan / maxRain) * 100, 100);
-              return (
-                <tr key={c.kecamatan} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3 pr-4 font-medium text-gray-800 dark:text-white/90 whitespace-nowrap">
-                    {c.kecamatan}
-                  </td>
-                  <td className="py-3 pr-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-lg">{weatherEmoji(c.weather_code)}</span>
-                      <span className="text-gray-600 dark:text-gray-400 text-xs">{c.deskripsi}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 whitespace-nowrap font-semibold">
-                    {c.suhu}°C
-                  </td>
-                  <td className="py-3 pr-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                        <div
-                          className="h-full rounded-full bg-blue-400"
-                          style={{ width: `${c.kelembapan}%` }}
-                        />
-                      </div>
-                      <span className="text-gray-600 dark:text-gray-400">{c.kelembapan}%</span>
-                    </div>
-                  </td>
-                  <td className="py-3 pr-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                        <div
-                          className={`h-full rounded-full ${rainBarColor(c.curah_hujan)}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="text-gray-600 dark:text-gray-400">{c.curah_hujan} mm</span>
-                    </div>
-                  </td>
-                  <td className="py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">
-                    {c.kecepatan_angin} km/j
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="max-w-full flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar mt-4 flex flex-col justify-end">
+        <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2 h-[315px] relative">
+          {currentData.length > 0 ? (
+            <ReactApexChart options={options} series={series} type="line" height={315} />
+          ) : (
+            <div className="flex h-[315px] items-center justify-center text-gray-500">
+              Belum ada data cuaca historis untuk kecamatan ini.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

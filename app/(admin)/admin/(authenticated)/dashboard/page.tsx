@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import React from "react";
 import { SiagaMetrics } from "@/components/dashboard/SiagaMetrics";
-import LaporanTrendChart from "@/components/dashboard/LaporanTrendChart";
+import CuacaWidget from "@/components/dashboard/CuacaWidget";
 import StatusLaporanChart from "@/components/dashboard/StatusLaporanChart";
 import PeringkatanDiniPanel from "@/components/dashboard/PeringkatanDiniPanel";
-import LaporanTerbaruTable from "@/components/dashboard/LaporanTerbaruTable";
 
 export const metadata: Metadata = {
   title: "Dashboard Admin | Jember Siaga",
@@ -21,9 +20,9 @@ export default function DashboardPage() {
         <SiagaMetrics />
       </div>
 
-      {/* ── Trend Chart ── */}
+      {/* ── Cuaca Widget ── */}
       <div className="col-span-12 xl:col-span-8">
-        <LaporanTrendChart />
+        <CuacaWidget />
       </div>
 
       {/* ── Status Donut ── */}
@@ -36,10 +35,7 @@ export default function DashboardPage() {
         <PeringkatanDiniPanel />
       </div>
 
-      {/* ── Laporan Terbaru ── */}
-      <div className="col-span-12">
-        <LaporanTerbaruTable />
-      </div>
+
 
     </div>
   );

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Gunakan NEXT_PUBLIC_API_URL dari env, fallback ke localhost:8000 jika tidak ada
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.1.101:8000';
 
 /**
  * Mengambil data prakiraan cuaca (dari API BMKG) yang telah dicache di database backend.
