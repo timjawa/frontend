@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState,useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -13,7 +14,7 @@ import {
   FolderIcon,
   GroupIcon,
 } from "../icons/index";
-import { HiOutlineMap, HiOutlineCloud } from "react-icons/hi2";
+import { HiOutlineMap, HiOutlineCloud, HiOutlineBellAlert } from "react-icons/hi2";
 import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
@@ -33,6 +34,11 @@ const monitoringItems: NavItem[] = [
     icon: <HiOutlineMap className="w-5 h-5" />,
     name: "Peta Bencana",
     path: "/admin/peta-bencana",
+  },
+  {
+    icon: <HiOutlineBellAlert className="w-5 h-5" />,
+    name: "Peringatan Dini",
+    path: "/admin/peringatan-dini",
   },
   {
     icon: <HiOutlineCloud className="w-5 h-5" />,
@@ -82,7 +88,16 @@ const othersItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { user } = useAuth();
   const pathname = usePathname();
+
+  const isBPBD = user?.role === "admin_bpbd";
+
+  const getFilteredItems = (items: NavItem[]) => {
+    if (!isBPBD) return items;
+    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Peringatan Dini", "Manajemen Pengaduan"];
+    return items.filter(item => allowedForBPBD.includes(item.name));
+  };
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -226,9 +241,9 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     const menuGroups = [
-      { type: "monitoring", items: monitoringItems },
-      { type: "operasional", items: operasionalItems },
-      { type: "others", items: othersItems },
+      { type: "monitoring", items: getFilteredItems(monitoringItems) },
+      { type: "operasional", items: getFilteredItems(operasionalItems) },
+      { type: "others", items: getFilteredItems(othersItems) },
     ];
     
     menuGroups.forEach(({ type, items }) => {
@@ -320,56 +335,64 @@ const AppSidebar: React.FC = () => {
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "MONITORING"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(monitoringItems, "monitoring")}
-            </div>
+              {getFilteredItems(monitoringItems).length > 0 && (
+                <div>
+                  <h2
+                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                      !isExpanded && !isHovered
+                        ? "lg:justify-center"
+                        : "justify-start"
+                    }`}
+                  >
+                    {isExpanded || isHovered || isMobileOpen ? (
+                      "MONITORING"
+                    ) : (
+                      <HorizontaLDots />
+                    )}
+                  </h2>
+                  {renderMenuItems(getFilteredItems(monitoringItems), "monitoring")}
+                </div>
+              )}
 
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "OPERASIONAL"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(operasionalItems, "operasional")}
-            </div>
+              {getFilteredItems(operasionalItems).length > 0 && (
+                <div>
+                  <h2
+                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                      !isExpanded && !isHovered
+                        ? "lg:justify-center"
+                        : "justify-start"
+                    }`}
+                  >
+                    {isExpanded || isHovered || isMobileOpen ? (
+                      "OPERASIONAL"
+                    ) : (
+                      <HorizontaLDots />
+                    )}
+                  </h2>
+                  {renderMenuItems(getFilteredItems(operasionalItems), "operasional")}
+                </div>
+              )}
 
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "OTHERS"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div>
+              {getFilteredItems(othersItems).length > 0 && (
+                <div>
+                  <h2
+                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                      !isExpanded && !isHovered
+                        ? "lg:justify-center"
+                        : "justify-start"
+                    }`}
+                  >
+                    {isExpanded || isHovered || isMobileOpen ? (
+                      "OTHERS"
+                    ) : (
+                      <HorizontaLDots />
+                    )}
+                  </h2>
+                  {renderMenuItems(getFilteredItems(othersItems), "others")}
+                </div>
+              )}
+
+
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}

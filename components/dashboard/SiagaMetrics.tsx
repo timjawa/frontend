@@ -47,10 +47,18 @@ const metrics: MetricItem[] = [
   },
 ];
 
-export function SiagaMetrics() {
+interface SiagaMetricsProps {
+  isBPBD?: boolean;
+}
+
+export function SiagaMetrics({ isBPBD = false }: SiagaMetricsProps) {
+  const displayedMetrics = isBPBD 
+    ? metrics.filter(m => m.label !== "Pengguna Terdaftar" && m.label !== "Kecamatan Rawan Tinggi")
+    : metrics;
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
-      {metrics.map((m, i) => (
+    <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 ${isBPBD ? 'xl:grid-cols-2' : 'xl:grid-cols-4'}`}>
+      {displayedMetrics.map((m, i) => (
         <div
           key={i}
           className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
@@ -65,9 +73,9 @@ export function SiagaMetrics() {
                 {m.value}
               </h4>
             </div>
-            <Badge color={m.badgeColor} size="sm">
+            <Badge color={m.badgeColor}>
               {m.trend === "up" ? <ArrowUpIcon /> : <ArrowDownIcon className={`text-${m.badgeColor}-500`} />}
-              <span className="whitespace-nowrap">{m.badgeValue}</span>
+              {m.badgeValue}
             </Badge>
           </div>
         </div>

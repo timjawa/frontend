@@ -65,7 +65,7 @@ export default function StatusLaporanChart() {
         Distribusi status seluruh laporan bencana
       </p>
 
-      <div className="flex items-center justify-center mt-2">
+      <div className="flex-1 flex items-center justify-center mt-2 min-h-[220px]">
         <ReactApexChart
           options={options}
           series={statusData.map((d) => d.value)}

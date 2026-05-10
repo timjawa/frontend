@@ -8,7 +8,7 @@ interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "masyarakat" | "admin_bmkg" | "super_admin";
+  role: "masyarakat" | "admin_bmkg" | "admin_bpbd" | "super_admin";
 }
 
 interface AuthContextType {
