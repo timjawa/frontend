@@ -8,6 +8,7 @@ import Select from "./Select";
 import Radio from "./input/Radio";
 import Label from "./Label";
 import AdminButton from "@/components/admin/ui/AdminButton";
+import api from "@/lib/api";
 
 // Removed ReactQuill - using textarea instead for React 19 compatibility
 
@@ -63,7 +64,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
     { value: "archived", label: "Archived" }
   ];
 
-  
+
   // Auto-generate slug from title
   const generateSlug = (title: string) => {
     return title
@@ -100,7 +101,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
         ...prev,
         coverImage: file
       }));
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -125,7 +126,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (file.type.startsWith('image/')) {
@@ -133,7 +134,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
           ...prev,
           coverImage: file
         }));
-        
+
         // Create preview
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -151,10 +152,53 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form data:", formData);
-    // Here you would typically send the data to your API
+
+    try {
+      // Kita pakai FormData karena mungkin ada file gambar
+      const submitData = new FormData();
+      submitData.append('judul', formData.title);
+      submitData.append('slug', formData.slug);
+      submitData.append('kategori', formData.category);
+      submitData.append('teaser', formData.teaser);
+      submitData.append('isi', formData.content);
+      submitData.append('sumber', formData.source);
+      submitData.append('tags', formData.tags);
+      submitData.append('status', formData.status);
+
+      // Jika ada file gambar baru yang diupload
+      if (formData.coverImage instanceof File) {
+        submitData.append('foto_cover', formData.coverImage);
+      }
+
+      let url = '/api/berita';
+
+      // Jika mode Edit, ubah URL dan tambahkan _method = PUT
+      if (isEdit && initialData?.id) {
+        url = `/api/berita/${initialData.id}`;
+        submitData.append('_method', 'PUT');
+      }
+
+      // Menggunakan api dari lib/api.ts agar cookie Sanctum terkirim (Authenticated)
+      await api.post(url, submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      alert(`Berita berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`);
+      window.location.href = '/admin/berita'; // Redirect ke halaman list
+
+    } catch (error: any) {
+      console.error('API Error:', error);
+      let errorMessage = 'Terjadi kesalahan pada server.';
+
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.message || 'Periksa kembali isian Anda.';
+      }
+      alert(`Gagal: ${errorMessage}`);
+    }
   };
 
   const onButtonClick = () => {
@@ -172,7 +216,6 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
           placeholder="Masukkan judul berita"
           defaultValue={formData.title}
           onChange={handleTitleChange}
-          required
         />
       </div>
 
@@ -227,11 +270,10 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
       <div>
         <Label>Foto Cover</Label>
         <div
-          className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-            dragActive
+          className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
               ? "border-brand-500 bg-brand-50 dark:bg-brand-500/10"
               : "border-gray-300 dark:border-gray-700"
-          }`}
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -244,10 +286,10 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
             onChange={handleFileChange}
             className="hidden"
           />
-          
+
           {previewImage ? (
             <div className="space-y-4">
-               <img
+              <img
                 src={previewImage}
                 alt="Preview"
                 className="mx-auto max-h-48 rounded-lg object-contain"

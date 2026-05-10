@@ -1,20 +1,79 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import BeritaForm from "@/components/form/BeritaForm";
+import api from "@/lib/api";
 
-export default function EditBeritaPage({ params }: { params: { id: string } }) {
-  // Dummy data
-  const dummyBerita = {
-    title: "Peringatan Dini Cuaca Ekstrem Jember",
-    slug: "peringatan-dini-cuaca-ekstrem-jember",
-    category: "cuaca",
-    teaser: "BMKG mengeluarkan peringatan dini cuaca ekstrem untuk wilayah Jember.",
-    content: "Badan Meteorologi, Klimatologi, dan Geofisika (BMKG) mengimbau masyarakat Kabupaten Jember untuk waspada terhadap potensi hujan lebat disertai angin kencang. \n\nPeringatan ini berlaku mulai hari ini hingga tiga hari ke depan, terutama di wilayah pegunungan dan pesisir selatan.",
-    coverImage: "https://images.unsplash.com/photo-1596700770933-2a382e2f69ff?w=800&q=80",
-    source: "BMKG Jatim",
-    tags: "cuaca, bmkg, waspada",
-    status: "published"
-  };
+export default function EditBeritaPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
+  const [initialData, setInitialData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const STORAGE_URL = 'http://192.168.0.194:8000/storage/uploads/berita/';
+
+  useEffect(() => {
+    const fetchBerita = async () => {
+      try {
+        const res = await api.get(`/api/berita/${id}`);
+        const resData = res.data;
+        
+        // Sesuaikan dengan struktur JSON dari backend (biasanya di dalam "berita")
+        const data = resData.berita || resData.data || resData;
+
+        // Parse tags dari array of objects menjadi comma-separated string
+        let tagsString = "";
+        if (Array.isArray(data.tags)) {
+          if (data.tags.length > 0 && typeof data.tags[0] === 'object') {
+            tagsString = data.tags.map((t: any) => t.tag).join(', ');
+          } else {
+            tagsString = data.tags.join(', ');
+          }
+        } else if (typeof data.tags === 'string') {
+          tagsString = data.tags;
+        }
+
+        // Helper untuk foto (preview)
+        const coverImageUrl = data.foto_cover 
+          ? (data.foto_cover.startsWith('http') 
+              ? data.foto_cover 
+              : (data.foto_cover.includes('/') 
+                  ? `http://localhost:8000/storage/${data.foto_cover.replace(/^\//, '')}`
+                  : `${STORAGE_URL}${data.foto_cover}`))
+          : null;
+
+        // Map field dari backend ke field yang dibutuhkan BeritaForm
+        setInitialData({
+          id: data.id,
+          title: data.judul,
+          slug: data.slug,
+          category: data.kategori,
+          teaser: data.teaser,
+          content: data.isi,
+          coverImage: coverImageUrl,
+          source: data.sumber,
+          tags: tagsString,
+          status: data.status,
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Gagal memuat data berita.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBerita();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div>
+        <PageBreadcrumb pageTitle="Edit Berita" className="mb-0" />
+        <p className="mt-4 px-5">Memuat data berita...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -25,9 +84,11 @@ export default function EditBeritaPage({ params }: { params: { id: string } }) {
             Form Edit Berita
           </h3>
           <p className="text-sm text-gray-500 mb-6 -mt-4">
-            Perbarui informasi artikel berita (ID: {params.id}).
+            Perbarui informasi artikel berita (ID: {id}).
           </p>
-          <BeritaForm isEdit={true} initialData={dummyBerita} />
+          {initialData && (
+            <BeritaForm isEdit={true} initialData={initialData} />
+          )}
         </div>
       </div>
     </div>

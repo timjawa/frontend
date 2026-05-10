@@ -1,6 +1,8 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
+import api from "@/lib/api";
 import { HiEllipsisVertical, HiMagnifyingGlass } from "react-icons/hi2";
 import AdminButton from "@/components/admin/ui/AdminButton";
 import { HiPlus } from "react-icons/hi";
@@ -13,54 +15,78 @@ import {
   HiOutlineArchiveBox,
 } from "react-icons/hi2";
 
-export default function BeritaPage() {
-  const tableRows = [
-    {
-      id: 1,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Banjir Bandang di Desa Kalibaru",
-      cat: "Banjir",
-      status: "Published",
-      views: 1245,
-      sv: "success" as const,
-    },
-    {
-      id: 2,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Tanah Longsor Menutup Akses Jalan Provinsi",
-      cat: "Longsor",
-      status: "Draft",
-      views: 0,
-      sv: "default" as const,
-    },
-    {
-      id: 3,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Kebakaran Hutan di Lereng Argopuro",
-      cat: "Kebakaran",
-      status: "Archived",
-      views: 342,
-      sv: "info" as const,
-    },
-    {
-      id: 4,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Puting Beliung Rusak Puluhan Rumah Warga",
-      cat: "Angin Kencang",
-      status: "Published",
-      views: 892,
-      sv: "success" as const,
-    },
-    {
-      id: 5,
-      foto: "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
-      title: "Peringatan Dini Cuaca Ekstrem Jember",
-      cat: "Cuaca",
-      status: "Published",
-      views: 2150,
-      sv: "success" as const,
-    },
-  ];
+  export default function BeritaPage() {
+  const [beritaList, setBeritaList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBerita = async () => {
+      try {
+        const response = await api.get('/api/berita');
+        const responseData = response.data;
+        
+        // Memeriksa struktur data kembalian API (Laravel biasanya membungkus dengan "data")
+        let extractedData = [];
+        if (Array.isArray(responseData)) {
+          extractedData = responseData;
+        } else if (responseData && Array.isArray(responseData.data)) {
+          extractedData = responseData.data;
+        } else if (responseData && responseData.data && Array.isArray(responseData.data.data)) {
+          extractedData = responseData.data.data;
+        }
+
+        setBeritaList(extractedData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBerita();
+  }, []); // Array kosong berarti efek ini hanya berjalan sekali setelah render pertama
+
+  if (loading) {
+    return (
+      <div>
+        <PageBreadcrumb pageTitle="Manajemen Berita" />
+        <p>Memuat berita...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageBreadcrumb pageTitle="Manajemen Berita" />
+        <p>Error: {error}</p>
+      </div>
+    );
+  }
+
+  // Base URL untuk storage Laravel
+  const STORAGE_URL = 'http://192.168.0.194:8000/storage/uploads/berita/';
+
+  // Mengganti tableRows dengan beritaList dari API dan menyesuaikan nama field
+  // Menambahkan index untuk kolom 'No', ditambahkan pengecekan Array.isArray
+  const tableRows = (Array.isArray(beritaList) ? beritaList : []).map((berita: any, index: number) => ({
+    no: index + 1, // Nomor urut
+    id: berita.id, // UUID tetap disimpan untuk aksi
+    foto: berita.foto_cover 
+      ? (berita.foto_cover.startsWith('http') 
+          ? berita.foto_cover 
+          : (berita.foto_cover.includes('/') 
+              ? `http://localhost:8000/storage/${berita.foto_cover.replace(/^\//, '')}`
+              : `${STORAGE_URL}${berita.foto_cover}`))
+      : "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
+    title: berita.judul, // Menggunakan judul
+    cat: berita.kategori || "Umum", // Menggunakan kategori
+    status: berita.status || "Draft", // Menggunakan status
+    views: berita.views_count || 0, // Menggunakan views_count
+    sv: (berita.status === "published" ? "success" : berita.status === "archived" ? "info" : "default" ) as "success" | "warning" | "danger" | "info" | "default",
+  }));
+  
   return (
     <div>
       <PageBreadcrumb pageTitle="Manajemen Berita" />
@@ -173,7 +199,7 @@ export default function BeritaPage() {
                     className="hover:bg-blue-50/40 transition-colors"
                   >
                     <td className="px-6 py-4 font-semibold text-[#1B2E4B]">
-                      {row.id}
+                      {row.no}
                     </td>
                     <td className="px-6 py-4">
                       <div className="h-12 w-16 overflow-hidden rounded-md border border-gray-200">
