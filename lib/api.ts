@@ -9,7 +9,7 @@ const getBaseUrl = () => {
 };
 
 const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.1.101:8000",
   withCredentials: true,
   withXSRFToken: true,
   headers: {

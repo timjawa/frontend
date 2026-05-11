@@ -1,33 +1,95 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlinePencil } from "react-icons/hi2";
+import api from "@/lib/api";
 
-export default function DetailBeritaPage({ params }: { params: { id: string } }) {
-  // Dummy data
-  const berita = {
-    id: params.id,
-    title: "Banjir Bandang di Desa Kalibaru, Ratusan Rumah Terendam Air",
-    slug: "banjir-bandang-di-desa-kalibaru-ratusan-rumah-terendam-air",
-    coverImage: "https://placehold.co/800x400/e2e8f0/1e293b?text=Foto+Banjir",
-    content: `
-      Banjir bandang melanda Desa Kalibaru setelah hujan deras mengguyur wilayah tersebut selama lebih dari 8 jam tanpa henti. Ratusan rumah dilaporkan terendam banjir dengan ketinggian air bervariasi antara 50 sentimeter hingga 1,5 meter.
-      
-      Tim gabungan dari BPBD, SAR, dan relawan setempat saat ini sedang berupaya melakukan evakuasi terhadap warga yang terjebak di rumah mereka. Beberapa perahu karet telah diturunkan untuk menjangkau area-area yang sulit diakses.
+export default function DetailBeritaPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
+  const [berita, setBerita] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const STORAGE_URL = 'http://192.168.0.194:8000/storage/uploads/berita/';
 
-      Pemerintah daerah telah menyiapkan beberapa titik pengungsian dan posko dapur umum. Masyarakat diimbau untuk tetap waspada mengingat potensi hujan susulan yang masih tinggi dalam beberapa hari ke depan menurut prakiraan BMKG.
-    `,
-    teaser: "Hujan deras selama 8 jam memicu banjir bandang di Desa Kalibaru, menyebabkan ratusan rumah terendam dan warga harus dievakuasi.",
-    tags: ["Banjir", "Bencana Alam", "Kalibaru", "Evakuasi"],
-    category: "Banjir",
-    status: "Published",
-    source: "Laporan Tim Lapangan BPBD",
-    viewsCount: 1245,
-    author: "Budi Santoso",
-    publishedAt: "23 April 2026 09:30 WIB",
-    updatedAt: "24 April 2026 14:15 WIB",
-  };
+  useEffect(() => {
+    const fetchDetail = async () => {
+      try {
+        const res = await api.get(`/api/berita/${id}`);
+        const resData = res.data;
+        
+        const data = resData.berita || resData.data || resData;
+
+        // Helper untuk parse tags (bisa array atau string dipisah koma)
+        let parsedTags: string[] = [];
+        if (Array.isArray(data.tags)) {
+          if (data.tags.length > 0 && typeof data.tags[0] === 'object') {
+            parsedTags = data.tags.map((t: any) => t.tag);
+          } else {
+            parsedTags = data.tags;
+          }
+        } else if (typeof data.tags === 'string' && data.tags.trim() !== '') {
+          parsedTags = data.tags.split(',').map((t: string) => t.trim());
+        }
+
+        // Helper untuk foto
+        const coverImageUrl = data.foto_cover 
+          ? (data.foto_cover.startsWith('http') 
+              ? data.foto_cover 
+              : (data.foto_cover.includes('/') 
+                  ? `http://localhost:8000/storage/${data.foto_cover.replace(/^\//, '')}`
+                  : `${STORAGE_URL}${data.foto_cover}`))
+          : "https://placehold.co/800x400/e2e8f0/1e293b?text=Tidak+Ada+Foto";
+
+        // Map format backend Laravel ke format UI
+        setBerita({
+          id: data.id,
+          title: data.judul,
+          slug: data.slug,
+          coverImage: coverImageUrl,
+          content: data.isi,
+          teaser: data.teaser || "-",
+          tags: parsedTags,
+          category: data.kategori || "Umum",
+          status: data.status || "draft",
+          source: data.sumber || "-",
+          viewsCount: data.views_count || 0,
+          author: data.user?.name || "Admin", // Asumsi backend pakai relasi user, jika tidak fallback ke Admin
+          publishedAt: data.created_at ? new Date(data.created_at).toLocaleString('id-ID') : "-",
+          updatedAt: data.updated_at ? new Date(data.updated_at).toLocaleString('id-ID') : "-",
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div>
+        <PageBreadcrumb pageTitle="Detail Berita" className="mb-0" />
+        <p className="mt-4 px-5">Memuat detail berita...</p>
+      </div>
+    );
+  }
+
+  if (!berita) {
+    return (
+      <div>
+        <PageBreadcrumb pageTitle="Detail Berita" className="mb-0" />
+        <p className="mt-4 px-5 text-rose-500">Berita tidak ditemukan.</p>
+        <Link href="/admin/berita" className="mt-4 inline-block px-5 text-blue-600 hover:underline">
+          Kembali ke daftar berita
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -42,7 +104,7 @@ export default function DetailBeritaPage({ params }: { params: { id: string } })
             Kembali
           </Link>
           <Link
-            href={`/admin/berita/${params.id}/edit`}
+            href={`/admin/berita/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
           >
             <HiOutlinePencil className="w-4 h-4" />
@@ -93,7 +155,13 @@ export default function DetailBeritaPage({ params }: { params: { id: string } })
             <div className="space-y-4">
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Status</span>
-                <AdminBadge variant={berita.status === 'Published' ? 'success' : 'default'} dot>
+                <AdminBadge 
+                  variant={
+                    berita.status === 'published' ? 'success' : 
+                    berita.status === 'archived' ? 'info' : 'default'
+                  } 
+                  dot
+                >
                   {berita.status}
                 </AdminBadge>
               </div>
@@ -108,11 +176,13 @@ export default function DetailBeritaPage({ params }: { params: { id: string } })
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Tags</span>
                 <div className="flex flex-wrap gap-2">
-                  {berita.tags.map((tag, idx) => (
+                  {berita.tags.length > 0 ? berita.tags.map((tag: string, idx: number) => (
                     <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                       #{tag}
                     </span>
-                  ))}
+                  )) : (
+                    <span className="text-sm text-gray-400">-</span>
+                  )}
                 </div>
               </div>
 

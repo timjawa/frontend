@@ -27,7 +27,24 @@ export default function BeritaTableAction({ id }: { id: number }) {
             <HiOutlinePencil className="w-4 h-4" />
             Edit
           </DropdownItem>
-          <DropdownItem tag="button" onClick={() => console.log('Delete', id)} className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
+          <DropdownItem 
+            tag="button" 
+            onClick={async () => {
+              if (confirm('Yakin ingin menghapus berita ini?')) {
+                try {
+                  const { default: api } = await import('@/lib/api');
+                  await api.delete(`/api/berita/${id}`);
+                  alert('Berita berhasil dihapus!');
+                  window.location.reload();
+                } catch (err: any) {
+                  console.error(err);
+                  const msg = err.response?.data?.message || 'Terjadi kesalahan.';
+                  alert(`Gagal menghapus berita: ${msg}`);
+                }
+              }
+            }} 
+            className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50"
+          >
             <HiOutlineTrash className="w-4 h-4" />
             Delete
           </DropdownItem>

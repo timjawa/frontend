@@ -27,6 +27,7 @@ export default function FaqPage() {
   const [faqs, setFaqs] = useState<Faq[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchFaqs();
@@ -48,6 +49,13 @@ export default function FaqPage() {
       setLoading(false);
     }
   };
+
+  const filteredFaqs = faqs.filter((faq) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      (faq.kategori?.toLowerCase() || "").includes(query)
+    );
+  });
 
   const handleDelete = async (id: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus FAQ ini?")) {
@@ -143,6 +151,8 @@ export default function FaqPage() {
                 <input
                   type="text"
                   placeholder="Cari FAQ..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white outline-none transition-all w-48"
                 />
               </div>
@@ -182,7 +192,7 @@ export default function FaqPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {faqs.map((row, index) => (
+                {filteredFaqs.map((row, index) => (
                   <tr
                     key={row.id}
                     className="hover:bg-blue-50/40 transition-colors"
@@ -207,12 +217,12 @@ export default function FaqPage() {
                     </td>
                   </tr>
                 ))}
-                {faqs.length === 0 && !loading && (
-                    <tr>
-                        <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
-                            Tidak ada data FAQ tersedia
-                        </td>
-                    </tr>
+                {filteredFaqs.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
+                      Tidak ada data FAQ tersedia
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -222,8 +232,13 @@ export default function FaqPage() {
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-slate-50/50">
             <p className="text-sm text-slate-500">
               Menampilkan{" "}
-              <span className="font-semibold text-slate-700">1–{faqs.length}</span> dari{" "}
-              <span className="font-semibold text-slate-700">{faqs.length}</span> data
+              <span className="font-semibold text-slate-700">1–{filteredFaqs.length}</span> dari{" "}
+              <span className="font-semibold text-slate-700">{filteredFaqs.length}</span> data
+              {searchQuery && (
+                <span className="ml-1">
+                  (hasil pencarian untuk "<span className="italic">{searchQuery}</span>")
+                </span>
+              )}
             </p>
             {/* Pagination buttons can be implemented dynamically if needed */}
           </div>
