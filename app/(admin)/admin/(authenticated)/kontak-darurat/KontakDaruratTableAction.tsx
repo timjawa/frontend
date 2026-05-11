@@ -10,7 +10,7 @@ import {
   HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
 interface Props {
   id: string;
@@ -28,11 +28,21 @@ export default function KontakDaruratTableAction({ id, onDeleted }: Props) {
     setDeleteError(null);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${API_BASE}/kontak-darurat/${id}`, {
+      
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
+        return '';
+      };
+      const xsrfToken = getCookie('XSRF-TOKEN');
+
+      const res = await fetch(`${getApiBase()}/kontak-darurat/${id}`, {
         method: "DELETE",
         credentials: "include",
         headers: {
           Accept: "application/json",
+          "X-XSRF-TOKEN": xsrfToken,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });

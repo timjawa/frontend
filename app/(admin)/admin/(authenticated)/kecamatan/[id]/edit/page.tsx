@@ -6,7 +6,7 @@ import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { useRouter, useParams } from "next/navigation";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
 export default function EditKecamatanPage() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function EditKecamatanPage() {
       setLoadingData(true);
       setFetchError(null);
       try {
-        const res = await fetch(`${API_BASE}/kecamatan/${id}`);
+        const res = await fetch(`${getApiBase()}/kecamatan/${id}`);
         if (!res.ok) throw new Error("Data kecamatan tidak ditemukan.");
         const json = await res.json();
         const k = json.data;
@@ -62,52 +62,43 @@ export default function EditKecamatanPage() {
     setErrors({});
     setServerError(null);
 
-    try {
-      const token = localStorage.getItem("auth_token");
-      const payload: Record<string, unknown> = {
-        nama: formData.nama,
-        kode_wilayah: formData.kode_wilayah,
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        level_rawan: formData.level_rawan,
-        elevasi: formData.elevasi !== "" ? parseFloat(formData.elevasi) : null,
-      };
+      try {
+        const token = localStorage.getItem("auth_token");
+        const payload: Record<string, unknown> = {
+          nama: formData.nama,
+          kode_wilayah: formData.kode_wilayah,
+          latitude: parseFloat(formData.latitude),
+          longitude: parseFloat(formData.longitude),
+          level_rawan: formData.level_rawan,
+          elevasi: formData.elevasi !== "" ? parseFloat(formData.elevasi) : null,
+        };
 
-      const res = await fetch(`${API_BASE}/kecamatan/${id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 422) {
-        const json = await res.json();
-        const errs: Record<string, string> = {};
-        if (json.errors) {
-          for (const key in json.errors) {
-            errs[key] = json.errors[key][0];
-          }
+        const { default: api } = await import("@/lib/api");
+        // token is added automatically via interceptor or withCredentials if cookie based
+        if (token) {
+           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
-        setErrors(errs);
-        return;
-      }
+        await api.put(`/api/kecamatan/${id}`, payload);
 
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal memperbarui data kecamatan.");
-      }
+        router.push(`/admin/kecamatan/${id}`);
+      } catch (err: any) {
+        if (err.response?.status === 422) {
+          const json = err.response.data;
+          const errs: Record<string, string> = {};
+          if (json.errors) {
+            for (const key in json.errors) {
+              errs[key] = json.errors[key][0];
+            }
+          }
+          setErrors(errs);
+          return;
+        }
 
-      router.push(`/admin/kecamatan/${id}`);
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : "Terjadi kesalahan.");
-    } finally {
-      setLoadingSubmit(false);
-    }
-  };
+        setServerError(err.response?.data?.message || err.message || "Gagal memperbarui data kecamatan.");
+      } finally {
+        setLoadingSubmit(false);
+      }
+    };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
 import { useRouter, useParams } from "next/navigation";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
 export default function EditKontakDaruratPage() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function EditKontakDaruratPage() {
 
   const fetchDetail = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/kontak-darurat/${id}`);
+      const res = await fetch(`${getApiBase()}/kontak-darurat/${id}`);
       if (!res.ok) throw new Error("Gagal mengambil data kontak darurat.");
       const json = await res.json();
       const data = json.data;
@@ -62,12 +62,21 @@ export default function EditKontakDaruratPage() {
         is_active: formData.is_active === "1",
       };
 
-      const res = await fetch(`${API_BASE}/kontak-darurat/${id}`, {
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
+        return '';
+      };
+      const xsrfToken = getCookie('XSRF-TOKEN');
+
+      const res = await fetch(`${getApiBase()}/kontak-darurat/${id}`, {
         method: "PUT",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          "X-XSRF-TOKEN": xsrfToken,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),

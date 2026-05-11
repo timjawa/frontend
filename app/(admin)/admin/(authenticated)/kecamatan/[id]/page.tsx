@@ -15,7 +15,7 @@ import {
   HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
 interface Kecamatan {
   id: string;
@@ -78,7 +78,7 @@ export default function KecamatanDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE}/kecamatan/${id}`);
+        const res = await fetch(`${getApiBase()}/kecamatan/${id}`);
         if (!res.ok) throw new Error("Data kecamatan tidak ditemukan.");
         const json = await res.json();
         setKecamatan(json.data);

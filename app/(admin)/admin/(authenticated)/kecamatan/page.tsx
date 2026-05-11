@@ -14,7 +14,7 @@ import {
   HiPlus,
 } from "react-icons/hi2";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
 interface Kecamatan {
   id: string;
@@ -58,7 +58,7 @@ export default function KecamatanPage() {
       const params = new URLSearchParams({ page: String(page), per_page: "10" });
       if (search) params.append("search", search);
 
-      const res = await fetch(`${API_BASE}/kecamatan?${params.toString()}`);
+      const res = await fetch(`${getApiBase()}/kecamatan?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal mengambil data kecamatan.");
       const json = await res.json();
 
@@ -73,7 +73,7 @@ export default function KecamatanPage() {
       });
 
       // Fetch statistics for all data
-      const statsRes = await fetch(`${API_BASE}/kecamatan/stats`);
+      const statsRes = await fetch(`${getApiBase()}/kecamatan/stats`);
       if (statsRes.ok) {
         const statsJson = await statsRes.json();
         setStats(statsJson);
@@ -101,7 +101,7 @@ export default function KecamatanPage() {
 
     // Refresh stats after delete
     try {
-      const statsRes = await fetch(`${API_BASE}/kecamatan/stats`);
+      const statsRes = await fetch(`${getApiBase()}/kecamatan/stats`);
       if (statsRes.ok) {
         const statsJson = await statsRes.json();
         setStats(statsJson);

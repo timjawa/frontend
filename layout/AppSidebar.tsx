@@ -104,7 +104,7 @@ const AppSidebar: React.FC = () => {
 
   const getFilteredItems = (items: NavItem[]) => {
     if (!isBPBD) return items;
-    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Peringatan Dini", "Manajemen Pengaduan"];
+    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Peringatan Dini", "Manajemen Pengaduan", "Laporan"];
     return items.filter(item => allowedForBPBD.includes(item.name));
   };
 

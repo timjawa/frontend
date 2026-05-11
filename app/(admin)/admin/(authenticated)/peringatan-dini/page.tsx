@@ -12,7 +12,7 @@ import {
   HiPlus,
 } from "react-icons/hi2";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
 interface PeringatanDini {
   id: string;
@@ -58,7 +58,7 @@ export default function PeringatanDiniPage() {
       const params = new URLSearchParams({ page: String(page), per_page: "10" });
       if (search) params.append("search", search);
 
-      const res = await fetch(`${API_BASE}/peringatan-dini?${params.toString()}`);
+      const res = await fetch(`${getApiBase()}/peringatan-dini?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal mengambil data peringatan dini.");
       const json = await res.json();
 
