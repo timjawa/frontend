@@ -1,16 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { HiMagnifyingGlass, HiCalendar, HiUser } from "react-icons/hi2";
 import { HiArrowRight, HiChevronLeft, HiChevronRight } from "react-icons/hi2";
-import {
-  beritaCategories,
-  beritaHero,
-  beritaList,
-} from "@/data/beritaData";
 import type { BeritaItem } from "@/data/beritaData";
+import api, { getImageUrl } from "@/lib/api";
 
 /* ───────────── Hero Card ───────────── */
 function HeroCard({ item }: { item: BeritaItem }) {
@@ -184,9 +180,75 @@ export default function BeritaContent() {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [newsList, setNewsList] = useState<BeritaItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(["Semua"]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBerita = async () => {
+      try {
+        const res = await api.get('/api/berita');
+        let rawData = [];
+        if (Array.isArray(res.data)) {
+          rawData = res.data;
+        } else if (res.data && Array.isArray(res.data.data)) {
+          rawData = res.data.data;
+        } else if (res.data && res.data.data && Array.isArray(res.data.data.data)) {
+          rawData = res.data.data.data;
+        }
+
+        const mapped: BeritaItem[] = rawData.map((b: any) => {
+          const imageUrl = getImageUrl(b.foto_cover);
+
+          const colors = {
+            'BANJIR': 'bg-cyan-600',
+            'GEMPA BUMI': 'bg-indigo-600',
+            'TANAH LONGSOR': 'bg-amber-600',
+            'CUACA EKSTREM': 'bg-blue-600',
+            'KEBAKARAN': 'bg-orange-600',
+            'LOGISTIK': 'bg-teal-600',
+            'PERINGATAN DINI': 'bg-red-600'
+          };
+          const cat = (b.kategori || "UMUM").toUpperCase();
+          const color = (colors as any)[cat] || 'bg-slate-600';
+
+          return {
+            id: b.id,
+            title: b.judul,
+            excerpt: b.ringkasan || "",
+            date: new Date(b.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+            category: b.kategori || "UMUM",
+            categoryColor: color,
+            image: imageUrl,
+            source: "Admin"
+          };
+        });
+
+        // Filter published news
+        const published = mapped.filter((item: any, index: number) => {
+          const rawItem = rawData[index];
+          return !rawItem.status || rawItem.status.toLowerCase() === 'published';
+        });
+
+        setNewsList(published);
+        
+        // Extract unique categories
+        const uniqueCats = Array.from(
+          new Set(published.map((p: any) => p.category))
+        ).filter(Boolean) as string[];
+        
+        setCategories(["Semua", ...uniqueCats]);
+      } catch (error) {
+        console.error("Error fetching berita:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBerita();
+  }, []);
 
   // Filter logic
-  const filteredNews = beritaList.filter((news) => {
+  const filteredNews = newsList.filter((news) => {
     const matchCat =
       activeCategory === "Semua" ||
       news.category.toLowerCase().includes(activeCategory.toLowerCase());
@@ -196,7 +258,20 @@ export default function BeritaContent() {
     return matchCat && matchSearch;
   });
 
-  const totalPages = 12; // dummy total
+  const heroData = filteredNews.length > 0 ? filteredNews[0] : null;
+  const remainingNews = filteredNews.slice(1);
+
+  const ITEMS_PER_PAGE = 6;
+  const totalPages = Math.ceil(remainingNews.length / ITEMS_PER_PAGE) || 1;
+  const currentNews = remainingNews.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <section className="bg-surface min-h-screen">
@@ -227,7 +302,7 @@ export default function BeritaContent() {
 
         {/* ── Category Pills ── */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {beritaCategories.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => {
@@ -246,28 +321,23 @@ export default function BeritaContent() {
         </div>
 
         {/* ── Hero Featured Article ── */}
-        <HeroCard item={beritaHero} />
+        {heroData && currentPage === 1 && <HeroCard item={heroData} />}
 
-        {/* ── News Grid — Row 1 (top 3) ── */}
+        {/* ── News Grid ── */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          {filteredNews.slice(0, 3).map((news) => (
-            <NewsCard key={news.id} item={news} />
-          ))}
-        </div>
-
-        {/* ── News Grid — Row 2 (next 3) ── */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNews.slice(3, 6).map((news) => (
+          {currentNews.map((news) => (
             <NewsCard key={news.id} item={news} />
           ))}
         </div>
 
         {/* ── Pagination ── */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
     </section>
   );

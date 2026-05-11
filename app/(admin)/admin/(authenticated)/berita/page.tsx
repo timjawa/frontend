@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
-import api from "@/lib/api";
+import api, { getImageUrl } from "@/lib/api";
 import { HiEllipsisVertical, HiMagnifyingGlass } from "react-icons/hi2";
 import AdminButton from "@/components/admin/ui/AdminButton";
 import { HiPlus } from "react-icons/hi";
@@ -65,21 +65,12 @@ import {
     );
   }
 
-  // Base URL untuk storage Laravel
-  const STORAGE_URL = 'http://192.168.0.194:8000/storage/uploads/berita/';
-
   // Mengganti tableRows dengan beritaList dari API dan menyesuaikan nama field
   // Menambahkan index untuk kolom 'No', ditambahkan pengecekan Array.isArray
   const tableRows = (Array.isArray(beritaList) ? beritaList : []).map((berita: any, index: number) => ({
     no: index + 1, // Nomor urut
     id: berita.id, // UUID tetap disimpan untuk aksi
-    foto: berita.foto_cover 
-      ? (berita.foto_cover.startsWith('http') 
-          ? berita.foto_cover 
-          : (berita.foto_cover.includes('/') 
-              ? `http://localhost:8000/storage/${berita.foto_cover.replace(/^\//, '')}`
-              : `${STORAGE_URL}${berita.foto_cover}`))
-      : "https://placehold.co/100x75/e2e8f0/1e293b?text=Foto",
+    foto: getImageUrl(berita.foto_cover),
     title: berita.judul, // Menggunakan judul
     cat: berita.kategori || "Umum", // Menggunakan kategori
     status: berita.status || "Draft", // Menggunakan status

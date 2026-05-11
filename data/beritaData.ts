@@ -1,7 +1,7 @@
 // ===================== BERITA PAGE DATA =====================
 
 export interface BeritaItem {
-  id: number;
+  id: string | number;
   title: string;
   excerpt: string;
   date: string;

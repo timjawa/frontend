@@ -35,11 +35,12 @@ export default function DetailBeritaPage({ params }: { params: Promise<{ id: str
         }
 
         // Helper untuk foto
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.0.194:8000';
         const coverImageUrl = data.foto_cover 
           ? (data.foto_cover.startsWith('http') 
               ? data.foto_cover 
               : (data.foto_cover.includes('/') 
-                  ? `http://localhost:8000/storage/${data.foto_cover.replace(/^\//, '')}`
+                  ? `${backendUrl}/storage/${data.foto_cover.replace(/^\//, '')}`
                   : `${STORAGE_URL}${data.foto_cover}`))
           : "https://placehold.co/800x400/e2e8f0/1e293b?text=Tidak+Ada+Foto";
 
@@ -49,8 +50,8 @@ export default function DetailBeritaPage({ params }: { params: Promise<{ id: str
           title: data.judul,
           slug: data.slug,
           coverImage: coverImageUrl,
-          content: data.isi,
-          teaser: data.teaser || "-",
+          content: data.konten,
+          teaser: data.ringkasan || "-",
           tags: parsedTags,
           category: data.kategori || "Umum",
           status: data.status || "draft",

@@ -34,11 +34,12 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
         }
 
         // Helper untuk foto (preview)
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.0.194:8000';
         const coverImageUrl = data.foto_cover 
           ? (data.foto_cover.startsWith('http') 
               ? data.foto_cover 
               : (data.foto_cover.includes('/') 
-                  ? `http://localhost:8000/storage/${data.foto_cover.replace(/^\//, '')}`
+                  ? `${backendUrl}/storage/${data.foto_cover.replace(/^\//, '')}`
                   : `${STORAGE_URL}${data.foto_cover}`))
           : null;
 
@@ -48,8 +49,8 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
           title: data.judul,
           slug: data.slug,
           category: data.kategori,
-          teaser: data.teaser,
-          content: data.isi,
+          teaser: data.ringkasan,
+          content: data.konten,
           coverImage: coverImageUrl,
           source: data.sumber,
           tags: tagsString,

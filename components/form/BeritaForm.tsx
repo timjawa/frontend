@@ -161,8 +161,8 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
       submitData.append('judul', formData.title);
       submitData.append('slug', formData.slug);
       submitData.append('kategori', formData.category);
-      submitData.append('teaser', formData.teaser);
-      submitData.append('isi', formData.content);
+      submitData.append('ringkasan', formData.teaser);
+      submitData.append('konten', formData.content);
       submitData.append('sumber', formData.source);
       submitData.append('tags', formData.tags);
       submitData.append('status', formData.status);
