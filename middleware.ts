@@ -7,19 +7,19 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get('role')?.value;
 
   // Protect all /admin routes
-  // if (pathname.startsWith('/admin')) {
-  //   if (!isLoggedIn) {
-  //     return NextResponse.redirect(new URL('/login', request.url));
-  //   }
-  //   // Only admin_bmkg and super_admin can access /admin
-  //   if (role !== 'admin_bmkg' && role !== 'super_admin') {
-  //     return NextResponse.redirect(new URL('/', request.url));
-  //   }
-  // }
+  if (pathname.startsWith('/admin')) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    // Only admin_bmkg, admin_bpbd, and super_admin can access /admin
+    if (role !== 'admin_bmkg' && role !== 'admin_bpbd' && role !== 'super_admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
 
   // Redirect to appropriate page if trying to access login/register while already logged in
   if ((pathname === '/login' || pathname === '/register') && isLoggedIn) {
-    if (role === 'admin_bmkg' || role === 'super_admin') {
+    if (role === 'admin_bmkg' || role === 'admin_bpbd' || role === 'super_admin') {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
     return NextResponse.redirect(new URL('/', request.url));

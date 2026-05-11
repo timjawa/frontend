@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
+import Cookies from "js-cookie";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -88,10 +89,18 @@ const othersItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const { user } = useAuth();
   const pathname = usePathname();
 
-  const isBPBD = user?.role === "admin_bpbd";
+  // Gunakan cookie sebagai fallback, pastikan hanya dibaca setelah mount
+  const currentRole = user?.role || (isMounted ? Cookies.get("role") : null);
+  const isBPBD = currentRole === "admin_bpbd";
 
   const getFilteredItems = (items: NavItem[]) => {
     if (!isBPBD) return items;
@@ -234,8 +243,11 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => path === pathname;
-   const isActive = useCallback((path: string) => path === pathname, [pathname]);
+   const isActive = useCallback((path: string) => {
+    if (path === pathname) return true;
+    if (pathname.startsWith(`${path}/`)) return true;
+    return false;
+   }, [pathname]);
 
   useEffect(() => {
     // Check if the current path matches any submenu item
@@ -335,6 +347,8 @@ const AppSidebar: React.FC = () => {
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
+            {isMounted && (
+              <>
               {getFilteredItems(monitoringItems).length > 0 && (
                 <div>
                   <h2
@@ -393,6 +407,8 @@ const AppSidebar: React.FC = () => {
               )}
 
 
+              </>
+            )}
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}

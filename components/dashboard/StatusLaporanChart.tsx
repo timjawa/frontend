@@ -57,7 +57,7 @@ export default function StatusLaporanChart() {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white px-5 pt-5 pb-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+    <div className="flex flex-col h-full rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-5 sm:pt-5">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
         Status Laporan
       </h3>
@@ -65,7 +65,7 @@ export default function StatusLaporanChart() {
         Distribusi status seluruh laporan bencana
       </p>
 
-      <div className="flex-1 flex items-center justify-center mt-2 min-h-[220px]">
+      <div className="flex items-center justify-center mt-2">
         <ReactApexChart
           options={options}
           series={statusData.map((d) => d.value)}
@@ -75,7 +75,7 @@ export default function StatusLaporanChart() {
         />
       </div>
 
-      <ul className="mt-3 space-y-2.5">
+      <ul className="mt-auto pt-4 space-y-2.5 border-t border-gray-100 dark:border-gray-800">
         {statusData.map((d) => (
           <li key={d.label} className="flex items-center justify-between">
             <div className="flex items-center gap-2">

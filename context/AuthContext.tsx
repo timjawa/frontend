@@ -8,7 +8,7 @@ interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "masyarakat" | "admin_bmkg" | "admin_bpbd" | "super_admin";
+  role: "masyarakat" | "admin_bpbd" | "super_admin";
 }
 
 interface AuthContextType {
@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       Cookies.set("role", data.user.role, { path: "/" });
     } catch {
       setUser(null);
-      Cookies.remove("isLoggedIn");
-      Cookies.remove("role");
+      Cookies.remove("isLoggedIn", { path: "/" });
+      Cookies.remove("role", { path: "/" });
     } finally {
       setIsLoading(false);
     }
@@ -80,10 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * Logout the user.
    */
   const logout = async () => {
-    await api.logout();
-    setUser(null);
-    Cookies.remove("isLoggedIn");
-    Cookies.remove("role");
+    try {
+      await api.logout();
+    } catch (error) {
+      console.error("API logout failed, clearing local state...", error);
+    } finally {
+      setUser(null);
+      Cookies.remove("isLoggedIn", { path: "/" });
+      Cookies.remove("role", { path: "/" });
+    }
   };
 
   return (

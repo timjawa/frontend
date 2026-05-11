@@ -1,7 +1,15 @@
 import axios from "axios";
 
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    // Gunakan hostname yang sama dengan yang diakses di browser untuk menghindari masalah CORS/SameSite cookie
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.1.101:8000";
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.1.101:8000",
+  baseURL: getBaseUrl(),
   withCredentials: true,
   withXSRFToken: true,
   headers: {
