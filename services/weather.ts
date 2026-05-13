@@ -1,7 +1,4 @@
-import axios from 'axios';
-
-// Gunakan NEXT_PUBLIC_API_URL dari env, fallback ke localhost:8000 jika tidak ada
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.1.101:8000';
+import api from '@/lib/api';
 
 /**
  * Mengambil data prakiraan cuaca (dari API BMKG) yang telah dicache di database backend.
@@ -11,7 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.1.101:800
  */
 export const fetchWeatherForecast = async () => {
   try {
-    const response = await axios.get(`${API_URL}/api/weather/forecast`);
+    const response = await api.get(`/api/weather/forecast`);
     return response.data;
   } catch (error) {
     console.error(`Gagal mengambil data cuaca BMKG dari backend:`, error);
@@ -26,10 +23,59 @@ export const fetchWeatherForecast = async () => {
  */
 export const fetchRealtimeWeather = async () => {
   try {
-    const response = await axios.get(`${API_URL}/api/weather/realtime`);
+    const response = await api.get(`/api/weather/realtime`);
     return response.data;
   } catch (error) {
     console.error(`Gagal mengambil data cuaca realtime dari backend:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Memperbarui data cuaca real-time secara manual (dari OpenWeather API)
+ * dan mengarsipkan data sebelumnya ke histori_cuaca.
+ * Memerlukan autentikasi admin (Sanctum session).
+ * 
+ * @returns Response object
+ */
+export const refreshRealtimeWeather = async () => {
+  try {
+    const response = await api.post(`/api/weather/refresh`);
+    return response.data;
+  } catch (error) {
+    console.error(`Gagal merefresh data cuaca realtime dari backend:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Memperbarui data prakiraan cuaca secara manual (dari API BMKG).
+ * Memerlukan autentikasi admin (Sanctum session).
+ * 
+ * @returns Response object dengan data flat (tidak di-group)
+ */
+export const refreshForecastWeather = async () => {
+  try {
+    const response = await api.post(`/api/weather/refresh-forecast`);
+    return response.data;
+  } catch (error) {
+    console.error(`Gagal merefresh data prakiraan cuaca dari backend:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Mengambil ringkasan harian cuaca per kecamatan.
+ * Data berupa rata-rata suhu dan total curah hujan per hari per kecamatan.
+ * 
+ * @returns Data array ringkasan harian
+ */
+export const fetchForecastSummary = async () => {
+  try {
+    const response = await api.get(`/api/weather/forecast-summary`);
+    return response.data;
+  } catch (error) {
+    console.error(`Gagal mengambil ringkasan cuaca harian:`, error);
     throw error;
   }
 };
