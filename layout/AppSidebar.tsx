@@ -15,7 +15,7 @@ import {
   FolderIcon,
   GroupIcon,
 } from "../icons/index";
-import { HiOutlineMap, HiOutlineCloud, HiOutlineBellAlert } from "react-icons/hi2";
+import { HiOutlineMap, HiOutlineCloud, HiOutlineBellAlert, HiOutlineHomeModern } from "react-icons/hi2";
 import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
@@ -35,6 +35,11 @@ const monitoringItems: NavItem[] = [
     icon: <HiOutlineMap className="w-5 h-5" />,
     name: "Peta Bencana",
     path: "/admin/peta-bencana",
+  },
+  {
+    icon: <HiOutlineHomeModern className="w-5 h-5" />,
+    name: "Pos Pengungsian",
+    path: "/admin/pos-pengungsian",
   },
   {
     icon: <HiOutlineBellAlert className="w-5 h-5" />,
@@ -64,14 +69,14 @@ const operasionalItems: NavItem[] = [
   },
   {
     icon: <FolderIcon />,
-    name: "Informasi & Edukasi",
+    name: "Informasi Publik",
     subItems: [
       { name: "Berita", path: "/admin/berita" },
-      { name: "Edukasi Siaga", path: "/admin/edukasi" },
       { name: "FAQ", path: "/admin/faq" },
       { name: "Kontak Darurat", path: "/admin/kontak-darurat" },
     ],
   },
+  
 ];
 
 const othersItems: NavItem[] = [

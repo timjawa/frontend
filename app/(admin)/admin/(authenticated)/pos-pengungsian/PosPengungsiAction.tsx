@@ -1,34 +1,38 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-import { HiEllipsisVertical, HiOutlineEye, HiOutlineTrash, HiOutlineExclamationTriangle } from "react-icons/hi2";
-
+import {
+  HiEllipsisVertical,
+  HiOutlineEye,
+  HiOutlinePencil,
+  HiOutlineTrash,
+  HiOutlineExclamationTriangle,
+} from "react-icons/hi2";
 import api from "@/lib/api";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 interface Props {
   id: string;
   onDeleted?: (id: string) => void;
 }
 
-export default function PengaduanTableAction({ id, onDeleted }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function PosPengungsiAction({ id, onDeleted }: Props) {
+  const [isOpen, setIsOpen]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting]   = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDeleteConfirm = async () => {
     setDeleting(true);
     setDeleteError(null);
     try {
-      await api.delete(`/api/admin/laporan/${id}`);
+      await api.delete(`/api/pos-pengungsian/${id}`);
       setShowConfirm(false);
       onDeleted?.(id);
     } catch (err: any) {
-      setDeleteError(err.response?.data?.message || "Terjadi kesalahan saat menghapus data.");
+      setDeleteError(err.response?.data?.message || "Gagal menghapus data.");
     } finally {
       setDeleting(false);
     }
@@ -46,17 +50,17 @@ export default function PengaduanTableAction({ id, onDeleted }: Props) {
 
         <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 right-0 top-full">
           <div className="py-1">
-            <DropdownItem tag="a" href={`/admin/pengaduan/${id}`} className="flex items-center gap-2">
+            <DropdownItem tag="a" href={`/admin/pos-pengungsian/${id}`} className="flex items-center gap-2">
               <HiOutlineEye className="w-4 h-4" />
               Detail
             </DropdownItem>
+            <DropdownItem tag="a" href={`/admin/pos-pengungsian/${id}/edit`} className="flex items-center gap-2">
+              <HiOutlinePencil className="w-4 h-4" />
+              Edit
+            </DropdownItem>
             <DropdownItem
               tag="button"
-              onClick={() => {
-                setIsOpen(false);
-                setShowConfirm(true);
-                setDeleteError(null);
-              }}
+              onClick={() => { setIsOpen(false); setShowConfirm(true); setDeleteError(null); }}
               className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50"
             >
               <HiOutlineTrash className="w-4 h-4" />
@@ -69,22 +73,19 @@ export default function PengaduanTableAction({ id, onDeleted }: Props) {
       {/* Delete Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => !deleting && setShowConfirm(false)}
           />
-
-          {/* Modal */}
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in-95">
             <div className="flex flex-col items-center text-center gap-3 mb-5">
               <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
                 <HiOutlineExclamationTriangle className="w-7 h-7 text-red-500" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">Hapus Laporan?</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Hapus Pos Pengungsian?</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Tindakan ini tidak dapat dibatalkan. Data laporan dan semua relasi terkait akan dihapus permanen.
+                  Tindakan ini tidak dapat dibatalkan. Data pos pengungsian akan dihapus permanen.
                 </p>
               </div>
             </div>

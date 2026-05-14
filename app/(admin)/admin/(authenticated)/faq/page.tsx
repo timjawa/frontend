@@ -138,22 +138,22 @@ export default function FaqPage() {
       )}
 
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 dark:ring-gray-800 shadow-sm overflow-hidden">
           {/* Table header bar */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-gray-800">
             <div>
-              <h3 className="text-base font-bold text-[#1B2E4B]">Daftar FAQ</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Kelola pertanyaan yang sering diajukan</p>
+              <h3 className="text-base font-bold text-[#1B2E4B] dark:text-white">Daftar FAQ</h3>
+              <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">Kelola pertanyaan yang sering diajukan</p>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Cari FAQ..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white outline-none transition-all w-48"
+                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all w-48 text-gray-700 dark:text-gray-200"
                 />
               </div>
               <Link
@@ -170,40 +170,40 @@ export default function FaqPage() {
           <div className="overflow-x-auto ">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-slate-50/80">
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <tr className="bg-slate-50/80 dark:bg-gray-800/50">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
                     No
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
                     Pertanyaan
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
                     Kategori
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-center">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-center">
                     Urutan
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
                     Status
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-right">
                     Aksi
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {filteredFaqs.map((row, index) => (
                   <tr
                     key={row.id}
-                    className="hover:bg-blue-50/40 transition-colors"
+                    className="hover:bg-blue-50/40 dark:hover:bg-gray-800/40 transition-colors"
                   >
-                    <td className="px-6 py-4 font-semibold text-[#1B2E4B]">
+                    <td className="px-6 py-4 font-semibold text-[#1B2E4B] dark:text-gray-200">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[300px] truncate">{row.pertanyaan}</td>
-                    <td className="px-6 py-4 text-slate-500">{row.kategori}</td>
+                    <td className="px-6 py-4 font-medium text-slate-700 dark:text-gray-300 max-w-[300px] truncate">{row.pertanyaan}</td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{row.kategori}</td>
                     <td className="px-6 py-4 text-center">
-                      <span className="inline-flex w-7 h-7 items-center justify-center rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">
+                      <span className="inline-flex w-7 h-7 items-center justify-center rounded-md bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 font-semibold text-xs border border-slate-200 dark:border-gray-700">
                         {row.urutan}
                       </span>
                     </td>
@@ -219,7 +219,7 @@ export default function FaqPage() {
                 ))}
                 {filteredFaqs.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
+                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500 dark:text-gray-500">
                       Tidak ada data FAQ tersedia
                     </td>
                   </tr>
@@ -229,14 +229,14 @@ export default function FaqPage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-slate-50/50">
-            <p className="text-sm text-slate-500">
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/30">
+            <p className="text-sm text-slate-500 dark:text-gray-400">
               Menampilkan{" "}
-              <span className="font-semibold text-slate-700">1–{filteredFaqs.length}</span> dari{" "}
-              <span className="font-semibold text-slate-700">{filteredFaqs.length}</span> data
+              <span className="font-semibold text-slate-700 dark:text-gray-200">1–{filteredFaqs.length}</span> dari{" "}
+              <span className="font-semibold text-slate-700 dark:text-gray-200">{filteredFaqs.length}</span> data
               {searchQuery && (
                 <span className="ml-1">
-                  (hasil pencarian untuk "<span className="italic">{searchQuery}</span>")
+                  (hasil pencarian untuk "<span className="italic text-gray-700 dark:text-gray-300">{searchQuery}</span>")
                 </span>
               )}
             </p>

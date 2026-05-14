@@ -9,6 +9,9 @@ interface AuthUser {
   name: string;
   email: string;
   role: "masyarakat" | "admin_bpbd" | "super_admin";
+  foto_url?: string | null;
+  no_telepon?: string | null;
+  alamat?: string | null;
 }
 
 interface AuthContextType {

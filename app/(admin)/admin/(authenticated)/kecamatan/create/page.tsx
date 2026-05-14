@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
-import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineCheck, HiMapPin } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
+import MapPicker from "@/components/ui/map/MapPicker";
 
 const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
@@ -162,42 +163,72 @@ export default function CreateKecamatanPage() {
               {errors.kode_wilayah && <p className="text-xs text-red-500">{errors.kode_wilayah}</p>}
             </div>
 
-            {/* Latitude */}
-            <div className="space-y-2">
-              <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Latitude <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="latitude"
-                name="latitude"
-                value={formData.latitude}
-                onChange={handleChange}
-                required
-                placeholder="-8.3000000"
-                className={inputClass("latitude")}
-              />
-              {errors.latitude && <p className="text-xs text-red-500">{errors.latitude}</p>}
-            </div>
+            {/* Coordinate Selection (Map + Inputs) */}
+            <div className="md:col-span-2 space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-5 dark:bg-blue-900/10 dark:border-blue-800/30">
+              <div className="flex items-center gap-2 mb-2">
+                <HiMapPin className="w-5 h-5 text-blue-500" />
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200">Pilih Titik Koordinat</h4>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Geser marker atau klik pada peta untuk menentukan lokasi kecamatan. Koordinat di bawah akan terisi otomatis.
+              </p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <MapPicker
+                    latitude={formData.latitude}
+                    longitude={formData.longitude}
+                    onChange={(lat, lng) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        latitude: lat.toFixed(7),
+                        longitude: lng.toFixed(7)
+                      }));
+                      setErrors(prev => ({ ...prev, latitude: "", longitude: "" }));
+                    }}
+                  />
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Latitude */}
+                  <div className="space-y-2">
+                    <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Latitude <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      id="latitude"
+                      name="latitude"
+                      value={formData.latitude}
+                      onChange={handleChange}
+                      required
+                      placeholder="-8.1724000"
+                      className={inputClass("latitude")}
+                    />
+                    {errors.latitude && <p className="text-xs text-red-500">{errors.latitude}</p>}
+                  </div>
 
-            {/* Longitude */}
-            <div className="space-y-2">
-              <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Longitude <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                step="any"
-                id="longitude"
-                name="longitude"
-                value={formData.longitude}
-                onChange={handleChange}
-                required
-                placeholder="113.4500000"
-                className={inputClass("longitude")}
-              />
-              {errors.longitude && <p className="text-xs text-red-500">{errors.longitude}</p>}
+                  {/* Longitude */}
+                  <div className="space-y-2">
+                    <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Longitude <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      id="longitude"
+                      name="longitude"
+                      value={formData.longitude}
+                      onChange={handleChange}
+                      required
+                      placeholder="113.7000000"
+                      className={inputClass("longitude")}
+                    />
+                    {errors.longitude && <p className="text-xs text-red-500">{errors.longitude}</p>}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Elevasi */}

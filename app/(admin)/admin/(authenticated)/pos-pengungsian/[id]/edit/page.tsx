@@ -5,51 +5,73 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineExclamationTriangle, HiMapPin } from "react-icons/hi2";
 import { useRouter, useParams } from "next/navigation";
+import api from "@/lib/api";
 import MapPicker from "@/components/ui/map/MapPicker";
 
-const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
-
-export default function EditKecamatanPage() {
+export default function EditPosPengungsiPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params.id;
 
   const [formData, setFormData] = useState({
     nama: "",
-    kode_wilayah: "",
+    kecamatan_id: "",
+    alamat: "",
     latitude: "",
     longitude: "",
-    elevasi: "",
-    level_rawan: "rendah",
+    kapasitas: "",
+    terisi: "0",
+    penanggung_jawab: "",
+    telepon: "",
+    fasilitas: "",
+    status: "standby",
+    is_active: true,
   });
-
+  
+  const [kecamatanList, setKecamatanList] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // Fetch existing data
+  useEffect(() => {
+    // Fetch kecamatan for dropdown
+    const fetchKecamatan = async () => {
+      try {
+        const res = await api.get("/api/kecamatan", { params: { per_page: 100 } });
+        setKecamatanList(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch kecamatan", err);
+      }
+    };
+    fetchKecamatan();
+  }, []);
+
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
       setLoadingData(true);
       setFetchError(null);
       try {
-        const res = await fetch(`${getApiBase()}/kecamatan/${id}`);
-        if (!res.ok) throw new Error("Data kecamatan tidak ditemukan.");
-        const json = await res.json();
-        const k = json.data;
+        const res = await api.get(`/api/pos-pengungsian/${id}`);
+        const p = res.data;
         setFormData({
-          nama: k.nama ?? "",
-          kode_wilayah: k.kode_wilayah ?? "",
-          latitude: k.latitude != null ? String(k.latitude) : "",
-          longitude: k.longitude != null ? String(k.longitude) : "",
-          elevasi: k.elevasi != null ? String(k.elevasi) : "",
-          level_rawan: k.level_rawan ?? "rendah",
+          nama: p.nama ?? "",
+          kecamatan_id: p.kecamatan_id ?? "",
+          alamat: p.alamat ?? "",
+          latitude: p.latitude != null ? String(p.latitude) : "",
+          longitude: p.longitude != null ? String(p.longitude) : "",
+          kapasitas: p.kapasitas != null ? String(p.kapasitas) : "",
+          terisi: p.terisi != null ? String(p.terisi) : "0",
+          penanggung_jawab: p.penanggung_jawab ?? "",
+          telepon: p.telepon ?? "",
+          fasilitas: Array.isArray(p.fasilitas) ? p.fasilitas.join(", ") : (p.fasilitas || ""),
+          status: p.status ?? "standby",
+          is_active: p.is_active ?? true,
         });
-      } catch (err: unknown) {
-        setFetchError(err instanceof Error ? err.message : "Gagal memuat data.");
+      } catch (err: any) {
+        setFetchError(err.response?.data?.message || "Gagal memuat data pos pengungsian.");
       } finally {
         setLoadingData(false);
       }
@@ -63,46 +85,38 @@ export default function EditKecamatanPage() {
     setErrors({});
     setServerError(null);
 
-      try {
-        const token = localStorage.getItem("auth_token");
-        const payload: Record<string, unknown> = {
-          nama: formData.nama,
-          kode_wilayah: formData.kode_wilayah,
-          latitude: parseFloat(formData.latitude),
-          longitude: parseFloat(formData.longitude),
-          level_rawan: formData.level_rawan,
-          elevasi: formData.elevasi !== "" ? parseFloat(formData.elevasi) : null,
-        };
+    try {
+      const payload = {
+        ...formData,
+        latitude: parseFloat(formData.latitude) || 0,
+        longitude: parseFloat(formData.longitude) || 0,
+        kapasitas: parseInt(formData.kapasitas) || 0,
+        terisi: parseInt(formData.terisi) || 0,
+        fasilitas: formData.fasilitas ? formData.fasilitas.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      };
 
-        const { default: api } = await import("@/lib/api");
-        // token is added automatically via interceptor or withCredentials if cookie based
-        if (token) {
-           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-        await api.put(`/api/kecamatan/${id}`, payload);
-
-        router.push(`/admin/kecamatan/${id}`);
-      } catch (err: any) {
-        if (err.response?.status === 422) {
-          const json = err.response.data;
-          const errs: Record<string, string> = {};
-          if (json.errors) {
-            for (const key in json.errors) {
-              errs[key] = json.errors[key][0];
-            }
+      await api.put(`/api/pos-pengungsian/${id}`, payload);
+      router.push("/admin/pos-pengungsian");
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errs: Record<string, string> = {};
+        if (err.response.data.errors) {
+          for (const key in err.response.data.errors) {
+            errs[key] = err.response.data.errors[key][0];
           }
-          setErrors(errs);
-          return;
         }
-
-        setServerError(err.response?.data?.message || err.message || "Gagal memperbarui data kecamatan.");
-      } finally {
-        setLoadingSubmit(false);
+        setErrors(errs);
+      } else {
+        setServerError(err.response?.data?.message || "Gagal memperbarui data pos pengungsian.");
       }
-    };
+    } finally {
+      setLoadingSubmit(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
     setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
@@ -115,9 +129,9 @@ export default function EditKecamatanPage() {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <PageBreadcrumb pageTitle="Edit Kecamatan" className="mb-0" />
+          <PageBreadcrumb pageTitle="Edit Pos Pengungsian" className="mb-0" />
           <Link
-            href="/admin/kecamatan"
+            href="/admin/pos-pengungsian"
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
           >
             <HiOutlineArrowLeft className="w-4 h-4" />
@@ -135,9 +149,9 @@ export default function EditKecamatanPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Edit Kecamatan" className="mb-0" />
+        <PageBreadcrumb pageTitle="Edit Pos Pengungsian" className="mb-0" />
         <Link
-          href="/admin/kecamatan"
+          href="/admin/pos-pengungsian"
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" />
@@ -148,9 +162,9 @@ export default function EditKecamatanPage() {
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Edit Kecamatan</h3>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Edit Pos Pengungsian</h3>
             <p className="text-sm text-gray-500 mt-1">
-              Perbarui informasi wilayah kecamatan (ID:{" "}
+              Perbarui informasi pos pengungsian (ID:{" "}
               <span className="font-mono text-xs">{id}</span>).
             </p>
           </div>
@@ -174,11 +188,10 @@ export default function EditKecamatanPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Nama Kecamatan */}
+              {/* Nama Pos */}
               <div className="space-y-2">
                 <label htmlFor="nama" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Nama Kecamatan <span className="text-red-500">*</span>
+                  Nama Pos <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -192,31 +205,50 @@ export default function EditKecamatanPage() {
                 {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
               </div>
 
-              {/* Kode Wilayah */}
+              {/* Kecamatan */}
               <div className="space-y-2">
-                <label htmlFor="kode_wilayah" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Kode Wilayah <span className="text-red-500">*</span>
+                <label htmlFor="kecamatan_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Kecamatan
+                </label>
+                <select
+                  id="kecamatan_id"
+                  name="kecamatan_id"
+                  value={formData.kecamatan_id}
+                  onChange={handleChange}
+                  className={`${inputClass("kecamatan_id")} appearance-none`}
+                >
+                  <option value="">-- Pilih Kecamatan (Opsional) --</option>
+                  {kecamatanList.map((kec) => (
+                    <option key={kec.id} value={kec.id}>{kec.nama}</option>
+                  ))}
+                </select>
+                {errors.kecamatan_id && <p className="text-xs text-red-500">{errors.kecamatan_id}</p>}
+              </div>
+              
+              {/* Alamat */}
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Alamat
                 </label>
                 <input
                   type="text"
-                  id="kode_wilayah"
-                  name="kode_wilayah"
-                  value={formData.kode_wilayah}
+                  id="alamat"
+                  name="alamat"
+                  value={formData.alamat}
                   onChange={handleChange}
-                  required
-                  className={inputClass("kode_wilayah")}
+                  className={inputClass("alamat")}
                 />
-                {errors.kode_wilayah && <p className="text-xs text-red-500">{errors.kode_wilayah}</p>}
+                {errors.alamat && <p className="text-xs text-red-500">{errors.alamat}</p>}
               </div>
 
               {/* Coordinate Selection (Map + Inputs) */}
               <div className="md:col-span-2 space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-5 dark:bg-blue-900/10 dark:border-blue-800/30">
                 <div className="flex items-center gap-2 mb-2">
                   <HiMapPin className="w-5 h-5 text-blue-500" />
-                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">Perbarui Titik Koordinat</h4>
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">Perbarui Titik Koordinat Pos</h4>
                 </div>
                 <p className="text-sm text-gray-500 mb-4">
-                  Geser marker atau klik pada peta untuk menyesuaikan lokasi kecamatan.
+                  Geser marker atau klik pada peta untuk menyesuaikan lokasi pos pengungsian.
                 </p>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -274,50 +306,127 @@ export default function EditKecamatanPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Elevasi */}
+              
+              {/* Kapasitas */}
               <div className="space-y-2">
-                <label htmlFor="elevasi" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Elevasi (mdpl)
+                <label htmlFor="kapasitas" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Kapasitas <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
-                  step="any"
-                  id="elevasi"
-                  name="elevasi"
-                  value={formData.elevasi}
-                  onChange={handleChange}
-                  placeholder="Opsional"
-                  className={inputClass("elevasi")}
-                />
-                {errors.elevasi && <p className="text-xs text-red-500">{errors.elevasi}</p>}
-              </div>
-
-              {/* Level Rawan */}
-              <div className="space-y-2">
-                <label htmlFor="level_rawan" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Tingkat Kerawanan <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="level_rawan"
-                  name="level_rawan"
-                  value={formData.level_rawan}
+                  id="kapasitas"
+                  name="kapasitas"
+                  value={formData.kapasitas}
                   onChange={handleChange}
                   required
-                  className={`${inputClass("level_rawan")} appearance-none`}
+                  className={inputClass("kapasitas")}
+                />
+                {errors.kapasitas && <p className="text-xs text-red-500">{errors.kapasitas}</p>}
+              </div>
+
+              {/* Terisi */}
+              <div className="space-y-2">
+                <label htmlFor="terisi" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Terisi (Orang)
+                </label>
+                <input
+                  type="number"
+                  id="terisi"
+                  name="terisi"
+                  value={formData.terisi}
+                  onChange={handleChange}
+                  className={inputClass("terisi")}
+                />
+                {errors.terisi && <p className="text-xs text-red-500">{errors.terisi}</p>}
+              </div>
+              
+              {/* Penanggung Jawab */}
+              <div className="space-y-2">
+                <label htmlFor="penanggung_jawab" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Penanggung Jawab
+                </label>
+                <input
+                  type="text"
+                  id="penanggung_jawab"
+                  name="penanggung_jawab"
+                  value={formData.penanggung_jawab}
+                  onChange={handleChange}
+                  className={inputClass("penanggung_jawab")}
+                />
+                {errors.penanggung_jawab && <p className="text-xs text-red-500">{errors.penanggung_jawab}</p>}
+              </div>
+
+              {/* Telepon */}
+              <div className="space-y-2">
+                <label htmlFor="telepon" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Telepon
+                </label>
+                <input
+                  type="text"
+                  id="telepon"
+                  name="telepon"
+                  value={formData.telepon}
+                  onChange={handleChange}
+                  className={inputClass("telepon")}
+                />
+                {errors.telepon && <p className="text-xs text-red-500">{errors.telepon}</p>}
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Status Pos
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className={`${inputClass("status")} appearance-none`}
                 >
-                  <option value="rendah">Rendah (Hijau)</option>
-                  <option value="sedang">Sedang (Kuning)</option>
-                  <option value="tinggi">Tinggi (Merah)</option>
+                  <option value="standby">Standby (Siaga)</option>
+                  <option value="aktif">Aktif (Menerima Pengungsi)</option>
+                  <option value="penuh">Penuh (Kapasitas Maksimal)</option>
+                  <option value="tutup">Tutup (Tidak Beroperasi)</option>
                 </select>
-                {errors.level_rawan && <p className="text-xs text-red-500">{errors.level_rawan}</p>}
+                {errors.status && <p className="text-xs text-red-500">{errors.status}</p>}
+              </div>
+              
+              {/* Is Active */}
+              <div className="space-y-2 flex flex-col justify-center mt-2 md:mt-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleChange}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tampilkan Pos Ini</span>
+                </label>
+              </div>
+
+              {/* Fasilitas */}
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="fasilitas" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Fasilitas <span className="text-xs text-gray-400 font-normal">(Pisahkan dengan koma)</span>
+                </label>
+                <input
+                  type="text"
+                  id="fasilitas"
+                  name="fasilitas"
+                  value={formData.fasilitas}
+                  onChange={handleChange}
+                  className={inputClass("fasilitas")}
+                />
+                {errors.fasilitas && <p className="text-xs text-red-500">{errors.fasilitas}</p>}
               </div>
             </div>
           )}
 
           <div className="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
             <Link
-              href="/admin/kecamatan"
+              href="/admin/pos-pengungsian"
               className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
             >
               Batal
