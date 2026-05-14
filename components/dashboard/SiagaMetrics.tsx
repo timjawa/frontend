@@ -1,5 +1,11 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import {
+  fetchLaporanStats,
+  fetchUserStats,
+  fetchKecamatanStats,
+  fetchPeringatanDini,
+} from "@/services/dashboard";
 import Badge from "../ui/badge/Badge";
 import { ArrowUpIcon, ArrowDownIcon, GroupIcon, AlertIcon, BoxIconLine, BoltIcon } from "@/icons";
 
@@ -7,7 +13,7 @@ interface MetricItem {
   icon: React.ReactNode;
   label: string;
   value: string;
-  badgeColor: "success" | "error" | "warning";
+  badgeColor: "success" | "error" | "warning" | "primary";
   badgeValue: string;
   trend: "up" | "down";
 }
@@ -87,7 +93,78 @@ interface SiagaMetricsProps {
 }
 
 export function SiagaMetrics({ isBPBD = false }: SiagaMetricsProps) {
-  const displayedMetrics = isBPBD ? bpbdMetrics : metrics;
+  const [metricsData, setMetricsData] = useState<MetricItem[]>(isBPBD ? bpbdMetrics : metrics);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        if (isBPBD) {
+          const [laporan, peringatan] = await Promise.all([
+            fetchLaporanStats(),
+            fetchPeringatanDini({ per_page: 100 }),
+          ]);
+          
+          const kritisCount = peringatan.data.filter(w => w.tingkat_urgensi === 'kritis').length;
+          
+          setMetricsData([
+            {
+              ...bpbdMetrics[0],
+              value: laporan.baru.toLocaleString("id-ID"),
+            },
+            {
+              ...bpbdMetrics[1],
+              value: laporan.diverifikasi.toLocaleString("id-ID"),
+            },
+            {
+              ...bpbdMetrics[2],
+              value: kritisCount.toLocaleString("id-ID"),
+            },
+            {
+              ...bpbdMetrics[3],
+              value: (laporan.total - laporan.selesai).toLocaleString("id-ID"), // Titik Bencana Aktif bisa direpresentasikan dari total laporan yg blm selesai
+            }
+          ]);
+        } else {
+          const [users, laporan, peringatan, kecamatan] = await Promise.all([
+            fetchUserStats(),
+            fetchLaporanStats(),
+            fetchPeringatanDini({ per_page: 1 }), // Hanya butuh get total
+            fetchKecamatanStats(),
+          ]);
+
+          setMetricsData([
+            {
+              ...metrics[0],
+              value: users.total.toLocaleString("id-ID"),
+            },
+            {
+              ...metrics[1],
+              value: laporan.total.toLocaleString("id-ID"),
+            },
+            {
+              ...metrics[2],
+              value: peringatan.total.toLocaleString("id-ID"),
+            },
+            {
+              ...metrics[3],
+              value: kecamatan.tinggi.toLocaleString("id-ID"),
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data metrik:", error);
+        // Fallback to dummy will be kept as initial state
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [isBPBD]);
+
+  const displayedMetrics = metricsData;
 
   return (
     <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-4`}>
@@ -103,7 +180,7 @@ export function SiagaMetrics({ isBPBD = false }: SiagaMetricsProps) {
             <div>
               <span className="text-xs text-gray-500 dark:text-gray-400">{m.label}</span>
               <h4 className="mt-1 font-bold text-gray-800 text-xl dark:text-white/90">
-                {m.value}
+                {loading ? "..." : m.value}
               </h4>
             </div>
             <Badge color={m.badgeColor}>

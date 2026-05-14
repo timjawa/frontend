@@ -6,6 +6,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useState, useEffect, useRef } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { fetchForecastSummary } from "@/services/weather";
+import { refreshForecastWeather } from "@/services/weather";
 import { HiArrowPath } from "react-icons/hi2";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -42,10 +43,20 @@ export default function CuacaWidget() {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (refreshFromBMKG = false) => {
     try {
       setLoading(true);
-      const res = await fetchForecastSummary();
+      if (refreshFromBMKG) {
+        await refreshForecastWeather();
+      }
+      let res = await fetchForecastSummary();
+      
+      // Auto fetch if data is empty
+      if (res && res.data && res.data.length === 0 && !refreshFromBMKG) {
+        await refreshForecastWeather();
+        res = await fetchForecastSummary();
+      }
+      
       if (res && res.data) {
         setRawData(res.data);
         // Auto-select first kecamatan
@@ -236,7 +247,7 @@ export default function CuacaWidget() {
               <DropdownItem
                 onItemClick={() => {
                   setIsOpen(false);
-                  loadData();
+                  loadData(true);
                 }}
                 className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
               >

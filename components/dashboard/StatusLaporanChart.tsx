@@ -1,19 +1,44 @@
 "use client";
 import dynamic from "next/dynamic";
 import { ApexOptions } from "apexcharts";
+import { useState, useEffect } from "react";
+import { fetchLaporanStats } from "@/services/dashboard";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const statusData = [
-  { label: "Selesai", value: 521, color: "#10b981" },
-  { label: "Diverifikasi", value: 389, color: "#465fff" },
-  { label: "Baru", value: 247, color: "#f97316" },
-  { label: "Ditolak", value: 91, color: "#ef4444" },
+const initialStatusData = [
+  { label: "Selesai", value: 0, color: "#10b981" },
+  { label: "Diverifikasi", value: 0, color: "#465fff" },
+  { label: "Baru", value: 0, color: "#f97316" },
+  { label: "Ditolak", value: 0, color: "#ef4444" },
 ];
 
-const total = statusData.reduce((s, d) => s + d.value, 0);
-
 export default function StatusLaporanChart() {
+  const [statusData, setStatusData] = useState(initialStatusData);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const stats = await fetchLaporanStats();
+        
+        setStatusData([
+          { label: "Selesai", value: stats.selesai, color: "#10b981" },
+          { label: "Diverifikasi", value: stats.diverifikasi, color: "#465fff" },
+          { label: "Baru", value: stats.baru, color: "#f97316" },
+          { label: "Ditolak", value: stats.ditolak, color: "#ef4444" },
+        ]);
+        setTotal(stats.total);
+      } catch (error) {
+        console.error("Gagal mengambil status laporan:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
   const options: ApexOptions = {
     chart: {
       fontFamily: "Outfit, sans-serif",
@@ -66,13 +91,19 @@ export default function StatusLaporanChart() {
       </p>
 
       <div className="flex items-center justify-center mt-2">
-        <ReactApexChart
-          options={options}
-          series={statusData.map((d) => d.value)}
-          type="donut"
-          height={220}
-          width={220}
-        />
+        {loading ? (
+           <div className="flex items-center justify-center h-[220px] w-[220px]">
+              <span className="text-gray-400 text-sm">Memuat chart...</span>
+           </div>
+        ) : (
+          <ReactApexChart
+            options={options}
+            series={statusData.map((d) => d.value)}
+            type="donut"
+            height={220}
+            width={220}
+          />
+        )}
       </div>
 
       <ul className="mt-auto pt-4 space-y-2.5 border-t border-gray-100 dark:border-gray-800">
@@ -90,7 +121,7 @@ export default function StatusLaporanChart() {
                 {d.value.toLocaleString("id-ID")}
               </span>
               <span className="text-xs text-gray-400">
-                ({((d.value / total) * 100).toFixed(1)}%)
+                ({total > 0 ? ((d.value / total) * 100).toFixed(1) : 0}%)
               </span>
             </div>
           </li>

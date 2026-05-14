@@ -30,7 +30,7 @@ export default function LaporanPage() {
       if (endDate) params.end_date = endDate;
       if (filterStatus !== "all") params.status = filterStatus;
 
-      const res = await api.get("/api/laporan-bencana", { params });
+      const res = await api.get("/api/admin/laporan", { params });
       setData(res.data.data || []);
     } catch (error) {
       console.error("Gagal memuat laporan", error);
@@ -206,9 +206,11 @@ export default function LaporanPage() {
                       <td className="px-4 py-3">
                         {/* Di mode print badge background tidak selalu tampil bagus, jadi tambahkan styling border solid */}
                         <div className="print:border print:border-gray-300 print:text-black print:px-2 print:py-1 print:rounded-md inline-block">
-                          <AdminBadge variant={st.variant} dot className="print:hidden">
-                            {st.label}
-                          </AdminBadge>
+                          <div className="print:hidden inline-block">
+                            <AdminBadge variant={st.variant} dot>
+                              {st.label}
+                            </AdminBadge>
+                          </div>
                           <span className="hidden print:inline text-xs font-bold uppercase">{st.label}</span>
                         </div>
                       </td>
