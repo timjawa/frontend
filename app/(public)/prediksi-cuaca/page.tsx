@@ -9,7 +9,7 @@ import { timeSlots, KecamatanPrediction, WeatherSlot } from "@/data/prediksiCuac
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiOutlineSearch } from "react-icons/hi";
 import { HiInformationCircle } from "react-icons/hi2";
-import { WiHumidity, WiStrongWind, WiThermometer, WiCloud, WiDaySunny } from "react-icons/wi";
+import { WiCloud, WiDaySunny } from "react-icons/wi";
 import { fetchWeatherForecast } from "@/services/weather";
 
 // Helper: map cuaca description to icon key
@@ -18,8 +18,8 @@ const mapConditionToIcon = (description: string) => {
   if (desc.includes('petir') || desc.includes('thunder')) return 'thunderstorm';
   if (desc.includes('hujan lebat') || desc.includes('heavy rain')) return 'rain';
   if (desc.includes('hujan') || desc.includes('rain')) return 'light-rain';
-  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
   if (desc.includes('cerah berawan') || desc.includes('partly')) return 'partly-cloudy';
+  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
   if (desc.includes('cerah') || desc.includes('clear') || desc.includes('sunny')) return 'sunny';
   if (desc.includes('kabut') || desc.includes('asap') || desc.includes('fog')) return 'cloudy';
   return 'partly-cloudy';
@@ -276,10 +276,18 @@ export default function PrediksiCuacaPage() {
                             </Link>
                           </td>
                           {visibleSlots.map((slot) => {
-                            const data = row[slot.key as keyof KecamatanPrediction] as WeatherSlot;
+                            const slotData = row[slot.key as keyof KecamatanPrediction] as WeatherSlot;
                             return (
                               <td key={slot.key} className="px-4 py-4 text-center">
-                                <WeatherCell data={data} iconType={data.icon} />
+                                <div className="flex flex-col items-center gap-1">
+                                  <WeatherIcon type={slotData.icon} size={32} />
+                                  <span className="font-bold text-primary text-sm">
+                                    {slotData.suhu}
+                                  </span>
+                                  <span className="text-xs text-slate-500 leading-tight capitalize">
+                                    {slotData.cuaca}
+                                  </span>
+                                </div>
                               </td>
                             );
                           })}
@@ -321,31 +329,3 @@ export default function PrediksiCuacaPage() {
   );
 }
 
-function WeatherCell({
-  data,
-  iconType,
-}: {
-  data: WeatherSlot;
-  iconType: string;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <WeatherIcon type={iconType} size={32} />
-      <span className="font-bold text-primary text-sm capitalize line-clamp-1" title={data.cuaca}>{data.cuaca}</span>
-      <div className="flex flex-col gap-0.5 text-[11px] text-slate-500">
-        <div className="flex items-center gap-1 justify-center">
-          <WiThermometer className="text-red-400 text-sm" />
-          <span>{data.suhu}</span>
-        </div>
-        <div className="flex items-center gap-1 justify-center">
-          <WiHumidity className="text-blue-400 text-sm" />
-          <span>{data.kelembapan}</span>
-        </div>
-        <div className="flex items-center gap-1 justify-center">
-          <WiStrongWind className="text-slate-400 text-sm" />
-          <span>{data.angin}</span>
-        </div>
-      </div>
-    </div>
-  );
-}

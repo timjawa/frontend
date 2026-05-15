@@ -515,7 +515,7 @@ export default function LaporanPage() {
                       </td>
                       <td className="print-status px-4 py-3">
                         {/* Di mode print badge background tidak selalu tampil bagus, jadi tambahkan styling border solid */}
-                        <div className="print-status-text print:text-black inline-block">
+                        <div className="print-status-text print:border print:border-gray-300 print:text-black print:px-2 print:py-1 print:rounded-md inline-block">
                           <span className="print:hidden">
                             <AdminBadge variant={st.variant} dot>
                               {st.label}

@@ -16,30 +16,56 @@ import CuacaTableAction from "./CuacaTableAction";
 
 import { fetchRealtimeWeather, refreshRealtimeWeather } from "@/services/weather";
 
-function weatherIcon(code: number) {
-  let iconFile = "berawan.svg";
+function getBmkgCode(weatherCode?: number): number {
+  if (!weatherCode) return 1;
+  if (weatherCode === 800) return 0;
+  if (weatherCode === 801) return 1;
+  if (weatherCode === 802 || weatherCode === 803) return 3;
+  if (weatherCode === 804) return 4;
+  if (weatherCode === 701 || weatherCode === 721 || weatherCode === 741) return 5;
+  if ((weatherCode >= 300 && weatherCode <= 321) || weatherCode === 500 || weatherCode === 520) return 60;
+  if (weatherCode === 501 || weatherCode === 521) return 61;
+  if (weatherCode === 502 || weatherCode === 503 || weatherCode === 504) return 63;
+  if (weatherCode >= 200 && weatherCode <= 232) return 95;
+  return 1;
+}
 
-  if (code >= 200 && code <= 232) {
-    iconFile = "hujan-petir.svg";
-  } else if ((code >= 300 && code <= 321) || code === 500) {
-    iconFile = "hujan-ringan.svg";
-  } else if (code === 501 || code === 520 || code === 521) {
-    iconFile = "hujan-sedang.svg";
-  } else if (code >= 502 && code <= 531) {
-    iconFile = "hujan-lebat.svg";
-  } else if (code >= 600 && code <= 622) {
-    iconFile = "hujan-lebat.svg"; // Fallback salju
-  } else if (code >= 701 && code <= 781) {
-    iconFile = "berawan.svg";
-  } else if (code === 800) {
-    iconFile = "cerah.svg";
-  } else if (code === 801) {
-    iconFile = "cerah-berawan.svg";
-  } else if (code === 802 || code === 803 || code === 804) {
-    iconFile = "berawan.svg";
-  }
+const bmkgCodeToIcon: Record<number, string> = {
+  0:  "cerah.svg",
+  1:  "cerah-berawan.svg",
+  3:  "berawan.svg",
+  4:  "berawan.svg",
+  5:  "berawan.svg",
+  60: "hujan-ringan.svg",
+  61: "hujan-sedang.svg",
+  63: "hujan-lebat.svg",
+  95: "hujan-petir.svg",
+};
 
-  return <Image src={`/icons/${iconFile}`} alt="Cuaca" width={28} height={28} className="w-7 h-7 object-contain" />;
+const bmkgCodeToDesc: Record<number, string> = {
+  0:  "Cerah",
+  1:  "Cerah Berawan",
+  3:  "Berawan",
+  4:  "Berawan Tebal",
+  5:  "Udara Kabur",
+  60: "Hujan Ringan",
+  61: "Hujan Sedang",
+  63: "Hujan Lebat",
+  95: "Hujan Petir",
+};
+
+function weatherIcon(weatherCode?: number) {
+  const bmkgCode = getBmkgCode(weatherCode);
+  const iconFile = bmkgCodeToIcon[bmkgCode] ?? "cerah-berawan.svg";
+  return (
+    <Image
+      src={`/icons/${iconFile}`}
+      alt="Cuaca"
+      width={28}
+      height={28}
+      className="w-7 h-7 object-contain"
+    />
+  );
 }
 
 export default function CuacaRealtimePage() {
@@ -261,7 +287,9 @@ export default function CuacaRealtimePage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className="text-xl leading-none">{weatherIcon(row.weather_code)}</span>
-                          <span className="text-sm text-slate-600 dark:text-slate-400">{row.deskripsi}</span>
+                          <span className="text-sm text-slate-600 dark:text-slate-400">
+                            {bmkgCodeToDesc[getBmkgCode(row.weather_code)] ?? row.deskripsi}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

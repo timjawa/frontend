@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { WeatherIcon } from "@/utils/weatherIcons";
+import { HiArrowTopRightOnSquare } from "react-icons/hi2";
 
 const tabs = ["Hari Ini", "Besok", "Lusa"];
 const timeLabels = [
@@ -17,8 +19,8 @@ const mapConditionToIcon = (description: string) => {
   if (desc.includes('petir') || desc.includes('thunder')) return 'thunderstorm';
   if (desc.includes('hujan lebat')) return 'rain';
   if (desc.includes('hujan') || desc.includes('rain')) return 'light-rain';
-  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
   if (desc.includes('cerah berawan') || desc.includes('partly')) return 'partly-cloudy';
+  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
   if (desc.includes('cerah') || desc.includes('clear') || desc.includes('sunny')) return 'sunny';
   if (desc.includes('kabut') || desc.includes('asap')) return 'cloudy';
   return 'partly-cloudy';
@@ -105,7 +107,15 @@ export default function WeatherTable({ data = {} }: { data?: Record<string, any[
                         }`}
                       >
                         <td className="px-5 py-4 font-semibold text-primary text-sm sticky left-0 bg-inherit z-10">
-                          {kecamatanName}
+                          <Link
+                            href={`/prediksi-cuaca/${encodeURIComponent(kecamatanName.toLowerCase())}`}
+                            className="inline-flex items-center gap-1.5 hover:text-secondary transition-colors group"
+                          >
+                            <span className="group-hover:underline underline-offset-2">
+                              {kecamatanName}
+                            </span>
+                            <HiArrowTopRightOnSquare className="text-primary/40 group-hover:text-secondary text-xs flex-shrink-0 transition-colors" />
+                          </Link>
                         </td>
                         {timeLabels.map((t) => {
                           const [minHour, maxHour] = t.range;

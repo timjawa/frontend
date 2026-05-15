@@ -5,14 +5,48 @@ import Image from "next/image";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
-// Helper function to map openweather icon/description to our local icons
-const mapConditionToIcon = (description: string) => {
-  const desc = description?.toLowerCase() || '';
-  if (desc.includes('hujan') || desc.includes('rain')) return 'rain';
-  if (desc.includes('petir') || desc.includes('thunder')) return 'thunderstorm';
-  if (desc.includes('berawan') || desc.includes('cloud')) return 'cloudy';
-  if (desc.includes('cerah') || desc.includes('clear')) return 'sunny';
-  return 'partly-cloudy';
+// Map OpenWeather ID → BMKG code
+const getBmkgCode = (weatherCode?: number): number => {
+  if (!weatherCode) return 1; // default: Cerah Berawan
+  if (weatherCode === 800) return 0;                                      // Cerah
+  if (weatherCode === 801) return 1;                                      // Cerah Berawan
+  if (weatherCode === 802 || weatherCode === 803) return 3;              // Berawan
+  if (weatherCode === 804) return 4;                                      // Berawan Tebal
+  if (weatherCode === 701 || weatherCode === 721 || weatherCode === 741) return 5; // Udara Kabur
+  if ((weatherCode >= 300 && weatherCode <= 321) || weatherCode === 500 || weatherCode === 520) return 60; // Hujan Ringan
+  if (weatherCode === 501 || weatherCode === 521) return 61;             // Hujan Sedang
+  if (weatherCode === 502 || weatherCode === 503 || weatherCode === 504) return 63; // Hujan Lebat
+  if (weatherCode >= 200 && weatherCode <= 232) return 95;              // Hujan Petir
+  return 1; // fallback
+};
+
+// Map BMKG code → local icon key
+const bmkgCodeToIcon = (bmkgCode: number): string => {
+  switch (bmkgCode) {
+    case 0:  return 'sunny';          // cerah.svg
+    case 1:  return 'partly-cloudy'; // cerah-berawan.svg
+    case 3:  return 'cloudy';        // berawan.svg
+    case 4:  return 'cloudy';        // berawan.svg (tebal)
+    case 5:  return 'cloudy';        // berawan.svg (kabur)
+    case 60: return 'light-rain';    // hujan-ringan.svg
+    case 61: return 'rain';          // hujan-sedang.svg
+    case 63: return 'rain';          // hujan-lebat.svg
+    case 95: return 'thunderstorm';  // hujan-petir.svg
+    default: return 'partly-cloudy';
+  }
+};
+
+// Map BMKG code → deskripsi Indonesia
+const bmkgCodeToDesc: Record<number, string> = {
+  0:  'Cerah',
+  1:  'Cerah Berawan',
+  3:  'Berawan',
+  4:  'Berawan Tebal',
+  5:  'Udara Kabur',
+  60: 'Hujan Ringan',
+  61: 'Hujan Sedang',
+  63: 'Hujan Lebat',
+  95: 'Hujan Petir',
 };
 
 // Format time as HH.MM
@@ -103,7 +137,9 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
           className="flex gap-4 overflow-x-auto hide-scrollbar pb-2"
         >
           {displayData.map((loc) => {
-            const iconName = mapConditionToIcon(loc.deskripsi || '');
+            const bmkgCode = getBmkgCode(loc.weather_code);
+            const iconName = bmkgCodeToIcon(bmkgCode);
+            const deskripsi = bmkgCodeToDesc[bmkgCode] ?? loc.deskripsi ?? 'Tidak diketahui';
             const time = formatTime(loc.updated_at || loc.created_at);
             
             return (
@@ -149,7 +185,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
 
                 {/* Bottom: condition text */}
                 <p className="text-center text-sm text-primary font-medium relative z-10 capitalize">
-                  {loc.deskripsi || 'Tidak diketahui'}
+                  {deskripsi}
                 </p>
               </div>
             );
