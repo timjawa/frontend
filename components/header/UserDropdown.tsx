@@ -1,17 +1,15 @@
 "use client";
-import Image from "next/image";
-import Link from "next/link";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { getImageUrl } from "@/lib/api";
 
 export default function UserDropdown() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const avatarSrc = user?.foto_url || "/images/user/owner.jpg";
 
 function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   e.stopPropagation();
@@ -40,7 +38,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           <img
             width={44}
             height={44}
-            src={user?.foto_url || "/images/user/owner.jpg"}
+            src={avatarSrc}
             alt="User"
             className="w-full h-full object-cover"
           />

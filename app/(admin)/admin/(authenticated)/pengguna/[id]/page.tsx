@@ -16,7 +16,6 @@ import {
   HiOutlineIdentification,
   HiOutlineStar,
   HiOutlineDocumentText,
-  HiOutlineBell,
   HiOutlineChatBubbleLeftRight,
   HiOutlineArrowTrendingUp,
   HiOutlineExclamationCircle,
@@ -28,21 +27,18 @@ import api from "@/lib/api";
 const roleConfig: Record<string, { label: string; variant: "info" | "warning" | "success" | "danger" | "default" }> = {
   masyarakat: { label: "Masyarakat", variant: "info" },
   admin_bpbd: { label: "Admin BPBD", variant: "warning" },
-  super_admin: { label: "Super Admin", variant: "success" },
 };
 
 const aktivitasIcon: Record<string, React.ReactNode> = {
   laporan:    <HiOutlineDocumentText className="w-4 h-4 text-blue-500" />,
   komentar:   <HiOutlineChatBubbleLeftRight className="w-4 h-4 text-slate-400" />,
   poin:       <HiOutlineArrowTrendingUp className="w-4 h-4 text-emerald-500" />,
-  notifikasi: <HiOutlineBell className="w-4 h-4 text-orange-400" />,
 };
 
 const aktivitasBadge: Record<string, { label: string; variant: "info" | "warning" | "success" | "danger" | "default" }> = {
   laporan:    { label: "Laporan",    variant: "info" },
   komentar:   { label: "Komentar",   variant: "default" },
   poin:       { label: "Poin",       variant: "success" },
-  notifikasi: { label: "Notifikasi", variant: "warning" },
 };
 
 function Avatar({ name, foto }: { name: string; foto: string | null }) {
@@ -105,7 +101,7 @@ export default function PenggunaDetailPage() {
 
   const user    = data?.user;
   const points  = data?.points  ?? { total_points: 0, updated_at: null };
-  const stats   = data?.stats   ?? { total_laporan: 0, total_komentar: 0, notifikasi_belum_dibaca: 0 };
+  const stats   = data?.stats   ?? { total_laporan: 0, total_komentar: 0 };
   const aktivitas = data?.aktivitas ?? [];
   const role    = user ? (roleConfig[user.role] ?? { label: user.role, variant: "default" as const }) : null;
   const isActive = user?.is_active ?? false;
@@ -165,14 +161,6 @@ export default function PenggunaDetailPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Laporan Dikirim</p>
             {loading ? <SkeletonBox className="h-7 w-10" /> : <p className="text-2xl font-bold text-gray-800">{stats.total_laporan}</p>}
-          </div>
-        </div>
-        {/* Notif */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-purple-50 shrink-0"><HiOutlineBell className="w-5 h-5 text-purple-500" /></div>
-          <div>
-            <p className="text-xs text-gray-500 mb-0.5">Notif Belum Dibaca</p>
-            {loading ? <SkeletonBox className="h-7 w-10" /> : <p className="text-2xl font-bold text-gray-800">{stats.notifikasi_belum_dibaca}</p>}
           </div>
         </div>
         {/* Status */}

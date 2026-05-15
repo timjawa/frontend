@@ -2,8 +2,18 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import api, { getImageUrl } from "@/lib/api";
-import { HiOutlineCamera, HiOutlineUser, HiOutlineLockClosed, HiOutlineEnvelope, HiOutlinePhone, HiOutlineMapPin } from "react-icons/hi2";
+import api from "@/lib/api";
+import type { AxiosError } from "axios";
+import {
+  HiOutlineCamera,
+  HiOutlineUser,
+  HiOutlineLockClosed,
+  HiOutlineEnvelope,
+  HiOutlinePhone,
+  HiOutlineMapPin,
+  HiOutlineEye,
+  HiOutlineEyeSlash,
+} from "react-icons/hi2";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
@@ -19,6 +29,11 @@ export default function ProfilePage() {
     old_password: "",
     password: "",
     password_confirmation: "",
+  });
+  const [visiblePasswords, setVisiblePasswords] = useState({
+    old_password: false,
+    password: false,
+    password_confirmation: false,
   });
 
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
@@ -43,6 +58,10 @@ export default function ProfilePage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const togglePasswordVisibility = (field: keyof typeof visiblePasswords) => {
+    setVisiblePasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +95,7 @@ export default function ProfilePage() {
         formPayload.append("foto", fotoFile);
       }
 
-      const res = await api.post("/api/user", formPayload, {
+      await api.post("/api/user", formPayload, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -95,9 +114,10 @@ export default function ProfilePage() {
         password_confirmation: "",
       }));
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      const errorMsg = err.response?.data?.message || "Terjadi kesalahan saat memperbarui profil";
+      const error = err as AxiosError<{ message?: string }>;
+      const errorMsg = error.response?.data?.message || "Terjadi kesalahan saat memperbarui profil";
       setMessage({ type: "error", text: errorMsg });
     } finally {
       setLoading(false);
@@ -252,38 +272,80 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password Lama</label>
-                      <input
-                        type="password"
-                        name="old_password"
-                        value={formData.old_password}
-                        onChange={handleChange}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all dark:text-gray-200"
-                        placeholder="Masukkan password lama"
-                      />
+                      <div className="relative">
+                        <input
+                          type={visiblePasswords.old_password ? "text" : "password"}
+                          name="old_password"
+                          value={formData.old_password}
+                          onChange={handleChange}
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 pr-12 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all dark:text-gray-200"
+                          placeholder="Masukkan password lama"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility("old_password")}
+                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+                          aria-label={visiblePasswords.old_password ? "Sembunyikan password lama" : "Tampilkan password lama"}
+                        >
+                          {visiblePasswords.old_password ? (
+                            <HiOutlineEyeSlash className="h-5 w-5" />
+                          ) : (
+                            <HiOutlineEye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password Baru</label>
-                      <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all dark:text-gray-200"
-                        placeholder="Masukkan password baru"
-                      />
+                      <div className="relative">
+                        <input
+                          type={visiblePasswords.password ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 pr-12 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all dark:text-gray-200"
+                          placeholder="Masukkan password baru"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility("password")}
+                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+                          aria-label={visiblePasswords.password ? "Sembunyikan password baru" : "Tampilkan password baru"}
+                        >
+                          {visiblePasswords.password ? (
+                            <HiOutlineEyeSlash className="h-5 w-5" />
+                          ) : (
+                            <HiOutlineEye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Konfirmasi Password Baru</label>
-                      <input
-                        type="password"
-                        name="password_confirmation"
-                        value={formData.password_confirmation}
-                        onChange={handleChange}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all dark:text-gray-200"
-                        placeholder="Ketik ulang password baru"
-                      />
+                      <div className="relative">
+                        <input
+                          type={visiblePasswords.password_confirmation ? "text" : "password"}
+                          name="password_confirmation"
+                          value={formData.password_confirmation}
+                          onChange={handleChange}
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 pr-12 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all dark:text-gray-200"
+                          placeholder="Ketik ulang password baru"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility("password_confirmation")}
+                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+                          aria-label={visiblePasswords.password_confirmation ? "Sembunyikan konfirmasi password baru" : "Tampilkan konfirmasi password baru"}
+                        >
+                          {visiblePasswords.password_confirmation ? (
+                            <HiOutlineEyeSlash className="h-5 w-5" />
+                          ) : (
+                            <HiOutlineEye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

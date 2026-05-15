@@ -3,6 +3,9 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+// Global counter to give each Dropdown instance a unique stable ID
+let _counter = 0;
+
 interface DropdownProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,25 +23,47 @@ export const Dropdown: React.FC<DropdownProps> = ({
   const anchorRef = useRef<HTMLSpanElement>(null);
   const [mounted, setMounted] = useState(false);
   const [style, setStyle] = useState<React.CSSProperties>({ opacity: 0 });
+  // Stable unique ID for this instance — never changes
+  const idRef = useRef<number>(++_counter);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // When this dropdown opens, broadcast so all other dropdowns close
+  useEffect(() => {
+    if (isOpen) {
+      const event = new CustomEvent("dropdown:open", { detail: { id: idRef.current } });
+      document.dispatchEvent(event);
+    }
+  }, [isOpen]);
+
+  // Listen for another dropdown opening — close self if it's a different instance
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ id: number }>).detail;
+      if (detail.id !== idRef.current) {
+        onClose();
+      }
+    };
+    document.addEventListener("dropdown:open", handler);
+    return () => document.removeEventListener("dropdown:open", handler);
+  }, [onClose]);
+
   const updatePosition = () => {
     if (isOpen && anchorRef.current && dropdownRef.current && anchorRef.current.parentElement) {
       const parentRect = anchorRef.current.parentElement.getBoundingClientRect();
       const dropdownRect = dropdownRef.current.getBoundingClientRect();
-      
-      const isRightAligned = className.includes('right-0');
-      
+
+      const isRightAligned = className.includes("right-0");
+
       let top = parentRect.bottom + window.scrollY + 8;
       let left = parentRect.left + window.scrollX;
-      
+
       if (isRightAligned) {
-         left = parentRect.right + window.scrollX - dropdownRect.width;
+        left = parentRect.right + window.scrollX - dropdownRect.width;
       }
-      
+
       // Flip up if no space below and enough space above
       const spaceBelow = window.innerHeight - parentRect.bottom;
       if (spaceBelow < dropdownRect.height + 20 && parentRect.top > dropdownRect.height + 20) {
@@ -46,7 +71,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       }
 
       setStyle({
-        position: 'absolute',
+        position: "absolute",
         top: `${top}px`,
         left: `${left}px`,
         opacity: 1,
@@ -59,13 +84,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
       requestAnimationFrame(() => {
         updatePosition();
       });
-      
-      window.addEventListener('resize', updatePosition);
-      document.addEventListener('scroll', updatePosition, true);
-      
+
+      window.addEventListener("resize", updatePosition);
+      document.addEventListener("scroll", updatePosition, true);
+
       return () => {
-        window.removeEventListener('resize', updatePosition);
-        document.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+        document.removeEventListener("scroll", updatePosition, true);
       };
     } else {
       setStyle({ opacity: 0 });
@@ -80,10 +105,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
       if (anchorRef.current && anchorRef.current.parentElement?.contains(event.target as Node)) {
         return;
       }
-      if ((event.target as HTMLElement).closest('.dropdown-toggle')) {
+      if ((event.target as HTMLElement).closest(".dropdown-toggle")) {
         return;
       }
-      
       onClose();
     };
 
@@ -96,14 +120,14 @@ export const Dropdown: React.FC<DropdownProps> = ({
   if (!isOpen) return null;
 
   const sanitizedClassName = className
-    .replace(/\b(absolute|right-0|top-full|mt-2|mt-\[.*?\]|z-40)\b/g, '')
+    .replace(/\b(absolute|right-0|top-full|mt-2|mt-\[.*?\]|z-40)\b/g, "")
     .trim();
 
   const content = (
     <div
       ref={dropdownRef}
       style={style}
-      className={`z-[100] rounded-xl border border-gray-200 bg-white shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark ${sanitizedClassName}`}
+      className={`z-[100] rounded-xl border border-gray-200 bg-white shadow-theme-lg dark:border-gray-700 dark:bg-gray-900 ${sanitizedClassName}`}
     >
       {children}
     </div>
@@ -111,7 +135,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <>
-      <span ref={anchorRef} style={{ display: 'none' }} aria-hidden="true" />
+      <span ref={anchorRef} style={{ display: "none" }} aria-hidden="true" />
       {mounted ? createPortal(content, document.body) : null}
     </>
   );

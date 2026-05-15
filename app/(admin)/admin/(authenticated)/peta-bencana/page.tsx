@@ -32,9 +32,9 @@ const posPengungsian = [
 ];
 
 const peringatanAktif = [
-  { id: "wd1", kecamatan: "Gumukmas", deskripsi: "Potensi banjir akibat curah hujan tinggi di hulu sungai", tingkat_urgensi: "tinggi" as const, berlaku_hingga: "2024-05-05 06:00" },
-  { id: "wd2", kecamatan: "Kalisat", deskripsi: "Longsor di jalur utama, akses jalan terganggu", tingkat_urgensi: "kritis" as const, berlaku_hingga: "2024-05-05 12:00" },
-  { id: "wd3", kecamatan: "Ambulu", deskripsi: "Gelombang pasang, warga pesisir diminta waspada", tingkat_urgensi: "sedang" as const, berlaku_hingga: "2024-05-05 18:00" },
+  { id: "wd1", kecamatan: "Gumukmas", deskripsi: "Potensi banjir akibat curah hujan tinggi di hulu sungai", tingkat_urgensi: "tinggi" as const, is_active: true },
+  { id: "wd2", kecamatan: "Kalisat", deskripsi: "Longsor di jalur utama, akses jalan terganggu", tingkat_urgensi: "kritis" as const, is_active: true },
+  { id: "wd3", kecamatan: "Ambulu", deskripsi: "Gelombang pasang, warga pesisir diminta waspada", tingkat_urgensi: "sedang" as const, is_active: true },
 ];
 
 const kecamatanRawan = [
@@ -72,13 +72,12 @@ export default function PetaBencanaPage() {
   };
 
   const activeLayers = layers.filter((l) => l.is_visible).length;
-  const embedUrl = `https://maps.google.com/maps?q=-8.1845,113.6681&z=11&output=embed`;
+  const embedUrl = "https://maps.google.com/maps?q=-8.1845,113.6681&z=11&output=embed";
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Peta Bencana" />
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 shrink-0">
@@ -120,14 +119,9 @@ export default function PetaBencanaPage() {
         </div>
       </div>
 
-      {/* Main: Peta kiri, Kontrol kanan */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-
-        {/* ─── KIRI: Peta ─────────────────────────────────────────────────── */}
         <div className="xl:col-span-3 order-1">
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col min-h-[620px] h-full">
-
-            {/* Map Header */}
             <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <HiOutlineMapPin className="w-5 h-5 text-blue-500" />
@@ -152,7 +146,6 @@ export default function PetaBencanaPage() {
               </div>
             </div>
 
-            {/* Map Embed */}
             <div className="relative flex-1">
               <iframe
                 title="Peta Bencana Jember"
@@ -164,7 +157,6 @@ export default function PetaBencanaPage() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-              {/* Legenda overlay */}
               <div className="absolute bottom-4 left-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg p-3 min-w-[160px]">
                 <p className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Legenda</p>
                 <div className="space-y-1.5 mb-3">
@@ -183,14 +175,10 @@ export default function PetaBencanaPage() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* ─── KANAN: Kontrol ─────────────────────────────────────────────── */}
         <div className="xl:col-span-1 space-y-4 order-2">
-
-          {/* Kontrol Layer */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
             <button onClick={() => toggleSection("layers")} className="w-full px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-2">
@@ -216,7 +204,6 @@ export default function PetaBencanaPage() {
             )}
           </div>
 
-          {/* Peringatan Aktif */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
             <button onClick={() => toggleSection("peringatan")} className="w-full px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-2">
@@ -237,7 +224,7 @@ export default function PetaBencanaPage() {
                         <AdminBadge variant={cfg.variant}>{cfg.label}</AdminBadge>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{w.deskripsi}</p>
-                      <p className="text-xs text-gray-400 mt-1.5">Berlaku hingga: {w.berlaku_hingga}</p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5">{w.is_active ? "Status: Aktif" : "Status: Tidak Aktif"}</p>
                     </div>
                   );
                 })}
@@ -245,7 +232,6 @@ export default function PetaBencanaPage() {
             )}
           </div>
 
-          {/* Pos Pengungsian */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
             <button onClick={() => toggleSection("pos")} className="w-full px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-2">
@@ -277,7 +263,6 @@ export default function PetaBencanaPage() {
             )}
           </div>
 
-          {/* Level Rawan */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
             <button onClick={() => toggleSection("rawan")} className="w-full px-5 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-2">
@@ -299,7 +284,6 @@ export default function PetaBencanaPage() {
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>

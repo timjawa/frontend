@@ -37,7 +37,6 @@ function toGeoJSON(data: typeof bencanaData) {
         jenis_bencana: item.jenis_bencana,
         status:        item.status,
         keterangan:    item.keterangan,
-        tinggi_air:    item.tinggi_air,
         diperbarui:    item.diperbarui,
       },
       geometry: {
@@ -136,7 +135,6 @@ export default function MapView() {
             Jenis      : <b>${getIkonBencana(p.jenis_bencana)}</b><br/>
             Status     : <b>${p.status.toUpperCase()}</b><br/>
             Keterangan : ${p.keterangan}<br/>
-            ${p.tinggi_air ? `Tinggi air : ${p.tinggi_air}<br/>` : ""}
             Update     : ${p.diperbarui}
           </div>
         `);

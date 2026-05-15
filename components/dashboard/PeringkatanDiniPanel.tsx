@@ -17,7 +17,7 @@ interface Warning {
   jenis_ancaman: string;
   deskripsi: string;
   tingkat_urgensi: UrgencyLevel;
-  berlaku_hingga: string;
+  is_active: boolean;
   dibuat_oleh: string;
 }
 
@@ -28,7 +28,7 @@ const warnings: Warning[] = [
     jenis_ancaman: "Banjir Bandang",
     deskripsi: "Potensi banjir bandang di hulu sungai Bedadung akibat hujan ekstrem.",
     tingkat_urgensi: "kritis",
-    berlaku_hingga: "07 Mei 2026, 23:59",
+    is_active: true,
     dibuat_oleh: "BPBD Jember",
   },
   {
@@ -37,7 +37,7 @@ const warnings: Warning[] = [
     jenis_ancaman: "Tanah Longsor",
     deskripsi: "Waspada longsor jalur Gunung Gumitir, kondisi tanah labil.",
     tingkat_urgensi: "tinggi",
-    berlaku_hingga: "08 Mei 2026, 18:00",
+    is_active: true,
     dibuat_oleh: "Admin BPBD",
   },
   {
@@ -46,7 +46,7 @@ const warnings: Warning[] = [
     jenis_ancaman: "Banjir",
     deskripsi: "Ketinggian air Sungai Bondoyudo meningkat, siaga level 2.",
     tingkat_urgensi: "sedang",
-    berlaku_hingga: "08 Mei 2026, 12:00",
+    is_active: true,
     dibuat_oleh: "Admin BPBD",
   },
   {
@@ -55,7 +55,7 @@ const warnings: Warning[] = [
     jenis_ancaman: "Angin Kencang",
     deskripsi: "Angin kencang berpotensi 60 km/jam di pesisir selatan.",
     tingkat_urgensi: "rendah",
-    berlaku_hingga: "09 Mei 2026, 06:00",
+    is_active: true,
     dibuat_oleh: "Admin BPBD",
   },
 ];
@@ -90,7 +90,7 @@ export default function PeringkatanDiniPanel() {
         <Table>
           <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
             <TableRow>
-              {["Kecamatan", "Jenis Ancaman", "Deskripsi", "Berlaku Hingga", "Urgensi"].map((h) => (
+              {["Kecamatan", "Jenis Ancaman", "Deskripsi", "Status", "Urgensi"].map((h) => (
                 <TableCell
                   key={h}
                   isHeader
@@ -121,7 +121,9 @@ export default function PeringkatanDiniPanel() {
                     <span className="line-clamp-1">{w.deskripsi}</span>
                   </TableCell>
                   <TableCell className="py-3 text-gray-500 text-theme-xs dark:text-gray-400 whitespace-nowrap">
-                    {w.berlaku_hingga}
+                    <Badge size="sm" color={w.is_active ? "success" : "error"}>
+                      {w.is_active ? "Aktif" : "Tidak Aktif"}
+                    </Badge>
                   </TableCell>
                   <TableCell className="py-3">
                     <Badge size="sm" color={color}>

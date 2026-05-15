@@ -96,35 +96,13 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) =>
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit}>
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
           {error}
         </div>
       )}
-      {/* Pertanyaan */}
-      <div>
-        <Label htmlFor="question">Pertanyaan *</Label>
-        <InputField
-          id="question"
-          name="question"
-          placeholder="Masukkan pertanyaan FAQ"
-          value={formData.question}
-          onChange={(e) => handleInputChange('question', e.target.value)}
-        />
-      </div>
-
-      {/* Jawaban */}
-      <div>
-        <Label htmlFor="answer">Jawaban *</Label>
-        <TextArea
-          placeholder="Masukkan jawaban lengkap untuk pertanyaan tersebut"
-          rows={6}
-          value={formData.answer}
-          onChange={(value) => handleInputChange('answer', value)}
-        />
-      </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Kategori */}
       <div>
         <Label htmlFor="category">Kategori *</Label>
@@ -152,7 +130,7 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) =>
       </div>
 
       {/* Switch Is Active */}
-      <div>
+      <div className="md:col-span-2">
         <Label>Status Aktif</Label>
         <div className="space-y-2">
           <Switch
@@ -167,8 +145,32 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) =>
         </div>
       </div>
 
+      {/* Pertanyaan */}
+      <div className="md:col-span-2">
+        <Label htmlFor="question">Pertanyaan *</Label>
+        <InputField
+          id="question"
+          name="question"
+          placeholder="Masukkan pertanyaan FAQ"
+          value={formData.question}
+          onChange={(e) => handleInputChange('question', e.target.value)}
+        />
+      </div>
+
+      {/* Jawaban */}
+      <div className="md:col-span-2">
+        <Label htmlFor="answer">Jawaban *</Label>
+        <TextArea
+          placeholder="Masukkan jawaban lengkap untuk pertanyaan tersebut"
+          rows={6}
+          value={formData.answer}
+          onChange={(value) => handleInputChange('answer', value)}
+        />
+      </div>
+      </div>
+
       {/* Submit Button */}
-      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={() => window.history.back()}

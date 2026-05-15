@@ -22,7 +22,7 @@ interface PeringatanDini {
   pembuat?: { name: string };
   deskripsi: string;
   tingkat_urgensi: "rendah" | "sedang" | "tinggi" | "kritis";
-  berlaku_hingga: string | null;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -35,10 +35,10 @@ interface PaginateMeta {
   to: number | null;
 }
 
-const urgensiColors: Record<string, "info" | "warning" | "danger" | "success" | "brand"> = {
+const urgensiColors: Record<string, "info" | "warning" | "danger" | "success" | "default"> = {
   rendah: "info",
   sedang: "warning",
-  tinggi: "brand",
+  tinggi: "danger",
   kritis: "danger",
 };
 
@@ -48,6 +48,7 @@ export default function PeringatanDiniPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [filterUrgensi, setFilterUrgensi] = useState("all");
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +58,7 @@ export default function PeringatanDiniPage() {
     try {
       const params = new URLSearchParams({ page: String(page), per_page: "10" });
       if (search) params.append("search", search);
+      if (filterUrgensi !== "all") params.append("tingkat_urgensi", filterUrgensi);
 
       const res = await fetch(`${getApiBase()}/peringatan-dini?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal mengambil data peringatan dini.");
@@ -76,7 +78,7 @@ export default function PeringatanDiniPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, search, filterUrgensi]);
 
   useEffect(() => {
     fetchData();
@@ -85,6 +87,11 @@ export default function PeringatanDiniPage() {
   const handleSearch = () => {
     setPage(1);
     setSearch(searchInput);
+  };
+
+  const handleUrgensiFilter = (value: string) => {
+    setPage(1);
+    setFilterUrgensi(value);
   };
 
   const handleDelete = (id: string) => {
@@ -132,7 +139,18 @@ export default function PeringatanDiniPage() {
               <h3 className="text-base font-bold text-[#1B2E4B] dark:text-white">Data Peringatan Dini</h3>
               <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">Kelola peringatan dini bencana untuk masyarakat</p>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <select
+                value={filterUrgensi}
+                onChange={(e) => handleUrgensiFilter(e.target.value)}
+                className="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all text-gray-700 dark:text-gray-200"
+              >
+                <option value="all">Semua status</option>
+                <option value="rendah">Rendah</option>
+                <option value="sedang">Sedang</option>
+                <option value="tinggi">Tinggi</option>
+                <option value="kritis">Kritis</option>
+              </select>
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
                 <input
@@ -163,7 +181,7 @@ export default function PeringatanDiniPage() {
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Kecamatan</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Deskripsi</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Tingkat Urgensi</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Berlaku Hingga</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Status</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-right">Aksi</th>
                 </tr>
               </thead>
@@ -211,7 +229,9 @@ export default function PeringatanDiniPage() {
                         </AdminBadge>
                       </td>
                       <td className="px-6 py-4 text-slate-600 dark:text-gray-400">
-                        {row.berlaku_hingga ? new Date(row.berlaku_hingga).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : "Selamanya"}
+                        <AdminBadge variant={row.is_active ? "success" : "danger"} dot>
+                          {row.is_active ? "Aktif" : "Tidak Aktif"}
+                        </AdminBadge>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <PeringatanDiniTableAction id={row.id} onDeleted={handleDelete} />

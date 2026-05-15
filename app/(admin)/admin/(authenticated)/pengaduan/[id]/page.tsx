@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   HiOutlineArrowLeft,
+  HiOutlineArrowPath,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
   HiMapPin,
@@ -37,7 +38,7 @@ interface Laporan {
   alamat_lengkap: string | null;
   latitude: number | string | null;
   longitude: number | string | null;
-  status: "baru" | "diverifikasi" | "ditolak" | "selesai";
+  status: "baru" | "diinvestigasi" | "diverifikasi" | "ditolak" | "selesai";
   is_draft: boolean;
   dibuat_pada: string;
   updated_at: string;
@@ -140,10 +141,11 @@ export default function PengaduanDetailPage() {
   };
 
   const statusConfig = {
-    baru: { color: "warning" as const, label: "Baru", bg: "bg-yellow-50 dark:bg-yellow-500/10", border: "border-yellow-200 dark:border-yellow-500/20", text: "text-yellow-700 dark:text-yellow-400" },
-    diverifikasi: { color: "info" as const, label: "Diverifikasi", bg: "bg-blue-50 dark:bg-blue-500/10", border: "border-blue-200 dark:border-blue-500/20", text: "text-blue-700 dark:text-blue-400" },
-    selesai: { color: "success" as const, label: "Selesai", bg: "bg-emerald-50 dark:bg-emerald-500/10", border: "border-emerald-200 dark:border-emerald-500/20", text: "text-emerald-700 dark:text-emerald-400" },
-    ditolak: { color: "danger" as const, label: "Ditolak", bg: "bg-red-50 dark:bg-red-500/10", border: "border-red-200 dark:border-red-500/20", text: "text-red-700 dark:text-red-400" },
+    baru:          { color: "warning" as const,  label: "Baru",           bg: "bg-yellow-50 dark:bg-yellow-500/10",  border: "border-yellow-200 dark:border-yellow-500/20",  text: "text-yellow-700 dark:text-yellow-400" },
+    diinvestigasi: { color: "info" as const,     label: "Diinvestigasi",  bg: "bg-indigo-50 dark:bg-indigo-500/10",  border: "border-indigo-200 dark:border-indigo-500/20",  text: "text-indigo-700 dark:text-indigo-400" },
+    diverifikasi:  { color: "default" as const,  label: "Diverifikasi",   bg: "bg-blue-50 dark:bg-blue-500/10",      border: "border-blue-200 dark:border-blue-500/20",      text: "text-blue-700 dark:text-blue-400" },
+    selesai:       { color: "success" as const,  label: "Selesai",        bg: "bg-emerald-50 dark:bg-emerald-500/10", border: "border-emerald-200 dark:border-emerald-500/20", text: "text-emerald-700 dark:text-emerald-400" },
+    ditolak:       { color: "danger" as const,   label: "Ditolak",        bg: "bg-red-50 dark:bg-red-500/10",         border: "border-red-200 dark:border-red-500/20",         text: "text-red-700 dark:text-red-400" },
   };
 
   if (loading) {
@@ -202,41 +204,59 @@ export default function PengaduanDetailPage() {
         <div className="flex gap-3">
           <Link
             href="/admin/pengaduan"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
           >
             <HiOutlineArrowLeft className="w-4 h-4" />
             Kembali
           </Link>
-          {pengaduanData.status !== "ditolak" && (
+
+          {/* baru → hanya tombol Investigasi */}
+          {pengaduanData.status === "baru" && (
             <button
-              onClick={() => handleStatusUpdate("ditolak")}
+              onClick={() => handleStatusUpdate("diinvestigasi")}
               disabled={updatingStatus}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <HiOutlineXCircle className="w-4 h-4" />
-              {updatingStatus ? "Memproses..." : "Tolak"}
+              <HiOutlineArrowPath className="w-4 h-4" />
+              {updatingStatus ? "Memproses..." : "Investigasi"}
             </button>
           )}
-          {pengaduanData.status !== "diverifikasi" && (
-            <button
-              onClick={() => handleStatusUpdate("diverifikasi")}
-              disabled={updatingStatus}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <HiOutlineCheckCircle className="w-4 h-4" />
-              {updatingStatus ? "Memproses..." : "Verifikasi"}
-            </button>
+
+          {/* diinvestigasi → Tolak & Verifikasi */}
+          {pengaduanData.status === "diinvestigasi" && (
+            <>
+              <button
+                onClick={() => handleStatusUpdate("ditolak")}
+                disabled={updatingStatus}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <HiOutlineXCircle className="w-4 h-4" />
+                {updatingStatus ? "Memproses..." : "Tolak"}
+              </button>
+              <button
+                onClick={() => handleStatusUpdate("diverifikasi")}
+                disabled={updatingStatus}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <HiOutlineCheckCircle className="w-4 h-4" />
+                {updatingStatus ? "Memproses..." : "Verifikasi"}
+              </button>
+            </>
           )}
-          {pengaduanData.status !== "selesai" && (
+
+          {/* diverifikasi → hanya tombol Selesai */}
+          {pengaduanData.status === "diverifikasi" && (
             <button
               onClick={() => handleStatusUpdate("selesai")}
               disabled={updatingStatus}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-lg hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <HiOutlineCheckCircle className="w-4 h-4" />
               {updatingStatus ? "Memproses..." : "Selesai"}
             </button>
           )}
+
+          {/* ditolak & selesai → tidak ada tombol aksi */}
         </div>
       </div>
 

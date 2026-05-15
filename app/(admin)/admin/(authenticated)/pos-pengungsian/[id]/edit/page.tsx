@@ -24,7 +24,7 @@ export default function EditPosPengungsiPage() {
     penanggung_jawab: "",
     telepon: "",
     fasilitas: "",
-    status: "standby",
+    status: "",
     is_active: true,
   });
   
@@ -67,7 +67,7 @@ export default function EditPosPengungsiPage() {
           penanggung_jawab: p.penanggung_jawab ?? "",
           telepon: p.telepon ?? "",
           fasilitas: Array.isArray(p.fasilitas) ? p.fasilitas.join(", ") : (p.fasilitas || ""),
-          status: p.status ?? "standby",
+          status: p.status ?? "",
           is_active: p.is_active ?? true,
         });
       } catch (err: any) {
@@ -85,11 +85,23 @@ export default function EditPosPengungsiPage() {
     setErrors({});
     setServerError(null);
 
+    const latitude = parseFloat(formData.latitude);
+    const longitude = parseFloat(formData.longitude);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      setErrors({
+        latitude: "Tentukan titik koordinat melalui peta.",
+        longitude: "Tentukan titik koordinat melalui peta.",
+      });
+      setLoadingSubmit(false);
+      return;
+    }
+
     try {
       const payload = {
         ...formData,
-        latitude: parseFloat(formData.latitude) || 0,
-        longitude: parseFloat(formData.longitude) || 0,
+        latitude,
+        longitude,
         kapasitas: parseInt(formData.kapasitas) || 0,
         terisi: parseInt(formData.terisi) || 0,
         fasilitas: formData.fasilitas ? formData.fasilitas.split(",").map((s) => s.trim()).filter(Boolean) : [],
@@ -279,9 +291,9 @@ export default function EditPosPengungsiPage() {
                         id="latitude"
                         name="latitude"
                         value={formData.latitude}
-                        onChange={handleChange}
+                        disabled
                         required
-                        className={inputClass("latitude")}
+                        className={`${inputClass("latitude")} disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 disabled:ring-0 dark:disabled:bg-gray-800 dark:disabled:text-gray-400`}
                       />
                       {errors.latitude && <p className="text-xs text-red-500">{errors.latitude}</p>}
                     </div>
@@ -297,9 +309,9 @@ export default function EditPosPengungsiPage() {
                         id="longitude"
                         name="longitude"
                         value={formData.longitude}
-                        onChange={handleChange}
+                        disabled
                         required
-                        className={inputClass("longitude")}
+                        className={`${inputClass("longitude")} disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 disabled:ring-0 dark:disabled:bg-gray-800 dark:disabled:text-gray-400`}
                       />
                       {errors.longitude && <p className="text-xs text-red-500">{errors.longitude}</p>}
                     </div>
@@ -382,8 +394,10 @@ export default function EditPosPengungsiPage() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
+                  required
                   className={`${inputClass("status")} appearance-none`}
                 >
+                  <option value="">Pilih status pos</option>
                   <option value="standby">Standby (Siaga)</option>
                   <option value="aktif">Aktif (Menerima Pengungsi)</option>
                   <option value="penuh">Penuh (Kapasitas Maksimal)</option>

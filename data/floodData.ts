@@ -8,8 +8,7 @@ export interface BencanaFeature {
   nama_jalan: string;
   jenis_bencana: JenisBencana;  // ← tambahan baru
   status: StatusBencana;
-  tinggi_air?: string;          // ← pakai ? karena tidak semua bencana punya tinggi air
-  keterangan: string;           // ← lebih general dari tinggi_air
+  keterangan: string;
   diperbarui: string;
   koordinat: [number, number][];
 }
@@ -20,7 +19,6 @@ export const bencanaData: BencanaFeature[] = [
     nama_jalan: "Jl. Mastrip",
     jenis_bencana: "banjir",
     status: "danger",
-    tinggi_air: "85 cm",
     keterangan: "Banjir parah, jalan tidak bisa dilalui oleh kendaraan jenis apapun",
     diperbarui: "10 menit lalu",
     koordinat: [
@@ -40,7 +38,6 @@ export const bencanaData: BencanaFeature[] = [
     nama_jalan: "Jl. Gajah Mada",
     jenis_bencana: "banjir",
     status: "warning",
-    tinggi_air: "40 cm",
     keterangan: "Genangan sedang",
     diperbarui: "5 menit lalu",
     koordinat: [

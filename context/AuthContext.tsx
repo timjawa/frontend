@@ -57,14 +57,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Login and return user data.
+   * After login, fetch fresh user data from DB to ensure foto_url and all fields are up-to-date.
    */
   const login = async (email: string, password: string): Promise<AuthUser> => {
     const data = await api.login(email, password);
-    setUser(data.user);
-    // Set cookies for Next.js middleware
+    // Set cookies for Next.js middleware first (needed before getUser call)
     Cookies.set("isLoggedIn", "true", { path: "/" });
     Cookies.set("role", data.user.role, { path: "/" });
-    return data.user;
+    // Fetch fresh user data from DB (includes foto_url, alamat, no_telepon)
+    try {
+      const freshData = await api.getUser();
+      setUser(freshData.user);
+      return freshData.user;
+    } catch {
+      // Fallback to login response data if getUser fails
+      setUser(data.user);
+      return data.user;
+    }
   };
 
   /**

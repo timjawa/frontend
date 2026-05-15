@@ -372,9 +372,9 @@ export const faqData = [
   },
   {
     question:
-      "Apakah aplikasi dapat memberikan notifikasi peringatan banjir?",
+      "Apakah aplikasi dapat menampilkan peringatan banjir?",
     answer:
-      "Ya, aplikasi Jember Siaga dapat memberikan notifikasi peringatan dini kepada pengguna jika terdapat potensi banjir atau informasi bencana di wilayah sekitar. Notifikasi ini membantu pengguna agar dapat lebih siap menghadapi kemungkinan terjadinya bencana.",
+      "Ya, aplikasi Jember Siaga dapat menampilkan peringatan dini jika terdapat potensi banjir atau informasi bencana di wilayah sekitar. Informasi ini membantu pengguna agar dapat lebih siap menghadapi kemungkinan terjadinya bencana.",
   },
   {
     question:

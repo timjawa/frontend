@@ -4,6 +4,8 @@ import React, { useEffect, useState, use } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import FAQForm from "@/components/form/FAQForm";
 import api from "@/lib/api";
+import Link from "next/link";
+import { HiOutlineArrowLeft } from "react-icons/hi2";
 
 export default function EditFAQPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -42,23 +44,31 @@ export default function EditFAQPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Edit FAQ" className="mb-0" />
-      <div className="rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
-        <div className="mx-auto w-full max-w-4xl">
-          <h3 className="mb-6 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-3xl">
-            Form Edit FAQ
-          </h3>
+      <div className="flex items-center justify-between mb-6">
+        <PageBreadcrumb pageTitle="Edit FAQ" className="mb-0" />
+        <Link
+          href="/admin/faq"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <HiOutlineArrowLeft className="w-4 h-4" />
+          Kembali
+        </Link>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Edit FAQ</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Perbarui informasi pertanyaan umum (ID: {id}).
+          </p>
+        </div>
+        <div className="p-6">
           {error ? (
              <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm mb-6">
                 {error}
              </div>
           ) : (
-            <>
-              <p className="text-sm text-gray-500 mb-6 -mt-4">
-                Perbarui informasi pertanyaan umum (ID: {id}).
-              </p>
-              <FAQForm isEdit={true} initialData={initialData} id={id} />
-            </>
+            <FAQForm isEdit={true} initialData={initialData} id={id} />
           )}
         </div>
       </div>

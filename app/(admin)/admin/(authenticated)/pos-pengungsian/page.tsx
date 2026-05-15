@@ -102,24 +102,29 @@ export default function PosPengungsiPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-slate-50/80 dark:bg-gray-800/50">
-                  {["No","Nama Pos","Kecamatan","Alamat","Kapasitas","Terisi","Penanggung Jawab","Status","Aksi"].map(h=>(
-                    <th key={h} className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 whitespace-nowrap">{h}</th>
-                  ))}
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 w-12 text-center">No</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Nama Pos</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Alamat</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Kapasitas</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Terisi</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Penanggung Jawab</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Status</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {loading ? Array.from({length:5}).map((_,i)=>(
                   <tr key={i} className="animate-pulse">
-                    {Array.from({length:9}).map((__,j)=>(
+                    {Array.from({length:8}).map((__,j)=>(
                       <td key={j} className="px-6 py-4"><div className="h-4 bg-slate-100 dark:bg-gray-800 rounded-md w-full"/></td>
                     ))}
                   </tr>
                 )) : error ? (
-                  <tr><td colSpan={9} className="px-6 py-12 text-center text-red-500">
+                  <tr><td colSpan={8} className="px-6 py-12 text-center text-red-500">
                     <HiOutlineXCircle className="w-8 h-8 mx-auto mb-2"/>{error}
                   </td></tr>
                 ) : data.length===0 ? (
-                  <tr><td colSpan={9} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500">
+                  <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500">
                     <HiOutlineHomeModern className="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-gray-600"/>
                     <p>Tidak ada data pos pengungsian ditemukan.</p>
                   </td></tr>
@@ -131,7 +136,6 @@ export default function PosPengungsiPage() {
                     <tr key={pos.id} className="hover:bg-blue-50/40 dark:hover:bg-gray-800/40 transition-colors">
                       <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-medium">{meta?(meta.from??1)+idx:idx+1}</td>
                       <td className="px-6 py-4 font-semibold text-[#1B2E4B] dark:text-gray-200">{pos.nama}</td>
-                      <td className="px-6 py-4 text-slate-600 dark:text-gray-400">{pos.kecamatan?.nama??<span className="text-slate-400 dark:text-gray-600">—</span>}</td>
                       <td className="px-6 py-4 text-slate-600 dark:text-gray-400 max-w-[160px]">
                         <span className="block truncate text-xs" title={pos.alamat}>{pos.alamat||<span className="text-slate-400 dark:text-gray-600">—</span>}</span>
                       </td>

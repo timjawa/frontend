@@ -19,7 +19,6 @@ import api from "@/lib/api";
 const roleConfig = {
   masyarakat: { label: "Masyarakat", variant: "info" as const },
   admin_bpbd: { label: "Admin BPBD", variant: "warning" as const },
-  super_admin: { label: "Super Admin", variant: "success" as const },
 };
 
 function Avatar({ name, foto }: { name: string; foto: string | null }) {
@@ -179,7 +178,6 @@ export default function PenggunaPage() {
                 <option value="all">Semua Role</option>
                 <option value="masyarakat">Masyarakat</option>
                 <option value="admin_bpbd">Admin BPBD</option>
-                <option value="super_admin">Super Admin</option>
               </select>
               {/* Search */}
               <div className="relative">

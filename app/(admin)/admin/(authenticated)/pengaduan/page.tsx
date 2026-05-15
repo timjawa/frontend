@@ -11,12 +11,10 @@ import {
   HiOutlineArrowPath,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
-  HiOutlinePhoto,
+  HiOutlineMagnifyingGlass,
 } from "react-icons/hi2";
 
 import api from "@/lib/api";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 interface Laporan {
   id: string;
@@ -63,6 +61,7 @@ interface PaginateMeta {
 interface Stats {
   total: number;
   baru: number;
+  diinvestigasi: number;
   diverifikasi: number;
   ditolak: number;
   selesai: number;
@@ -70,10 +69,13 @@ interface Stats {
 
 const statusColors = {
   baru: "warning",
-  diverifikasi: "info", 
+  diinvestigasi: "info",
+  diverifikasi: "default",
   ditolak: "danger",
   selesai: "success",
 } as const;
+
+type StatusVariant = (typeof statusColors)[keyof typeof statusColors] | "default";
 
 export default function PengaduanPage() {
   const [data, setData] = useState<Laporan[]>([]);
@@ -106,9 +108,10 @@ export default function PengaduanPage() {
         from: json.from,
         to: json.to,
       });
-    } catch (err: any) {
-      const apiMsg = err.response?.data?.message;
-      const status = err.response?.status;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string }; status?: number } };
+      const apiMsg = error.response?.data?.message;
+      const status = error.response?.status;
       const hint =
           status === 401
             ? "Sesi tidak valid atau sudah habis — login ulang sebagai admin."
@@ -140,7 +143,7 @@ export default function PengaduanPage() {
     setSearch(searchInput);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
     // Refresh data and stats after delete
     await fetchData();
     await fetchStats();
@@ -151,13 +154,13 @@ export default function PengaduanPage() {
       <PageBreadcrumb pageTitle="Manajemen Pengaduan" />
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
           <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0">
             <HiOutlineDocumentText className="w-5 h-5 text-blue-500" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Total Pengaduan</p>
+            <p className="text-xs text-gray-500 mb-0.5">Total</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
               {loading ? "—" : stats?.total ?? 0}
             </p>
@@ -171,6 +174,17 @@ export default function PengaduanPage() {
             <p className="text-xs text-gray-500 mb-0.5">Baru</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
               {loading ? "—" : stats?.baru ?? 0}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 shrink-0">
+            <HiOutlineMagnifyingGlass className="w-5 h-5 text-indigo-500" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-0.5">Investigasi</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+              {loading ? "—" : stats?.diinvestigasi ?? 0}
             </p>
           </div>
         </div>
@@ -222,10 +236,11 @@ export default function PengaduanPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="py-2 px-3 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 outline-none transition-all text-slate-600 dark:text-gray-300"
+                className="py-2 px-3 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-slate-600 dark:text-gray-300"
               >
                 <option value="all">Semua Status</option>
                 <option value="baru">Baru</option>
+                <option value="diinvestigasi">Diinvestigasi</option>
                 <option value="diverifikasi">Diverifikasi</option>
                 <option value="selesai">Selesai</option>
                 <option value="ditolak">Ditolak</option>
@@ -250,30 +265,14 @@ export default function PengaduanPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-slate-50/80 dark:bg-gray-800/50">
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
-                    No
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
-                    Waktu
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 min-w-[180px]">
-                    Jenis Bencana
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
-                    Lokasi
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-center">
-                    Media
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
-                    Pelapor
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
-                    Status
-                  </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-right">
-                    Aksi
-                  </th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 w-12 text-center">No</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Waktu</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 min-w-[180px]">Jenis Bencana</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Lokasi</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-center">Media</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Pelapor</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Status</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
@@ -303,10 +302,10 @@ export default function PengaduanPage() {
                   </tr>
                 ) : (
                   data.map((item, index) => {
-                    const st = statusColors[item.status as keyof typeof statusColors] || "default";
+                    const st: StatusVariant = statusColors[item.status] || "default";
                     return (
                       <tr key={item.id} className="hover:bg-blue-50/40 dark:hover:bg-gray-800/40 transition-colors">
-                        <td className="px-6 py-4 text-slate-500 dark:text-gray-400 font-medium">
+                        <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-medium">
                           {meta?.from != null ? meta.from + index : index + 1}
                         </td>
                         <td className="px-6 py-4">
@@ -346,7 +345,7 @@ export default function PengaduanPage() {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <AdminBadge variant={st as any} dot>
+                          <AdminBadge variant={st} dot>
                             {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                           </AdminBadge>
                         </td>

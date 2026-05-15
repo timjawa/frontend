@@ -177,7 +177,7 @@ export default function KecamatanPage() {
               <h3 className="text-base font-bold text-[#1B2E4B] dark:text-white">Data Kecamatan Jember</h3>
               <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">Kelola data wilayah kecamatan se-Kabupaten Jember</p>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
                 <input

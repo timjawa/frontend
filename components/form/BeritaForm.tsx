@@ -206,7 +206,8 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Judul Berita */}
       <div>
         <Label htmlFor="title">Judul Berita *</Label>
@@ -243,31 +244,51 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
         />
       </div>
 
-      {/* Ringkasan (Teaser) */}
+      {/* Sumber Berita */}
       <div>
-        <Label htmlFor="teaser">Ringkasan (Teaser)</Label>
-        <TextArea
-          placeholder="Masukkan ringkasan berita"
-          rows={3}
-          value={formData.teaser}
-          onChange={(value) => handleInputChange('teaser', value)}
+        <Label htmlFor="source">Sumber Berita</Label>
+        <InputField
+          id="source"
+          name="source"
+          placeholder="Masukkan sumber berita (URL atau nama sumber)"
+          defaultValue={formData.source}
+          onChange={(e) => handleInputChange('source', e.target.value)}
         />
       </div>
 
-      {/* Isi Berita dengan Textarea (sementara) */}
+      {/* Tags */}
       <div>
-        <Label htmlFor="content">Isi Berita *</Label>
-        <TextArea
-          placeholder="Tulis isi berita di sini..."
-          rows={8}
-          value={formData.content}
-          onChange={(value) => handleInputChange('content', value)}
-          hint="Anda dapat menggunakan format text biasa. Rich text editor akan segera hadir."
+        <Label htmlFor="tags">Tags</Label>
+        <InputField
+          id="tags"
+          name="tags"
+          placeholder="Masukkan tags (pisahkan dengan koma)"
+          defaultValue={formData.tags}
+          onChange={(e) => handleInputChange('tags', e.target.value)}
+          hint="Contoh: bencana, alam, darurat"
         />
+      </div>
+
+      {/* Status Publikasi */}
+      <div>
+        <Label>Status Publikasi</Label>
+        <div className="space-y-3">
+          {statusOptions.map((option) => (
+            <Radio
+              key={option.value}
+              id={`status-${option.value}`}
+              name="status"
+              value={option.value}
+              checked={formData.status === option.value}
+              onChange={(value) => handleInputChange('status', value as 'draft' | 'published' | 'archived')}
+              label={option.label}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Foto Cover */}
-      <div>
+      <div className="md:col-span-2">
         <Label>Foto Cover</Label>
         <div
           className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
@@ -339,51 +360,32 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
         </div>
       </div>
 
-      {/* Sumber Berita */}
-      <div>
-        <Label htmlFor="source">Sumber Berita</Label>
-        <InputField
-          id="source"
-          name="source"
-          placeholder="Masukkan sumber berita (URL atau nama sumber)"
-          defaultValue={formData.source}
-          onChange={(e) => handleInputChange('source', e.target.value)}
+      {/* Ringkasan (Teaser) */}
+      <div className="md:col-span-2">
+        <Label htmlFor="teaser">Ringkasan (Teaser)</Label>
+        <TextArea
+          placeholder="Masukkan ringkasan berita"
+          rows={3}
+          value={formData.teaser}
+          onChange={(value) => handleInputChange('teaser', value)}
         />
       </div>
 
-      {/* Tags */}
-      <div>
-        <Label htmlFor="tags">Tags</Label>
-        <InputField
-          id="tags"
-          name="tags"
-          placeholder="Masukkan tags (pisahkan dengan koma)"
-          defaultValue={formData.tags}
-          onChange={(e) => handleInputChange('tags', e.target.value)}
-          hint="Contoh: bencana, alam, darurat"
+      {/* Isi Berita dengan Textarea (sementara) */}
+      <div className="md:col-span-2">
+        <Label htmlFor="content">Isi Berita *</Label>
+        <TextArea
+          placeholder="Tulis isi berita di sini..."
+          rows={8}
+          value={formData.content}
+          onChange={(value) => handleInputChange('content', value)}
+          hint="Anda dapat menggunakan format text biasa. Rich text editor akan segera hadir."
         />
       </div>
-
-      {/* Status Publikasi */}
-      <div>
-        <Label>Status Publikasi</Label>
-        <div className="space-y-3">
-          {statusOptions.map((option) => (
-            <Radio
-              key={option.value}
-              id={`status-${option.value}`}
-              name="status"
-              value={option.value}
-              checked={formData.status === option.value}
-              onChange={(value) => handleInputChange('status', value as 'draft' | 'published' | 'archived')}
-              label={option.label}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+      <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
         <AdminButton
           type="button"
           variant="outline"

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
 
@@ -13,39 +13,62 @@ interface Kecamatan {
   nama: string;
 }
 
-export default function CreatePeringatanDiniPage() {
+export default function EditPeringatanDiniPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = typeof params?.id === "string" ? params.id : "";
+
   const [formData, setFormData] = useState({
     kecamatan_id: "",
     deskripsi: "",
-    tingkat_urgensi: "",
+    tingkat_urgensi: "rendah",
     is_active: "1",
   });
   const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
   const [loading, setLoading] = useState(false);
-  const [fetchingKecamatan, setFetchingKecamatan] = useState(true);
+  const [fetchingData, setFetchingData] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchKecamatan = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`${getApiBase()}/kecamatan?per_page=100`);
-        if (res.ok) {
-          const json = await res.json();
-          setKecamatanList(json.data || []);
-          if (json.data && json.data.length > 0) {
-            setFormData((prev) => ({ ...prev, kecamatan_id: json.data[0].id }));
+        // Fetch kecamatan list
+        const resKec = await fetch(`${getApiBase()}/kecamatan?per_page=100`);
+        let fetchedKecamatan: Kecamatan[] = [];
+        if (resKec.ok) {
+          const jsonKec = await resKec.json();
+          fetchedKecamatan = jsonKec.data || [];
+          setKecamatanList(fetchedKecamatan);
+        }
+
+        // Fetch existing peringatan dini data
+        if (id) {
+          const resData = await fetch(`${getApiBase()}/peringatan-dini/${id}`);
+          if (resData.ok) {
+            const jsonData = await resData.json();
+            const data = jsonData.data;
+            if (data) {
+              setFormData({
+                kecamatan_id: data.kecamatan_id || (fetchedKecamatan.length > 0 ? fetchedKecamatan[0].id : ""),
+                deskripsi: data.deskripsi || "",
+                tingkat_urgensi: data.tingkat_urgensi || "rendah",
+                is_active: data.is_active ? "1" : "0",
+              });
+            }
+          } else {
+            setServerError("Gagal memuat data peringatan dini.");
           }
         }
       } catch (err) {
-        console.error("Gagal mengambil data kecamatan:", err);
+        console.error("Gagal mengambil data:", err);
+        setServerError("Terjadi kesalahan koneksi.");
       } finally {
-        setFetchingKecamatan(false);
+        setFetchingData(false);
       }
     };
-    fetchKecamatan();
-  }, []);
+    fetchData();
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +91,8 @@ export default function CreatePeringatanDiniPage() {
       };
       const xsrfToken = getCookie('XSRF-TOKEN');
 
-      const res = await fetch(`${getApiBase()}/peringatan-dini`, {
-        method: "POST",
+      const res = await fetch(`${getApiBase()}/peringatan-dini/${id}`, {
+        method: "PUT",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -115,10 +138,18 @@ export default function CreatePeringatanDiniPage() {
       errors[field] ? "border-red-400 bg-red-50" : "border-gray-200 dark:border-gray-700"
     }`;
 
+  if (fetchingData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <PageBreadcrumb pageTitle="Tambah Peringatan Dini" className="mb-0" />
+        <PageBreadcrumb pageTitle="Edit Peringatan Dini" className="mb-0" />
         <Link
           href="/admin/peringatan-dini"
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
@@ -130,9 +161,9 @@ export default function CreatePeringatanDiniPage() {
 
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Tambah Peringatan Dini</h3>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Form Edit Peringatan Dini</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Berikan informasi mengenai potensi bahaya atau peringatan dini untuk masyarakat.
+            Perbarui informasi peringatan dini untuk masyarakat.
           </p>
         </div>
 
@@ -156,21 +187,14 @@ export default function CreatePeringatanDiniPage() {
                 value={formData.kecamatan_id}
                 onChange={handleChange}
                 required
-                disabled={fetchingKecamatan}
                 className={`${inputClass("kecamatan_id")} appearance-none`}
               >
-                {fetchingKecamatan ? (
-                  <option value="">Memuat data...</option>
-                ) : (
-                  <>
-                    <option value="" disabled>Pilih Kecamatan</option>
-                    {kecamatanList.map((kec) => (
-                      <option key={kec.id} value={kec.id}>
-                        {kec.nama}
-                      </option>
-                    ))}
-                  </>
-                )}
+                <option value="" disabled>Pilih Kecamatan</option>
+                {kecamatanList.map((kec) => (
+                  <option key={kec.id} value={kec.id}>
+                    {kec.nama}
+                  </option>
+                ))}
               </select>
               {errors.kecamatan_id && <p className="text-xs text-red-500">{errors.kecamatan_id}</p>}
             </div>
@@ -188,7 +212,6 @@ export default function CreatePeringatanDiniPage() {
                 required
                 className={`${inputClass("tingkat_urgensi")} appearance-none`}
               >
-                <option value="">Pilih tingkat urgensi</option>
                 <option value="rendah">Rendah (Informasi Awal)</option>
                 <option value="sedang">Sedang (Waspada)</option>
                 <option value="tinggi">Tinggi (Siaga)</option>
@@ -253,7 +276,7 @@ export default function CreatePeringatanDiniPage() {
               ) : (
                 <HiOutlineCheck className="w-4 h-4" />
               )}
-              {loading ? "Menyimpan..." : "Simpan Peringatan"}
+              {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
         </form>

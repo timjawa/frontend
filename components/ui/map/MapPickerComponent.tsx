@@ -52,6 +52,14 @@ export default function MapPickerComponent({ latitude, longitude, onChange, clas
           onChange(pos.lat, pos.lng);
         }
       });
+
+      mapInstance.current.on("dragend", () => {
+        const center = mapInstance.current?.getCenter();
+        if (center) {
+          markerInstance.current?.setLatLng(center);
+          onChange(center.lat, center.lng);
+        }
+      });
     }
 
     return () => {
