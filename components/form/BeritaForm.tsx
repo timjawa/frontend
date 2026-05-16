@@ -395,7 +395,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
         </AdminButton>
         <AdminButton
           type="submit"
-          variant="primary"
+          variant="secondary"
         >
           {isEdit ? "Perbarui Berita" : "Simpan Berita"}
         </AdminButton>

@@ -5,7 +5,7 @@ import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { HiEllipsisVertical, HiOutlineEye, HiOutlinePencil, HiOutlineTrash } from "react-icons/hi2";
 
-export default function BeritaTableAction({ id }: { id: number }) {
+export default function BeritaTableAction({ id }: { id: string | number }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

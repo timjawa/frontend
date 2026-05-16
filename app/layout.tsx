@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="antialiased">
+    <html lang="id" className="antialiased" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -38,7 +38,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${outfit.className} min-h-screen flex flex-col dark:bg-gray-900`}>
+      <body className={`${outfit.className} min-h-screen flex flex-col dark:bg-gray-900`} suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>
             <SidebarProvider>{children}</SidebarProvider>

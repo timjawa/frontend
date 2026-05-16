@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { HiUser } from "react-icons/hi2";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getImageUrl } from "@/lib/api";
+import ShareButton from "@/components/berita/ShareButton";
+
 
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.0.194:8000";
@@ -66,36 +67,17 @@ export default async function BeritaDetail({ params }: { params: Promise<{ id: s
       <Navbar />
       <main className="flex-1 bg-[#F9FAFB] pt-[88px] pb-16">
         <article className="max-w-[800px] mx-auto px-4 sm:px-6 mt-8 md:mt-12">
-          {/* Category Badge */}
-          <div className="mb-5">
-            <span className={`${categoryColorClass} text-white text-[10px] font-bold px-3 py-1 rounded shadow-sm inline-block tracking-widest uppercase`}>
-              {news.kategori || "Umum"}
-            </span>
-          </div>
-
           {/* Title */}
-          <h1 className="text-3xl md:text-[44px] font-bold text-slate-900 leading-[1.1] mb-8 tracking-tight">
+          <h1 className="text-3xl md:text-[32px] font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
             {news.judul}
           </h1>
 
-          {/* Author & Date Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-                <HiUser className="text-slate-500 text-xl" />
-              </div>
-              <div className="flex flex-col justify-center">
-                <p className="text-[13px] font-bold text-slate-900 leading-tight">{source}</p>
-                <p className="text-[12px] text-slate-500 leading-tight mt-0.5 font-medium">{formattedDate}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 mt-4 sm:mt-0">
-            </div>
-          </div>
-
           {/* Hero Image */}
-          <figure className="mb-10 w-full relative">
-            <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden mb-4 bg-slate-100">
+          <figure className="mb-10 w-full relative group">
+            <div className="absolute top-4 right-4 z-20">
+              <ShareButton />
+            </div>
+            <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden mb-4 bg-slate-100 shadow-sm">
               <Image
                 src={imageUrl}
                 alt={news.judul}
@@ -106,39 +88,33 @@ export default async function BeritaDetail({ params }: { params: Promise<{ id: s
             </div>
             {source && (
               <figcaption className="text-center text-[12px] font-medium text-slate-500 px-4 md:px-12 leading-relaxed">
-                Ilustrasi kondisi terkait: {news.judul}. (Foto: {source})
+                Ilustrasi kondisi terkait: {news.judul}. (Sumber:{" "}
+                <a href= {source} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                  {source}
+                </a>
+                )
               </figcaption>
             )}
           </figure>
 
           {/* Content */}
-          <div className="prose prose-lg prose-slate max-w-none text-slate-800 text-[15px] leading-[1.8] font-medium">
+          <div className="prose prose-lg prose-slate max-w-none">
             {news.ringkasan && (
-              <p className="mb-6 text-[17px] font-semibold text-slate-900 border-l-4 border-slate-900 pl-4 py-1 bg-slate-50">
+              <div className="mb-10 text-[20px] font-medium text-slate-900 border-l-4 border-[#7a0000] pl-6 py-4 bg-slate-50/80 leading-relaxed italic rounded-r-xl">
                 {news.ringkasan}
-              </p>
+              </div>
             )}
             
-            <div className="whitespace-pre-wrap">
-              {news.konten}
+            <div className="space-y-8 text-[18px] md:text-[19px] leading-[1.9] text-slate-800 text-justify font-normal">
+              {news.konten?.split('\n').filter((p: string) => p.trim() !== '').map((para: string, i: number) => (
+                <p key={i} className="m-0 indent-8 md:indent-12 first:indent-0">
+                  {para.trim()}
+                </p>
+              ))}
             </div>
           </div>
 
-          {/* Komentar Section */}
-          <div className="mt-16 pt-10 border-t border-slate-200">
-            <h3 className="text-xl font-bold text-slate-900 mb-6">Komentar</h3>
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-              <textarea
-                className="w-full h-24 bg-[#F8FAFC] rounded-xl p-4 resize-none outline-none text-sm text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-900"
-                placeholder="Tulis pendapat Anda tentang berita ini..."
-              ></textarea>
-              <div className="flex justify-end mt-3">
-                <button className="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-6 py-3 rounded-full transition-colors">
-                  Kirim Komentar
-                </button>
-              </div>
-            </div>
-          </div>
+
         </article>
       </main>
       <Footer />
