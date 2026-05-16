@@ -73,14 +73,6 @@ export default function FaqPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
   return (
     <div>
       <PageBreadcrumb pageTitle="Manajemen FAQ" />
@@ -93,7 +85,7 @@ export default function FaqPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Total FAQ</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{faqs.length}</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{loading ? "—" : faqs.length}</p>
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
@@ -103,7 +95,7 @@ export default function FaqPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Aktif</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {faqs.filter((r) => r.is_active).length}
+              {loading ? "—" : faqs.filter((r) => r.is_active).length}
             </p>
           </div>
         </div>
@@ -114,7 +106,7 @@ export default function FaqPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Tidak Aktif</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {faqs.filter((r) => !r.is_active).length}
+              {loading ? "—" : faqs.filter((r) => !r.is_active).length}
             </p>
           </div>
         </div>
@@ -125,7 +117,7 @@ export default function FaqPage() {
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Kategori</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {new Set(faqs.map((r) => r.kategori)).size}
+              {loading ? "—" : new Set(faqs.map((r) => r.kategori)).size}
             </p>
           </div>
         </div>
@@ -192,37 +184,48 @@ export default function FaqPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
-                {filteredFaqs.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-blue-50/40 dark:hover:bg-gray-800/40 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-semibold text-[#1B2E4B] dark:text-gray-200">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-slate-700 dark:text-gray-300 max-w-[300px] truncate">{row.pertanyaan}</td>
-                    <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{row.kategori}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex w-7 h-7 items-center justify-center rounded-md bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 font-semibold text-xs border border-slate-200 dark:border-gray-700">
-                        {row.urutan}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <AdminBadge variant={row.is_active ? "success" : "danger"} dot>
-                        {row.is_active ? "Aktif" : "Tidak Aktif"}
-                      </AdminBadge>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <FaqTableAction id={row.id} onDelete={() => handleDelete(row.id)} />
-                    </td>
-                  </tr>
-                ))}
-                {filteredFaqs.length === 0 && !loading && (
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      {Array.from({ length: 6 }).map((__, j) => (
+                        <td key={j} className="px-6 py-4">
+                          <div className="h-4 bg-slate-100 dark:bg-gray-800 rounded-md w-full" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : filteredFaqs.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-10 text-center text-slate-500 dark:text-gray-500">
                       Tidak ada data FAQ tersedia
                     </td>
                   </tr>
+                ) : (
+                  filteredFaqs.map((row, index) => (
+                    <tr
+                      key={row.id}
+                      className="hover:bg-blue-50/40 dark:hover:bg-gray-800/40 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-semibold text-[#1B2E4B] dark:text-gray-200">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-slate-700 dark:text-gray-300 max-w-[300px] truncate">{row.pertanyaan}</td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{row.kategori}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-flex w-7 h-7 items-center justify-center rounded-md bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 font-semibold text-xs border border-slate-200 dark:border-gray-700">
+                          {row.urutan}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <AdminBadge variant={row.is_active ? "success" : "danger"} dot>
+                          {row.is_active ? "Aktif" : "Tidak Aktif"}
+                        </AdminBadge>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <FaqTableAction id={row.id} onDelete={() => handleDelete(row.id)} />
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>

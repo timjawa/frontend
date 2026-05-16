@@ -13,7 +13,7 @@ interface FAQFormData {
   question: string;
   answer: string;
   category: string;
-  order: number;
+  order: number | string;
   isActive: boolean;
 }
 
@@ -32,7 +32,7 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) =>
     question: initialData?.pertanyaan || "",
     answer: initialData?.jawaban || "",
     category: initialData?.kategori || "umum",
-    order: initialData?.urutan || 1,
+    order: initialData?.urutan || (!isEdit ? "" : 1),
     isActive: initialData?.is_active ?? true
   });
 
@@ -43,11 +43,21 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) =>
         question: initialData.pertanyaan || "",
         answer: initialData.jawaban || "",
         category: initialData.kategori || "umum",
-        order: initialData.urutan || 1,
+        order: initialData.urutan || (!isEdit ? "" : 1),
         isActive: initialData.is_active ?? true
       });
+    } else if (!isEdit) {
+      api.get("/api/faq").then(response => {
+        if (response.data.success) {
+          const faqs = response.data.data;
+          const maxOrder = faqs.reduce((max: number, faq: any) => Math.max(max, faq.urutan), 0);
+          setFormData(prev => ({ ...prev, order: maxOrder + 1 }));
+        }
+      }).catch(err => {
+        console.error("Error fetching FAQs for max order:", err);
+      });
     }
-  }, [initialData]);
+  }, [initialData, isEdit]);
 
   // Category options
   const categoryOptions = [
@@ -121,11 +131,13 @@ const FAQForm: React.FC<FAQFormProps> = ({ isEdit = false, initialData, id }) =>
           id="order"
           name="order"
           type="number"
-          placeholder="Masukkan nomor urutan tampil"
-          defaultValue={formData.order}
+          placeholder="Otomatis diisi di urutan terakhir"
+          value={formData.order}
           onChange={(e) => handleInputChange('order', parseInt(e.target.value) || 0)}
           min="1"
-          hint="Nomor urutan untuk mengatur posisi tampil FAQ (1 = paling atas)"
+          disabled={true}
+          className="bg-gray-100 dark:bg-gray-800"
+          hint="Nomor urutan otomatis ditempatkan setelah yang terakhir"
         />
       </div>
 

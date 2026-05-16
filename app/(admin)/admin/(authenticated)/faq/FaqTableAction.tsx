@@ -29,10 +29,6 @@ export default function FaqTableAction({
             <HiOutlineEye className="w-4 h-4" />
             Detail
           </DropdownItem>
-          <DropdownItem tag="a" href={`/admin/faq/${id}/edit`} className="flex items-center gap-2">
-            <HiOutlinePencil className="w-4 h-4" />
-            Edit
-          </DropdownItem>
           <DropdownItem tag="button" onClick={() => { onDelete?.(); setIsOpen(false); }} className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
             <HiOutlineTrash className="w-4 h-4" />
             Delete
