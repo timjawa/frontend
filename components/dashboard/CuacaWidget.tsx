@@ -5,25 +5,22 @@ import { MoreDotIcon } from "@/icons";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useState, useEffect, useRef } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { fetchForecastSummary } from "@/services/weather";
-import { refreshForecastWeather } from "@/services/weather";
+import { fetchHistoricalWeather } from "@/services/weather";
+import { refreshRealtimeWeather } from "@/services/weather";
 import { HiArrowPath } from "react-icons/hi2";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-interface SummaryRow {
-  id: string;
-  kecamatan_id: string;
+interface DailyEntry {
   tanggal: string;
-  suhu_rata: number | null;
-  curah_hujan: number | null;
-  kecamatan: { id: string; nama: string } | null;
+  suhu_avg: number;
+  hujan_avg: number;
 }
 
 export default function CuacaWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [rawData, setRawData] = useState<SummaryRow[]>([]);
+  const [historicalData, setHistoricalData] = useState<Record<string, DailyEntry[]>>({});
   const [selectedKecamatan, setSelectedKecamatan] = useState<string>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchKecamatan, setSearchKecamatan] = useState("");
@@ -43,45 +40,35 @@ export default function CuacaWidget() {
     loadData();
   }, []);
 
-  const loadData = async (refreshFromBMKG = false) => {
+  const loadData = async (refreshFromAPI = false) => {
     try {
       setLoading(true);
-      if (refreshFromBMKG) {
-        await refreshForecastWeather();
+      if (refreshFromAPI) {
+        await refreshRealtimeWeather();
       }
-      let res = await fetchForecastSummary();
-      
-      // Auto fetch if data is empty
-      if (res && res.data && res.data.length === 0 && !refreshFromBMKG) {
-        await refreshForecastWeather();
-        res = await fetchForecastSummary();
-      }
-      
+      const res = await fetchHistoricalWeather();
+
+      // Backend returns: { status: "success", data: { "KecamatanName": [{tanggal, suhu_avg, hujan_avg}] } }
       if (res && res.data) {
-        setRawData(res.data);
+        setHistoricalData(res.data);
         // Auto-select first kecamatan
-        const kecList = Array.from(new Set(
-          res.data.map((d: SummaryRow) => d.kecamatan?.nama).filter(Boolean)
-        )) as string[];
+        const kecList = Object.keys(res.data).sort();
         if (kecList.length > 0 && !selectedKecamatan) {
           setSelectedKecamatan(kecList[0]);
         }
       }
     } catch (error) {
-      console.error("Gagal mengambil data ringkasan cuaca:", error);
+      console.error("Gagal mengambil data riwayat cuaca:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Get unique kecamatan names
-  const kecamatanList = Array.from(new Set(
-    rawData.map((d) => d.kecamatan?.nama).filter(Boolean)
-  )) as string[];
+  // Get unique kecamatan names from the grouped data
+  const kecamatanList = Object.keys(historicalData).sort();
 
-  // Filter data for selected kecamatan, sorted by date
-  const currentData = rawData
-    .filter((d) => d.kecamatan?.nama === selectedKecamatan)
+  // Get data for selected kecamatan, sorted by date
+  const currentData = (historicalData[selectedKecamatan] || [])
     .sort((a, b) => a.tanggal.localeCompare(b.tanggal));
 
   // Format tanggal (contoh: "02 Mei")
@@ -90,8 +77,8 @@ export default function CuacaWidget() {
     return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
   });
   
-  const suhuData = currentData.map(d => parseFloat(String(d.suhu_rata ?? 0)));
-  const curahHujanData = currentData.map(d => parseFloat(String(d.curah_hujan ?? 0)));
+  const suhuData = currentData.map(d => parseFloat(String(d.suhu_avg ?? 0)));
+  const curahHujanData = currentData.map(d => parseFloat(String(d.hujan_avg ?? 0)));
 
   const options: ApexOptions = {
     colors: ["#f79009", "#0ea5e9"], // Orange untuk suhu, Biru untuk hujan
@@ -272,8 +259,8 @@ export default function CuacaWidget() {
           ) : (
             <div className="flex h-[315px] items-center justify-center text-gray-500">
               <div className="flex flex-col items-center gap-2">
-                <span className="text-sm">Belum ada data ringkasan cuaca untuk kecamatan ini.</span>
-                <span className="text-xs text-gray-400">Silakan refresh data Prediksi Cuaca terlebih dahulu.</span>
+                <span className="text-sm">Belum ada data riwayat cuaca untuk kecamatan ini.</span>
+                <span className="text-xs text-gray-400">Data riwayat akan terisi otomatis setiap kali cuaca realtime diperbarui.</span>
               </div>
             </div>
           )}

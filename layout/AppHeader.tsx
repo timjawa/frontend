@@ -57,9 +57,9 @@ const AppHeader: React.FC = () => {
             )}
           </button>
 
-          <Link href="/" className="lg:hidden">
-            <Image width={154} height={32} className="dark:hidden" src="./images/logo/logo.svg" alt="Logo" />
-            <Image width={154} height={32} className="hidden dark:block" src="./images/logo/logo-dark.svg" alt="Logo" />
+          <Link href="/" className="lg:hidden flex items-center gap-2">
+            <Image width={32} height={32} src="/logo.png" alt="Logo" className="object-contain" />
+            <span className="text-lg font-bold text-gray-800 dark:text-white">Jember Siaga</span>
           </Link>
 
           <button

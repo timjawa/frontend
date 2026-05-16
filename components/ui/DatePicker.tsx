@@ -27,9 +27,11 @@ interface DatePickerProps {
   value: string; // "YYYY-MM-DD"
   onChange: (value: string) => void;
   id?: string;
+  minDate?: string; // "YYYY-MM-DD" — earliest selectable date
+  maxDate?: string; // "YYYY-MM-DD" — latest selectable date
 }
 
-export default function DatePicker({ value, onChange, id }: DatePickerProps) {
+export default function DatePicker({ value, onChange, id, minDate, maxDate }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => {
     const d = value ? new Date(value + "T00:00:00") : new Date();
@@ -110,6 +112,7 @@ export default function DatePicker({ value, onChange, id }: DatePickerProps) {
     isCurrentMonth: boolean;
     isToday: boolean;
     isSelected: boolean;
+    isDisabled: boolean;
   }[] = [];
 
   // Previous month trailing days
@@ -124,6 +127,7 @@ export default function DatePicker({ value, onChange, id }: DatePickerProps) {
       isCurrentMonth: false,
       isToday: dateStr === todayStr,
       isSelected: dateStr === value,
+      isDisabled: (minDate && dateStr < minDate) || (maxDate && dateStr > maxDate) ? true : false,
     });
   }
 
@@ -136,6 +140,7 @@ export default function DatePicker({ value, onChange, id }: DatePickerProps) {
       isCurrentMonth: true,
       isToday: dateStr === todayStr,
       isSelected: dateStr === value,
+      isDisabled: (minDate && dateStr < minDate) || (maxDate && dateStr > maxDate) ? true : false,
     });
   }
 
@@ -151,10 +156,12 @@ export default function DatePicker({ value, onChange, id }: DatePickerProps) {
       isCurrentMonth: false,
       isToday: dateStr === todayStr,
       isSelected: dateStr === value,
+      isDisabled: (minDate && dateStr < minDate) || (maxDate && dateStr > maxDate) ? true : false,
     });
   }
 
-  const selectDate = (dateStr: string) => {
+  const selectDate = (dateStr: string, disabled: boolean) => {
+    if (disabled) return;
     onChange(dateStr);
     setIsOpen(false);
   };
@@ -277,18 +284,21 @@ export default function DatePicker({ value, onChange, id }: DatePickerProps) {
               <button
                 key={i}
                 type="button"
-                onClick={() => selectDate(cell.dateStr)}
+                onClick={() => selectDate(cell.dateStr, cell.isDisabled)}
+                disabled={cell.isDisabled}
                 className={`
                   relative w-full aspect-square flex items-center justify-center
                   text-sm rounded-xl transition-all duration-200 m-[1px]
                   ${
-                    cell.isSelected
-                      ? "bg-secondary text-white font-bold shadow-md shadow-secondary/30 scale-105"
-                      : cell.isToday
-                        ? "bg-secondary/10 text-secondary font-bold ring-1 ring-secondary/30"
-                        : cell.isCurrentMonth
-                          ? "text-slate-700 hover:bg-slate-100 hover:scale-105 font-medium"
-                          : "text-slate-300 hover:bg-slate-50 hover:text-slate-400"
+                    cell.isDisabled
+                      ? "text-slate-200 cursor-not-allowed"
+                      : cell.isSelected
+                        ? "bg-secondary text-white font-bold shadow-md shadow-secondary/30 scale-105"
+                        : cell.isToday
+                          ? "bg-secondary/10 text-secondary font-bold ring-1 ring-secondary/30"
+                          : cell.isCurrentMonth
+                            ? "text-slate-700 hover:bg-slate-100 hover:scale-105 font-medium"
+                            : "text-slate-300 hover:bg-slate-50 hover:text-slate-400"
                   }
                   active:scale-95
                 `}

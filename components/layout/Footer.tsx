@@ -13,8 +13,8 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 bg-white/15 rounded-full flex items-center justify-center">
-                <WiDayCloudyGusts className="text-white text-xl" />
+              <div className="w-9 h-9 flex items-center justify-center">
+                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-bold text-lg">
                 Jember <span className="text-secondary-light">Siaga</span>

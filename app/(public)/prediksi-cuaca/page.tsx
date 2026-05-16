@@ -10,7 +10,7 @@ import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiOutlineSearch } from "react-icons/hi";
 import { HiInformationCircle } from "react-icons/hi2";
 import { WiCloud, WiDaySunny } from "react-icons/wi";
-import { fetchWeatherForecast } from "@/services/weather";
+import { fetchWeatherByDate } from "@/services/weather";
 
 // Helper: map cuaca description to icon key
 const mapConditionToIcon = (description: string) => {
@@ -39,20 +39,26 @@ export default function PrediksiCuacaPage() {
   const [activeTimeSlot, setActiveTimeSlot] = useState<string | null>(null);
   const [allKecamatanPredictions, setAllKecamatanPredictions] = useState<KecamatanPrediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataSource, setDataSource] = useState<string>("");
 
   // Date picker state — defaults to today
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
 
+  // Date limits: 7 days back, 3 days forward
+  const minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const maxDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetchWeatherForecast();
+        const res = await fetchWeatherByDate(selectedDate);
         const data = res?.data || {};
+        setDataSource(res?.source || "");
 
         // Map backend data to the frontend structure
-        const mappedData: KecamatanPrediction[] = Object.keys(data).map(kecamatan => {
+        const mappedData: KecamatanPrediction[] = Object.keys(data).sort().map(kecamatan => {
           const forecasts = data[kecamatan] || [];
 
           // Find the best forecast for a given date & hour range
@@ -89,7 +95,6 @@ export default function PrediksiCuacaPage() {
             slot2: getSlotData([9, 14]),   // Siang 09:00–14:00
             slot3: getSlotData([14, 18]),  // Sore 14:00–18:00
             slot4: getSlotData([18, 24]),  // Malam 18:00–24:00
-            slot5: getSlotData([0, 5]),    // Dini Hari 00:00–05:00
           };
         });
 
@@ -193,8 +198,9 @@ export default function PrediksiCuacaPage() {
                 id="date-picker"
                 value={selectedDate}
                 onChange={(val) => setSelectedDate(val)}
+                minDate={minDate}
+                maxDate={maxDate}
               />
-
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs text-slate-500 mr-1 font-medium">Jam:</span>
                 <button
@@ -228,6 +234,9 @@ export default function PrediksiCuacaPage() {
         {/* Weather Table */}
         <section className="py-10 bg-surface">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-end mb-3">
+              <span className="text-sm font-medium text-slate-500">Sumber: BMKG</span>
+            </div>
             <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full" id="weather-prediction-table">
