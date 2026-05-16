@@ -55,6 +55,16 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  // Auto-hide notification after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -102,6 +112,7 @@ export default function ProfilePage() {
       });
 
       setMessage({ type: "success", text: "Profil berhasil diperbarui!" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       
       // Refresh user context data
       await checkAuth();
@@ -119,6 +130,7 @@ export default function ProfilePage() {
       const error = err as AxiosError<{ message?: string }>;
       const errorMsg = error.response?.data?.message || "Terjadi kesalahan saat memperbarui profil";
       setMessage({ type: "error", text: errorMsg });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setLoading(false);
     }

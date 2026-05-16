@@ -72,6 +72,10 @@ interface Laporan {
   }>;
 }
 
+function SkeletonBlock({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg ${className}`} />;
+}
+
 export default function PengaduanDetailPage() {
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : "";
@@ -148,27 +152,7 @@ export default function PengaduanDetailPage() {
     ditolak:       { color: "danger" as const,   label: "Ditolak",        bg: "bg-red-50 dark:bg-red-500/10",         border: "border-red-200 dark:border-red-500/20",         text: "text-red-700 dark:text-red-400" },
   };
 
-  if (loading) {
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <PageBreadcrumb pageTitle="Detail Pengaduan" className="mb-0" />
-          <Link
-            href="/admin/pengaduan"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            <HiOutlineArrowLeft className="w-4 h-4" />
-            Kembali
-          </Link>
-        </div>
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !pengaduanData) {
+  if (error || (!loading && !pengaduanData)) {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
@@ -189,12 +173,12 @@ export default function PengaduanDetailPage() {
     );
   }
 
-  const currentStatus = statusConfig[pengaduanData.status];
-  const lat = Number(pengaduanData.latitude);
-  const lng = Number(pengaduanData.longitude);
-  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
-  const embedUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const currentStatus = pengaduanData ? statusConfig[pengaduanData.status] : null;
+  const lat = pengaduanData ? Number(pengaduanData.latitude) : 0;
+  const lng = pengaduanData ? Number(pengaduanData.longitude) : 0;
+  const hasCoords = pengaduanData ? Number.isFinite(lat) && Number.isFinite(lng) : false;
+  const embedUrl = hasCoords ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed` : "";
+  const mapsUrl = hasCoords ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : "#";
 
   return (
     <div>
@@ -211,7 +195,7 @@ export default function PengaduanDetailPage() {
           </Link>
 
           {/* baru → hanya tombol Investigasi */}
-          {pengaduanData.status === "baru" && (
+          {!loading && pengaduanData?.status === "baru" && (
             <button
               onClick={() => handleStatusUpdate("diinvestigasi")}
               disabled={updatingStatus}
@@ -223,7 +207,7 @@ export default function PengaduanDetailPage() {
           )}
 
           {/* diinvestigasi → Tolak & Verifikasi */}
-          {pengaduanData.status === "diinvestigasi" && (
+          {!loading && pengaduanData?.status === "diinvestigasi" && (
             <>
               <button
                 onClick={() => handleStatusUpdate("ditolak")}
@@ -245,7 +229,7 @@ export default function PengaduanDetailPage() {
           )}
 
           {/* diverifikasi → hanya tombol Selesai */}
-          {pengaduanData.status === "diverifikasi" && (
+          {!loading && pengaduanData?.status === "diverifikasi" && (
             <button
               onClick={() => handleStatusUpdate("selesai")}
               disabled={updatingStatus}
@@ -269,20 +253,32 @@ export default function PengaduanDetailPage() {
           </div>
           <div>
             <span className="block text-xs font-medium text-gray-500 mb-0.5">Jenis Bencana</span>
-            <p className="text-base font-bold text-gray-800 dark:text-white">{pengaduanData.jenis_bencana}</p>
+            {loading ? <SkeletonBlock className="h-5 w-24" /> : <p className="text-base font-bold text-gray-800 dark:text-white">{pengaduanData?.jenis_bencana}</p>}
           </div>
         </div>
 
         {/* Status */}
-        <div className={`rounded-2xl border p-5 shadow-sm flex items-center gap-4 ${currentStatus.bg} ${currentStatus.border}`}>
-          <div className="p-3 rounded-xl bg-white/60 dark:bg-white/10 shrink-0">
-            <HiCheckBadge className={`w-6 h-6 ${currentStatus.text}`} />
+        {loading ? (
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0">
+              <HiCheckBadge className="w-6 h-6 text-gray-400" />
+            </div>
+            <div>
+              <SkeletonBlock className="h-3 w-16 mb-1.5" />
+              <SkeletonBlock className="h-5 w-20" />
+            </div>
           </div>
-          <div>
-            <span className="block text-xs font-medium text-gray-500 mb-0.5">Status</span>
-            <p className={`text-base font-bold ${currentStatus.text}`}>{currentStatus.label}</p>
+        ) : (
+          <div className={`rounded-2xl border p-5 shadow-sm flex items-center gap-4 ${currentStatus!.bg} ${currentStatus!.border}`}>
+            <div className="p-3 rounded-xl bg-white/60 dark:bg-white/10 shrink-0">
+              <HiCheckBadge className={`w-6 h-6 ${currentStatus!.text}`} />
+            </div>
+            <div>
+              <span className="block text-xs font-medium text-gray-500 mb-0.5">Status</span>
+              <p className={`text-base font-bold ${currentStatus!.text}`}>{currentStatus!.label}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Kecamatan */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
@@ -291,7 +287,7 @@ export default function PengaduanDetailPage() {
           </div>
           <div>
             <span className="block text-xs font-medium text-gray-500 mb-0.5">Kecamatan</span>
-            <p className="text-base font-bold text-gray-800 dark:text-white">{pengaduanData.kecamatan?.nama || '-'}</p>
+            {loading ? <SkeletonBlock className="h-5 w-28" /> : <p className="text-base font-bold text-gray-800 dark:text-white">{pengaduanData?.kecamatan?.nama || '-'}</p>}
           </div>
         </div>
 
@@ -302,10 +298,17 @@ export default function PengaduanDetailPage() {
           </div>
           <div>
             <span className="block text-xs font-medium text-gray-500 mb-0.5">Dilaporkan</span>
-            <p className="text-sm font-bold text-gray-800 dark:text-white leading-tight">
-              {new Date(pengaduanData.dibuat_pada).toLocaleDateString('id-ID')}
-              <span className="block text-xs font-normal text-gray-500">{new Date(pengaduanData.dibuat_pada).toLocaleTimeString('id-ID')}</span>
-            </p>
+            {loading ? (
+              <>
+                <SkeletonBlock className="h-4 w-20 mb-1" />
+                <SkeletonBlock className="h-3 w-16" />
+              </>
+            ) : (
+              <p className="text-sm font-bold text-gray-800 dark:text-white leading-tight">
+                {new Date(pengaduanData!.dibuat_pada).toLocaleDateString('id-ID')}
+                <span className="block text-xs font-normal text-gray-500">{new Date(pengaduanData!.dibuat_pada).toLocaleTimeString('id-ID')}</span>
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -320,14 +323,26 @@ export default function PengaduanDetailPage() {
               <HiDocumentText className="w-5 h-5 text-blue-500" />
               Deskripsi Kejadian
             </h3>
-            <div className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line bg-blue-50/50 dark:bg-blue-900/10 p-5 rounded-xl border border-blue-100 dark:border-blue-900/30">
-              {pengaduanData.deskripsi?.trim() ? pengaduanData.deskripsi : "— (tidak ada narasi)"}
-            </div>
+            {loading ? (
+              <div className="space-y-2 mb-4">
+                <SkeletonBlock className="h-4 w-full" />
+                <SkeletonBlock className="h-4 w-full" />
+                <SkeletonBlock className="h-4 w-3/4" />
+              </div>
+            ) : (
+              <div className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line bg-blue-50/50 dark:bg-blue-900/10 p-5 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                {pengaduanData?.deskripsi?.trim() ? pengaduanData.deskripsi : "— (tidak ada narasi)"}
+              </div>
+            )}
             <div className="mt-4">
               <span className="block text-xs font-medium text-gray-500 mb-1">Alamat Lengkap</span>
-              <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 px-3 py-2 rounded-lg border border-gray-100 dark:border-gray-700/50">
-                {pengaduanData.alamat_lengkap || '-'}
-              </p>
+              {loading ? (
+                <SkeletonBlock className="h-8 w-full" />
+              ) : (
+                <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 px-3 py-2 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                  {pengaduanData?.alamat_lengkap || '-'}
+                </p>
+              )}
             </div>
           </div>
 
@@ -337,7 +352,9 @@ export default function PengaduanDetailPage() {
               <HiMapPin className="w-5 h-5 text-green-600" />
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">Lokasi Kejadian</h3>
             </div>
-            {hasCoords ? (
+            {loading ? (
+              <div className="w-full h-60 animate-pulse bg-gray-200 dark:bg-gray-700" />
+            ) : hasCoords ? (
               <>
                 <div className="w-full h-60 bg-gray-100 dark:bg-gray-800">
                   <iframe
@@ -379,11 +396,16 @@ export default function PengaduanDetailPage() {
             <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 border-b border-gray-100 dark:border-gray-800 pb-3 flex items-center gap-2">
               <HiCamera className="w-5 h-5 text-indigo-500" />
               Media bukti
-              <span className="ml-auto text-xs font-normal text-gray-400">{pengaduanData.media?.length || 0} baris</span>
+              <span className="ml-auto text-xs font-normal text-gray-400">{loading ? '-' : (pengaduanData?.media?.length || 0)} baris</span>
             </h3>
             <p className="text-xs text-gray-400 mb-4">Kolom: url, tipe, urutan, uploaded_at</p>
 
-            {pengaduanData.media && pengaduanData.media.length > 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <SkeletonBlock className="aspect-[4/3] w-full" />
+                <SkeletonBlock className="aspect-[4/3] w-full" />
+              </div>
+            ) : pengaduanData?.media && pengaduanData.media.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {pengaduanData.media.map((item) => {
                   // Tangani data dummy yang tidak memiliki ekstensi
@@ -467,36 +489,53 @@ export default function PengaduanDetailPage() {
             <div className="space-y-4">
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Status</span>
-                <AdminBadge variant={currentStatus.color} dot>{currentStatus.label}</AdminBadge>
+                {loading ? <SkeletonBlock className="h-6 w-20" /> : (
+                  <AdminBadge variant={currentStatus!.color} dot>{currentStatus!.label}</AdminBadge>
+                )}
               </div>
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Jenis Bencana</span>
-                <span className="inline-flex px-2.5 py-1 rounded-md text-sm font-medium bg-orange-50 text-orange-700 border border-orange-100 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-300">
-                  {pengaduanData.jenis_bencana}
-                </span>
+                {loading ? <SkeletonBlock className="h-6 w-32" /> : (
+                  <span className="inline-flex px-2.5 py-1 rounded-md text-sm font-medium bg-orange-50 text-orange-700 border border-orange-100 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-300">
+                    {pengaduanData?.jenis_bencana}
+                  </span>
+                )}
               </div>
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Kecamatan</span>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{pengaduanData.kecamatan?.nama || "—"}</p>
+                {loading ? <SkeletonBlock className="h-5 w-28" /> : (
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{pengaduanData?.kecamatan?.nama || "—"}</p>
+                )}
               </div>
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Dibuat / diperbarui</span>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  <span className="block">dibuat_pada: {new Date(pengaduanData.dibuat_pada).toLocaleString("id-ID")}</span>
-                  <span className="block mt-0.5">updated_at: {new Date(pengaduanData.updated_at).toLocaleString("id-ID")}</span>
-                </p>
+                {loading ? (
+                  <div className="space-y-1">
+                    <SkeletonBlock className="h-4 w-40" />
+                    <SkeletonBlock className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <span className="block">dibuat_pada: {new Date(pengaduanData!.dibuat_pada).toLocaleString("id-ID")}</span>
+                    <span className="block mt-0.5">updated_at: {new Date(pengaduanData!.updated_at).toLocaleString("id-ID")}</span>
+                  </p>
+                )}
               </div>
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Draft</span>
-                <AdminBadge variant={pengaduanData.is_draft ? "warning" : "success"}>
-                  {pengaduanData.is_draft ? "Draft" : "Terkirim"}
-                </AdminBadge>
+                {loading ? <SkeletonBlock className="h-6 w-16" /> : (
+                  <AdminBadge variant={pengaduanData?.is_draft ? "warning" : "success"}>
+                    {pengaduanData?.is_draft ? "Draft" : "Terkirim"}
+                  </AdminBadge>
+                )}
               </div>
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">ID Laporan</span>
-                <p className="text-xs text-gray-600 dark:text-gray-400 break-all font-mono bg-gray-50 dark:bg-gray-800/40 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700/50">
-                  {pengaduanData.id}
-                </p>
+                {loading ? <SkeletonBlock className="h-8 w-full" /> : (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 break-all font-mono bg-gray-50 dark:bg-gray-800/40 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                    {pengaduanData?.id}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -510,15 +549,21 @@ export default function PengaduanDetailPage() {
             <div className="space-y-3">
               <div>
                 <span className="block text-xs font-medium text-gray-500 mb-1">Nama</span>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{pengaduanData.user?.name || '-'}</p>
+                {loading ? <SkeletonBlock className="h-5 w-32" /> : (
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{pengaduanData?.user?.name || '-'}</p>
+                )}
               </div>
               <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/40 p-2.5 rounded-lg border border-gray-100 dark:border-gray-700/50">
                 <HiPhone className="w-4 h-4 text-gray-400 shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{pengaduanData.user?.no_telepon || '-'}</span>
+                {loading ? <SkeletonBlock className="h-5 w-24" /> : (
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{pengaduanData?.user?.no_telepon || '-'}</span>
+                )}
               </div>
               <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/40 p-2.5 rounded-lg border border-gray-100 dark:border-gray-700/50">
                 <HiEnvelope className="w-4 h-4 text-gray-400 shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 break-all">{pengaduanData.user?.email || '-'}</span>
+                {loading ? <SkeletonBlock className="h-5 w-40" /> : (
+                  <span className="text-sm text-gray-700 dark:text-gray-300 break-all">{pengaduanData?.user?.email || '-'}</span>
+                )}
               </div>
             </div>
           </div>
@@ -530,8 +575,13 @@ export default function PengaduanDetailPage() {
               Komentar
             </h3>
 
-            <div className="space-y-3 max-h-52 overflow-y-auto mb-4">
-              {pengaduanData.komentar && pengaduanData.komentar.length > 0 ? (
+            <div className="space-y-3 max-h-52 overflow-y-auto mb-4 mt-3">
+              {loading ? (
+                <div className="space-y-3">
+                  <SkeletonBlock className="h-16 w-full" />
+                  <SkeletonBlock className="h-16 w-full" />
+                </div>
+              ) : pengaduanData?.komentar && pengaduanData.komentar.length > 0 ? (
                 pengaduanData.komentar.map((k) => (
                   <div key={k.id} className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50">
                     <div className="flex justify-between items-start gap-2 mb-1.5">

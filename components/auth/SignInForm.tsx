@@ -73,7 +73,7 @@ export default function SignInForm() {
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
                   <Input
-                    placeholder="admin@jembersiaga.go.id"
+                    placeholder="Enter your email"
                     type="email"
                     value={email}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}

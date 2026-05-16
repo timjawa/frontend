@@ -13,7 +13,9 @@ import {
   HiOutlineXCircle,
   HiOutlineEnvelope,
   HiOutlinePhone,
+  HiOutlinePlus,
 } from "react-icons/hi2";
+import Link from "next/link";
 import api from "@/lib/api";
 
 const roleConfig = {
@@ -23,7 +25,7 @@ const roleConfig = {
 
 function Avatar({ name, foto }: { name: string; foto: string | null }) {
   if (foto) {
-    return <img src={foto} alt={name} className="w-9 h-9 rounded-full object-cover" />;
+    return <img src={foto} alt={name} className="w-10 h-10 rounded-full object-cover shrink-0" />;
   }
   const initials = name
     .split(" ")
@@ -34,7 +36,7 @@ function Avatar({ name, foto }: { name: string; foto: string | null }) {
   const colors = ["bg-blue-500", "bg-purple-500", "bg-emerald-500", "bg-orange-500", "bg-rose-500", "bg-indigo-500"];
   const color = colors[name.charCodeAt(0) % colors.length] || colors[0];
   return (
-    <div className={`w-9 h-9 rounded-full ${color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+    <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
       {initials}
     </div>
   );
@@ -190,6 +192,13 @@ export default function PenggunaPage() {
                   className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all w-48 text-gray-700 dark:text-gray-200"
                 />
               </div>
+              <Link
+                href="/admin/pengguna/create"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200 dark:shadow-none"
+              >
+                <HiOutlinePlus className="w-4 h-4" />
+                Tambah Admin
+              </Link>
             </div>
           </div>
 
@@ -238,9 +247,7 @@ export default function PenggunaPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg shrink-0">
-                            {user.name.charAt(0).toUpperCase()}
-                          </div>
+                          <Avatar name={user.name} foto={user.foto_url?.startsWith('http') && !user.foto_url?.includes('ui-avatars') ? user.foto_url : null} />
                           <div>
                             <div className="font-semibold text-[#1B2E4B] dark:text-gray-200">{user.name}</div>
                             <div className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Terdaftar {new Date(user.created_at).toLocaleDateString('id-ID')}</div>

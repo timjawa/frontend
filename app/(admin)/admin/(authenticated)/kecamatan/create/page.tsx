@@ -17,7 +17,7 @@ export default function CreateKecamatanPage() {
     latitude: "",
     longitude: "",
     elevasi: "",
-    level_rawan: "rendah",
+    level_rawan: "",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -93,7 +93,7 @@ export default function CreateKecamatanPage() {
   };
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:bg-gray-800/50 dark:text-white ${
+    `w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:bg-gray-800/50 dark:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-500 ${
       errors[field] ? "border-red-400 bg-red-50" : "border-gray-200 dark:border-gray-700"
     }`;
 
@@ -139,7 +139,7 @@ export default function CreateKecamatanPage() {
                 value={formData.nama}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: Gumukmas"
+                placeholder="Masukkan nama kecamatan"
                 className={inputClass("nama")}
               />
               {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
@@ -157,7 +157,7 @@ export default function CreateKecamatanPage() {
                 value={formData.kode_wilayah}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: 35.09.04.2001"
+                placeholder="Masukkan kode wilayah"
                 className={inputClass("kode_wilayah")}
               />
               {errors.kode_wilayah && <p className="text-xs text-red-500">{errors.kode_wilayah}</p>}
@@ -201,9 +201,9 @@ export default function CreateKecamatanPage() {
                       id="latitude"
                       name="latitude"
                       value={formData.latitude}
-                      onChange={handleChange}
+                      disabled
                       required
-                      placeholder="-8.1724000"
+                      placeholder="Geser map/klik pada peta"
                       className={inputClass("latitude")}
                     />
                     {errors.latitude && <p className="text-xs text-red-500">{errors.latitude}</p>}
@@ -220,9 +220,9 @@ export default function CreateKecamatanPage() {
                       id="longitude"
                       name="longitude"
                       value={formData.longitude}
-                      onChange={handleChange}
+                      disabled
                       required
-                      placeholder="113.7000000"
+                      placeholder="Geser map/klik pada peta"
                       className={inputClass("longitude")}
                     />
                     {errors.longitude && <p className="text-xs text-red-500">{errors.longitude}</p>}
@@ -262,6 +262,7 @@ export default function CreateKecamatanPage() {
                 required
                 className={`${inputClass("level_rawan")} appearance-none`}
               >
+                <option value="">Pilih tingkat rawan</option>
                 <option value="rendah">Rendah (Hijau)</option>
                 <option value="sedang">Sedang (Kuning)</option>
                 <option value="tinggi">Tinggi (Merah)</option>
