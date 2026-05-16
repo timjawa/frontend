@@ -45,7 +45,7 @@ export default function FaqPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 min-h-screen">
+      <main className="flex flex-col flex-1 min-h-screen bg-white">
         {/* Hero — consistent with homepage: from-slate-50 to-white */}
         <section className="pt-36 pb-4 bg-gradient-to-b from-slate-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,7 +62,7 @@ export default function FaqPage() {
         </section>
 
         {/* FAQ Accordion — bg-white section, card with rounded-2xl border */}
-        <section className="pt-4 pb-10 bg-white">
+        <section className="flex-1 pt-4 pb-10 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
               <div className="flex justify-center py-12">
