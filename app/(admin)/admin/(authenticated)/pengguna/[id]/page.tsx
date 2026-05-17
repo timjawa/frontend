@@ -54,7 +54,7 @@ function Avatar({ name, foto }: { name: string; foto: string | null }) {
 }
 
 function SkeletonBox({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-slate-100 rounded-lg ${className}`} />;
+  return <div className={`animate-pulse bg-slate-100 dark:bg-gray-700 rounded-lg ${className}`} />;
 }
 
 export default function PenggunaDetailPage() {
@@ -127,7 +127,7 @@ export default function PenggunaDetailPage() {
         <div className="flex gap-3">
           <Link
             href="/admin/pengguna"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
           >
             <HiOutlineArrowLeft className="w-4 h-4" />
             Kembali
@@ -146,28 +146,28 @@ export default function PenggunaDetailPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Poin */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-yellow-50 shrink-0"><HiOutlineStar className="w-5 h-5 text-yellow-500" /></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 shrink-0"><HiOutlineStar className="w-5 h-5 text-yellow-500" /></div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Total Poin</p>
-            {loading ? <SkeletonBox className="h-7 w-16" /> : <p className="text-2xl font-bold text-gray-800">{points.total_points.toLocaleString()}</p>}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Poin</p>
+            {loading ? <SkeletonBox className="h-7 w-16" /> : <p className="text-2xl font-bold text-gray-800 dark:text-white">{points.total_points.toLocaleString()}</p>}
           </div>
         </div>
         {/* Laporan */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-blue-50 shrink-0"><HiOutlineDocumentText className="w-5 h-5 text-blue-500" /></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0"><HiOutlineDocumentText className="w-5 h-5 text-blue-500" /></div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Laporan Dikirim</p>
-            {loading ? <SkeletonBox className="h-7 w-10" /> : <p className="text-2xl font-bold text-gray-800">{stats.total_laporan}</p>}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Laporan Dikirim</p>
+            {loading ? <SkeletonBox className="h-7 w-10" /> : <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total_laporan}</p>}
           </div>
         </div>
         {/* Status */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-emerald-50 shrink-0"><HiOutlineIdentification className="w-5 h-5 text-emerald-500" /></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 shrink-0"><HiOutlineIdentification className="w-5 h-5 text-emerald-500" /></div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Status Akun</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Status Akun</p>
             {loading ? <SkeletonBox className="h-6 w-16 mt-1" /> : (
               <AdminBadge variant={isActive ? "success" : "danger"} dot>
                 {isActive ? "Aktif" : "Nonaktif"}
@@ -177,14 +177,10 @@ export default function PenggunaDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* ── Konten Utama ── */}
-        <div className="lg:col-span-2 space-y-6">
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch">
           {/* Profil */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3">Informasi Profil</h3>
+          <div className="lg:col-span-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm h-full flex flex-col">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">Informasi Profil</h3>
             {loading ? (
               <div className="flex items-start gap-5 mb-6">
                 <SkeletonBox className="w-20 h-20 rounded-2xl shrink-0" />
@@ -197,7 +193,7 @@ export default function PenggunaDetailPage() {
               <div className="flex items-start gap-5 mb-6">
                 <Avatar name={user.name} foto={user.foto_url?.startsWith('http') && !user.foto_url?.includes('ui-avatars') ? user.foto_url : null} />
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white">{user.name}</h2>
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     {role && <AdminBadge variant={role.variant}>{role.label}</AdminBadge>}
                     <AdminBadge variant={isActive ? "success" : "danger"} dot>{isActive ? "Aktif" : "Nonaktif"}</AdminBadge>
@@ -206,159 +202,117 @@ export default function PenggunaDetailPage() {
               </div>
             ) : null}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <HiOutlineEnvelope className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
-                <div>
-                  <span className="block text-xs font-medium text-gray-500 mb-1">Email</span>
-                  {loading ? <SkeletonBox className="h-4 w-40" /> : <p className="text-sm text-gray-800 break-all">{user?.email ?? "—"}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
+              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                <HiOutlineEnvelope className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email</span>
+                  {loading ? <SkeletonBox className="h-4 w-40" /> : <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{user?.email ?? "—"}</p>}
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <HiOutlinePhone className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
-                <div>
-                  <span className="block text-xs font-medium text-gray-500 mb-1">No. Telepon</span>
+              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                <HiOutlinePhone className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">No. Telepon</span>
                   {loading ? <SkeletonBox className="h-4 w-28" /> : (
-                    <p className="text-sm text-gray-800">{user?.no_telepon || <span className="italic text-gray-400">Belum diisi</span>}</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{user?.no_telepon || <span className="italic text-gray-400 dark:text-gray-500">Belum diisi</span>}</p>
                   )}
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100 sm:col-span-2">
-                <HiOutlineMapPin className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
-                <div>
-                  <span className="block text-xs font-medium text-gray-500 mb-1">Alamat</span>
+              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 sm:col-span-2">
+                <HiOutlineMapPin className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Alamat</span>
                   {loading ? <SkeletonBox className="h-4 w-full" /> : (
-                    <p className="text-sm text-gray-800">{user?.alamat || <span className="italic text-gray-400">Belum diisi</span>}</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{user?.alamat || <span className="italic text-gray-400 dark:text-gray-500">Belum diisi</span>}</p>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Histori Aktivitas */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
-              <HiOutlineExclamationCircle className="w-5 h-5 text-slate-400" />
-              Histori Aktivitas
-            </h3>
-            {loading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-3 animate-pulse">
-                    <SkeletonBox className="w-9 h-9 rounded-xl shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <SkeletonBox className="h-4 w-3/4" />
-                      <SkeletonBox className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : aktivitas.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-6">Belum ada aktivitas tercatat.</p>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {aktivitas.map((item: any) => {
-                  const badge = aktivitasBadge[item.tipe] ?? { label: item.tipe, variant: "default" as const };
-                  const icon  = aktivitasIcon[item.tipe] ?? <HiOutlineExclamationCircle className="w-4 h-4" />;
-                  return (
-                    <div key={item.id} className="flex items-start gap-3 py-3.5 first:pt-0 last:pb-0">
-                      <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 shrink-0 mt-0.5">{icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                          <span className="text-sm font-semibold text-gray-800 truncate">{item.judul}</span>
-                          <AdminBadge variant={badge.variant}>{badge.label}</AdminBadge>
-                        </div>
-                        <p className="text-xs text-gray-500 leading-relaxed truncate">{item.deskripsi}</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {item.waktu ? new Date(item.waktu).toLocaleString("id-ID") : "—"}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Sidebar ── */}
-        <div className="space-y-6">
-
           {/* Informasi Akun */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3">Informasi Akun</h3>
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm h-full flex flex-col lg:col-span-1">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">Informasi Akun</h3>
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 4 }).map((_, i) => <SkeletonBox key={i} className="h-10 w-full" />)}
               </div>
             ) : user ? (
-              <div className="space-y-4">
+              <div className="space-y-4 flex-1">
                 <div>
-                  <span className="block text-xs font-medium text-gray-500 mb-1">ID Pengguna</span>
-                  <p className="text-xs font-mono bg-gray-50 px-2 py-1.5 rounded-lg border border-gray-100 text-gray-600 break-all">{user.id}</p>
+                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">ID Pengguna</span>
+                  <p className="text-xs font-mono bg-gray-50 dark:bg-gray-900/50 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 break-all">{user.id}</p>
                 </div>
                 {user.firebase_uid && (
                   <div>
-                    <span className="block text-xs font-medium text-gray-500 mb-1">Firebase UID</span>
-                    <p className="text-xs font-mono bg-gray-50 px-2 py-1.5 rounded-lg border border-gray-100 text-gray-600 break-all">{user.firebase_uid}</p>
+                    <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Firebase UID</span>
+                    <p className="text-xs font-mono bg-gray-50 dark:bg-gray-900/50 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 break-all">{user.firebase_uid}</p>
                   </div>
                 )}
                 <div>
-                  <span className="block text-xs font-medium text-gray-500 mb-1">Role</span>
+                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Role</span>
                   {role && <AdminBadge variant={role.variant}>{role.label}</AdminBadge>}
                 </div>
                 <div className="flex items-center gap-2">
-                  <HiOutlineCalendar className="w-4 h-4 text-gray-400 shrink-0" />
+                  <HiOutlineCalendar className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
                   <div>
-                    <span className="block text-xs font-medium text-gray-500">Bergabung</span>
-                    <p className="text-sm text-gray-700">{user.created_at ? new Date(user.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "—"}</p>
+                    <span className="block text-xs font-medium text-gray-500 dark:text-gray-400">Bergabung</span>
+                    <p className="text-sm text-gray-700 dark:text-gray-200">{user.created_at ? new Date(user.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "—"}</p>
                   </div>
                 </div>
                 <div>
-                  <span className="block text-xs font-medium text-gray-500 mb-1">Total Komentar</span>
-                  <p className="text-sm font-semibold text-gray-700">{stats.total_komentar} komentar</p>
+                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Total Komentar</span>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{stats.total_komentar} komentar</p>
                 </div>
               </div>
             ) : null}
           </div>
+      </div>
 
-          {/* Poin Gamifikasi */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
-              <HiOutlineStar className="w-5 h-5 text-yellow-500" />
-              Poin Gamifikasi
-            </h3>
-            {loading ? (
-              <div className="text-center py-3 space-y-2">
-                <SkeletonBox className="h-12 w-24 mx-auto" />
-                <SkeletonBox className="h-3 w-20 mx-auto" />
-                <SkeletonBox className="h-2 w-full mt-4" />
-              </div>
-            ) : (
-              <div className="text-center py-3">
-                <p className="text-4xl font-bold text-gray-800">{points.total_points.toLocaleString()}</p>
-                <p className="text-sm text-gray-500 mt-1">Total Poin</p>
-              </div>
-            )}
-            {!loading && (
-              <>
-                <div className="w-full h-2 bg-gray-100 rounded-full mt-4 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.min((points.total_points / 2000) * 100, 100)}%` }}
-                  />
+      {/* Histori Aktivitas */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm mb-6">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2">
+          <HiOutlineExclamationCircle className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+          Histori Aktivitas
+        </h3>
+        {loading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3 animate-pulse">
+                <SkeletonBox className="w-9 h-9 rounded-xl shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <SkeletonBox className="h-4 w-1/4" />
+                  <SkeletonBox className="h-3 w-1/2" />
                 </div>
-                <p className="text-xs text-gray-400 mt-2 text-center">{points.total_points} / 2.000 poin ke level berikutnya</p>
-                {points.updated_at && (
-                  <p className="text-xs text-gray-400 text-center mt-1">
-                    Diperbarui: {new Date(points.updated_at).toLocaleDateString("id-ID")}
-                  </p>
-                )}
-              </>
-            )}
+              </div>
+            ))}
           </div>
-
-        </div>
+        ) : aktivitas.length === 0 ? (
+          <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">Belum ada aktivitas tercatat.</p>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            {aktivitas.map((item: any) => {
+              const badge = aktivitasBadge[item.tipe] ?? { label: item.tipe, variant: "default" as const };
+              const icon  = aktivitasIcon[item.tipe] ?? <HiOutlineExclamationCircle className="w-4 h-4" />;
+              return (
+                <div key={item.id} className="flex items-start gap-3 py-3.5 first:pt-0 last:pb-0">
+                  <div className="p-2 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 shrink-0 mt-0.5">{icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{item.judul}</span>
+                      <AdminBadge variant={badge.variant}>{badge.label}</AdminBadge>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed truncate">{item.deskripsi}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      {item.waktu ? new Date(item.waktu).toLocaleString("id-ID") : "—"}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Confirmation Modal (Toggle Active) ── */}

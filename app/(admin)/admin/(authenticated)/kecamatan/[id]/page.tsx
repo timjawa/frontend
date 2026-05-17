@@ -217,168 +217,177 @@ export default function KecamatanDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Konten Utama - Peta & Koordinat */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="flex flex-col gap-6">
+        {/* Baris Pertama: Peta dan Informasi Kecamatan sejajar dengan tinggi yang sama */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          
           {/* Peta Embed */}
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
-            <div className="px-6 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Lokasi di Peta</h3>
-            </div>
-            <div className="w-full h-64 bg-gray-100 dark:bg-gray-800">
-              {loading ? (
-                <div className="w-full h-full animate-pulse bg-gray-200 dark:bg-gray-700" />
-              ) : (
-                <iframe
-                  title={`Peta Kecamatan ${kecamatan?.nama}`}
-                  src={embedUrl}
-                  width="100%"
-                  height="100%"
-                  className="border-0 grayscale-[20%]"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              )}
-            </div>
-            <div className="px-6 py-3">
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 font-medium rounded-xl transition-colors text-sm border border-blue-100 dark:border-blue-500/20"
-              >
-                <HiMapPin className="w-4 h-4" />
-                Buka di Google Maps
-              </a>
+          <div className="lg:col-span-2">
+            <div className="h-full flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+              <div className="px-6 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Lokasi di Peta</h3>
+              </div>
+              <div className="w-full flex-1 bg-gray-100 dark:bg-gray-800 min-h-[250px]">
+                {loading ? (
+                  <div className="w-full h-full animate-pulse bg-gray-200 dark:bg-gray-700" />
+                ) : (
+                  <iframe
+                    title={`Peta Kecamatan ${kecamatan?.nama}`}
+                    src={embedUrl}
+                    width="100%"
+                    height="100%"
+                    className="border-0 grayscale-[20%] w-full h-full"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                )}
+              </div>
+              <div className="px-6 py-3 shrink-0">
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 font-medium rounded-xl transition-colors text-sm border border-blue-100 dark:border-blue-500/20"
+                >
+                  <HiMapPin className="w-4 h-4" />
+                  Buka di Google Maps
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Koordinat Detail */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
-              Koordinat Geografis
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-700/50 p-4">
-                <span className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Latitude</span>
-                {loading ? (
-                  <SkeletonBlock className="h-7 w-32 mt-1" />
-                ) : (
-                  <>
-                    <p className="font-mono text-xl font-bold text-gray-800 dark:text-gray-200">
-                      {Number(kecamatan?.latitude).toFixed(7)}
+          {/* Informasi Kecamatan */}
+          <div className="lg:col-span-1">
+            <div className="h-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+                Informasi Kecamatan
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <span className="block text-xs font-medium text-gray-500 mb-1">Status Level Rawan</span>
+                  {loading ? (
+                    <SkeletonBlock className="h-6 w-20" />
+                  ) : (
+                    <AdminBadge variant={currentLevel!.color} dot>
+                      {currentLevel!.label}
+                    </AdminBadge>
+                  )}
+                </div>
+
+                <div>
+                  <span className="block text-xs font-medium text-gray-500 mb-1">Kode Wilayah</span>
+                  {loading ? (
+                    <SkeletonBlock className="h-6 w-28" />
+                  ) : (
+                    <span className="inline-flex px-2.5 py-1 rounded-md text-sm font-medium font-mono bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300">
+                      {kecamatan?.kode_wilayah}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <span className="block text-xs font-medium text-gray-500 mb-1">Elevasi</span>
+                  {loading ? (
+                    <SkeletonBlock className="h-5 w-20" />
+                  ) : (
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                      {kecamatan?.elevasi != null ? `${Number(kecamatan.elevasi).toFixed(2)} ` : "— "}
+                      <span className="font-normal text-gray-500">mdpl</span>
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Lintang Selatan (LS)</p>
-                  </>
-                )}
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-700/50 p-4">
-                <span className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Longitude</span>
-                {loading ? (
-                  <SkeletonBlock className="h-7 w-32 mt-1" />
-                ) : (
-                  <>
-                    <p className="font-mono text-xl font-bold text-gray-800 dark:text-gray-200">
-                      {Number(kecamatan?.longitude).toFixed(7)}
+                  )}
+                </div>
+
+                <div>
+                  <span className="block text-xs font-medium text-gray-500 mb-1">ID Kecamatan</span>
+                  {loading ? (
+                    <SkeletonBlock className="h-8 w-full" />
+                  ) : (
+                    <p className="text-xs text-gray-600 dark:text-gray-400 break-all font-mono bg-gray-50 dark:bg-gray-800/40 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                      {kecamatan?.id}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Bujur Timur (BT)</p>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Informasi Kecamatan */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
-              Informasi Kecamatan
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <span className="block text-xs font-medium text-gray-500 mb-1">Status Level Rawan</span>
-                {loading ? (
-                  <SkeletonBlock className="h-6 w-20" />
-                ) : (
-                  <AdminBadge variant={currentLevel!.color} dot>
-                    {currentLevel!.label}
-                  </AdminBadge>
-                )}
-              </div>
-
-              <div>
-                <span className="block text-xs font-medium text-gray-500 mb-1">Kode Wilayah</span>
-                {loading ? (
-                  <SkeletonBlock className="h-6 w-28" />
-                ) : (
-                  <span className="inline-flex px-2.5 py-1 rounded-md text-sm font-medium font-mono bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300">
-                    {kecamatan?.kode_wilayah}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <span className="block text-xs font-medium text-gray-500 mb-1">Elevasi</span>
-                {loading ? (
-                  <SkeletonBlock className="h-5 w-20" />
-                ) : (
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                    {kecamatan?.elevasi != null ? `${Number(kecamatan.elevasi).toFixed(2)} ` : "— "}
-                    <span className="font-normal text-gray-500">mdpl</span>
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <span className="block text-xs font-medium text-gray-500 mb-1">ID Kecamatan</span>
-                {loading ? (
-                  <SkeletonBlock className="h-8 w-full" />
-                ) : (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 break-all font-mono bg-gray-50 dark:bg-gray-800/40 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700/50">
-                    {kecamatan?.id}
-                  </p>
-                )}
+        {/* Baris Kedua: Koordinat Detail & Level Rawan Visual */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Koordinat Detail (Kiri) */}
+          <div className="lg:col-span-2">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+                Koordinat Geografis
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-700/50 p-4">
+                  <span className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Latitude</span>
+                  {loading ? (
+                    <SkeletonBlock className="h-7 w-32 mt-1" />
+                  ) : (
+                    <>
+                      <p className="font-mono text-xl font-bold text-gray-800 dark:text-gray-200">
+                        {Number(kecamatan?.latitude).toFixed(7)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Lintang Selatan (LS)</p>
+                    </>
+                  )}
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-700/50 p-4">
+                  <span className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Longitude</span>
+                  {loading ? (
+                    <SkeletonBlock className="h-7 w-32 mt-1" />
+                  ) : (
+                    <>
+                      <p className="font-mono text-xl font-bold text-gray-800 dark:text-gray-200">
+                        {Number(kecamatan?.longitude).toFixed(7)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Bujur Timur (BT)</p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Level Rawan Visual */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
-              Tingkat Kerawanan
-            </h3>
+          {/* Level Rawan Visual (Kanan) */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+                Tingkat Kerawanan
+              </h3>
 
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Level Risiko</span>
-              {loading ? (
-                <SkeletonBlock className="h-5 w-16" />
-              ) : (
-                <AdminBadge variant={currentLevel!.color}>{currentLevel!.label}</AdminBadge>
-              )}
-            </div>
-
-            {/* Progress bar */}
-            <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
-              {!loading && (
-                <div className={`h-full rounded-full ${currentLevel?.barColor} ${currentLevel?.bar} transition-all duration-700`} />
-              )}
-            </div>
-            <div className="flex justify-between text-xs text-gray-400 mb-5">
-              <span>Rendah</span>
-              <span>Sedang</span>
-              <span>Tinggi</span>
-            </div>
-
-            {loading ? (
-              <SkeletonBlock className="h-16 w-full" />
-            ) : (
-              <div className={`p-4 rounded-xl border text-sm leading-relaxed ${currentLevel?.bgCard} ${currentLevel?.border} ${currentLevel?.text}`}>
-                {currentLevel?.desc}
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Level Risiko</span>
+                {loading ? (
+                  <SkeletonBlock className="h-5 w-16" />
+                ) : (
+                  <AdminBadge variant={currentLevel!.color}>{currentLevel!.label}</AdminBadge>
+                )}
               </div>
-            )}
+
+              {/* Progress bar */}
+              <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
+                {!loading && (
+                  <div className={`h-full rounded-full ${currentLevel?.barColor} ${currentLevel?.bar} transition-all duration-700`} />
+                )}
+              </div>
+              <div className="flex justify-between text-xs text-gray-400 mb-5">
+                <span>Rendah</span>
+                <span>Sedang</span>
+                <span>Tinggi</span>
+              </div>
+
+              {loading ? (
+                <SkeletonBlock className="h-16 w-full" />
+              ) : (
+                <div className={`p-4 rounded-xl border text-sm leading-relaxed ${currentLevel?.bgCard} ${currentLevel?.border} ${currentLevel?.text}`}>
+                  {currentLevel?.desc}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

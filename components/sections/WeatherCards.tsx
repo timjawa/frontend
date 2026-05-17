@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
@@ -8,58 +8,75 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 // Map OpenWeather ID → BMKG code
 const getBmkgCode = (weatherCode?: number): number => {
   if (!weatherCode) return 1; // default: Cerah Berawan
-  if (weatherCode === 800) return 0;                                      // Cerah
-  if (weatherCode === 801) return 1;                                      // Cerah Berawan
-  if (weatherCode === 802 || weatherCode === 803) return 3;              // Berawan
-  if (weatherCode === 804) return 4;                                      // Berawan Tebal
-  if (weatherCode === 701 || weatherCode === 721 || weatherCode === 741) return 5; // Udara Kabur
-  if ((weatherCode >= 300 && weatherCode <= 321) || weatherCode === 500 || weatherCode === 520) return 60; // Hujan Ringan
-  if (weatherCode === 501 || weatherCode === 521) return 61;             // Hujan Sedang
-  if (weatherCode === 502 || weatherCode === 503 || weatherCode === 504) return 63; // Hujan Lebat
-  if (weatherCode >= 200 && weatherCode <= 232) return 95;              // Hujan Petir
+  if (weatherCode === 800) return 0; // Cerah
+  if (weatherCode === 801) return 1; // Cerah Berawan
+  if (weatherCode === 802 || weatherCode === 803) return 3; // Berawan
+  if (weatherCode === 804) return 4; // Berawan Tebal
+  if (weatherCode === 701 || weatherCode === 721 || weatherCode === 741)
+    return 5; // Udara Kabur
+  if (
+    (weatherCode >= 300 && weatherCode <= 321) ||
+    weatherCode === 500 ||
+    weatherCode === 520
+  )
+    return 60; // Hujan Ringan
+  if (weatherCode === 501 || weatherCode === 521) return 61; // Hujan Sedang
+  if (weatherCode === 502 || weatherCode === 503 || weatherCode === 504)
+    return 63; // Hujan Lebat
+  if (weatherCode >= 200 && weatherCode <= 232) return 95; // Hujan Petir
   return 1; // fallback
 };
 
 // Map BMKG code → local icon key
 const bmkgCodeToIcon = (bmkgCode: number): string => {
   switch (bmkgCode) {
-    case 0:  return 'sunny';          // cerah.svg
-    case 1:  return 'partly-cloudy'; // cerah-berawan.svg
-    case 3:  return 'cloudy';        // berawan.svg
-    case 4:  return 'cloudy';        // berawan.svg (tebal)
-    case 5:  return 'cloudy';        // berawan.svg (kabur)
-    case 60: return 'light-rain';    // hujan-ringan.svg
-    case 61: return 'rain';          // hujan-sedang.svg
-    case 63: return 'rain';          // hujan-lebat.svg
-    case 95: return 'thunderstorm';  // hujan-petir.svg
-    default: return 'partly-cloudy';
+    case 0:
+      return "sunny"; // cerah.svg
+    case 1:
+      return "partly-cloudy"; // cerah-berawan.svg
+    case 3:
+      return "cloudy"; // berawan.svg
+    case 4:
+      return "cloudy"; // berawan.svg (tebal)
+    case 5:
+      return "cloudy"; // berawan.svg (kabur)
+    case 60:
+      return "light-rain"; // hujan-ringan.svg
+    case 61:
+      return "rain"; // hujan-sedang.svg
+    case 63:
+      return "rain"; // hujan-lebat.svg
+    case 95:
+      return "thunderstorm"; // hujan-petir.svg
+    default:
+      return "partly-cloudy";
   }
 };
 
 // Map BMKG code → deskripsi Indonesia
 const bmkgCodeToDesc: Record<number, string> = {
-  0:  'Cerah',
-  1:  'Cerah Berawan',
-  3:  'Berawan',
-  4:  'Berawan Tebal',
-  5:  'Udara Kabur',
-  60: 'Hujan Ringan',
-  61: 'Hujan Sedang',
-  63: 'Hujan Lebat',
-  95: 'Hujan Petir',
+  0: "Cerah",
+  1: "Cerah Berawan",
+  3: "Berawan",
+  4: "Berawan",
+  5: "Udara Kabur",
+  60: "Hujan Ringan",
+  61: "Hujan Sedang",
+  63: "Hujan Lebat",
+  95: "Hujan Petir",
 };
 
 // Format time as HH.MM
 const formatTime = (dateStr?: string) => {
   if (!dateStr) {
     const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}.${String(now.getMinutes()).padStart(2, '0')}`;
+    return `${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}`;
   }
   try {
     const d = new Date(dateStr);
-    return `${String(d.getHours()).padStart(2, '0')}.${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${String(d.getHours()).padStart(2, "0")}.${String(d.getMinutes()).padStart(2, "0")}`;
   } catch {
-    return '--:--';
+    return "--:--";
   }
 };
 
@@ -69,7 +86,12 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Jika data dari backend kosong, fallback sementara
-  const displayData = data && data.length > 0 ? data : [];
+  const displayData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return [...data].sort((a, b) =>
+      (a.kecamatan?.nama || "").localeCompare(b.kecamatan?.nama || ""),
+    );
+  }, [data]);
 
   const checkScroll = () => {
     const el = scrollRef.current;
@@ -100,7 +122,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
   if (displayData.length === 0) return null;
 
   return (
-    <section className="py-8" style={{ backgroundColor: '#F3F8FF' }}>
+    <section className="py-8" style={{ backgroundColor: "#F3F8FF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-primary">Cuaca Hari Ini</h2>
@@ -139,14 +161,15 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
           {displayData.map((loc) => {
             const bmkgCode = getBmkgCode(loc.weather_code);
             const iconName = bmkgCodeToIcon(bmkgCode);
-            const deskripsi = bmkgCodeToDesc[bmkgCode] ?? loc.deskripsi ?? 'Tidak diketahui';
+            const deskripsi =
+              bmkgCodeToDesc[bmkgCode] ?? loc.deskripsi ?? "Tidak diketahui";
             const time = formatTime(loc.updated_at || loc.created_at);
-            
+
             return (
               <div
                 key={loc.id}
                 className="flex-shrink-0 w-[220px] relative overflow-hidden rounded-2xl p-5 cursor-pointer group hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                style={{ backgroundColor: '#DFEAF6' }}
+                style={{ backgroundColor: "#DFEAF6" }}
               >
                 {/* Shield watermarks at corners */}
                 <Image
@@ -169,7 +192,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
                 {/* Top row: location name + time */}
                 <div className="flex justify-between items-start mb-8 relative z-10">
                   <h3 className="font-semibold text-primary text-sm leading-tight max-w-[130px]">
-                    {loc.kecamatan?.nama || 'Unknown'}
+                    {loc.kecamatan?.nama || "Unknown"}
                   </h3>
                   <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
                     {time}
@@ -179,7 +202,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
                 {/* Center: weather icon */}
                 <div className="flex justify-center mb-8 relative z-10">
                   <div className="group-hover:scale-110 transition-transform duration-300">
-                    <WeatherIcon type={iconName} size={80} />
+                    <WeatherIcon type={iconName} size={90} />
                   </div>
                 </div>
 

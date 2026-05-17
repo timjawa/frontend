@@ -34,9 +34,25 @@ export default function LaporanPage() {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterHari, setFilterHari] = useState("all");
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
+
+  const handleFilterHariChange = (val: string) => {
+    setFilterHari(val);
+    if (val === "all") {
+      setStartDate("");
+      setEndDate("");
+    } else if (val !== "custom") {
+      const days = parseInt(val);
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - days);
+      
+      setEndDate(end.toISOString().split('T')[0]);
+      setStartDate(start.toISOString().split('T')[0]);
+    }
+  };
 
   const filterLabelClass = "block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5";
   const filterControlClass =
@@ -80,16 +96,18 @@ export default function LaporanPage() {
       const params: Record<string, string | number> = { per_page: 500 }; // Ambil hingga 500 data untuk report
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
-      if (filterStatus !== "all") params.status = filterStatus;
 
       const res = await api.get("/api/admin/laporan", { params });
-      setData(res.data.data || []);
+      let results = res.data.data || [];
+      // Hanya tampilkan status diverifikasi dan selesai
+      results = results.filter((item: any) => item.status === "diverifikasi" || item.status === "selesai");
+      setData(results);
     } catch (error) {
       console.error("Gagal memuat laporan", error);
     } finally {
       setLoading(false);
     }
-  }, [startDate, endDate, filterStatus]);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchLaporan();
@@ -340,7 +358,10 @@ export default function LaporanPage() {
                   ref={startDateRef}
                   type="date" 
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setFilterHari("custom");
+                  }}
                   className="absolute inset-0 h-full w-full opacity-0 pointer-events-none [color-scheme:light] dark:[color-scheme:dark]"
                   tabIndex={-1}
                   aria-hidden="true"
@@ -372,7 +393,10 @@ export default function LaporanPage() {
                   ref={endDateRef}
                   type="date" 
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setFilterHari("custom");
+                  }}
                   className="absolute inset-0 h-full w-full opacity-0 pointer-events-none [color-scheme:light] dark:[color-scheme:dark]"
                   tabIndex={-1}
                   aria-hidden="true"
@@ -380,16 +404,18 @@ export default function LaporanPage() {
               </div>
             </div>
             
-            {/* Filter Status */}
+            {/* Filter Hari */}
             <div>
-              <label className={filterLabelClass}>Status Laporan</label>
+              <label className={filterLabelClass}>Filter Periode</label>
               <select 
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
+                value={filterHari}
+                onChange={(e) => handleFilterHariChange(e.target.value)}
                 className={`${filterControlClass} md:w-56`}
               >
-                <option value="all">Semua Status</option>
-                {STATUS_OPT.map(s => <option key={s} value={s}>{ST[s].label}</option>)}
+                <option value="all">Semua Waktu</option>
+                <option value="7">7 Hari Terakhir</option>
+                <option value="30">30 Hari Terakhir</option>
+                <option value="custom">Kustom Tanggal</option>
               </select>
             </div>
           </div>

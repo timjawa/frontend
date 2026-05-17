@@ -143,7 +143,7 @@ export default function CreatePosPengungsiPage() {
                 value={formData.nama}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: Posko Balai Desa A"
+                placeholder="Masukkan nama pos"
                 className={inputClass("nama")}
               />
               {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
@@ -180,7 +180,7 @@ export default function CreatePosPengungsiPage() {
                 name="alamat"
                 value={formData.alamat}
                 onChange={handleChange}
-                placeholder="Alamat lengkap pos"
+                placeholder="Masukkan alamat lengkap pos"
                 className={inputClass("alamat")}
               />
               {errors.alamat && <p className="text-xs text-red-500">{errors.alamat}</p>}
@@ -300,7 +300,7 @@ export default function CreatePosPengungsiPage() {
                 name="penanggung_jawab"
                 value={formData.penanggung_jawab}
                 onChange={handleChange}
-                placeholder="Nama PJ"
+                placeholder="Masukkan nama penanggung jawab"
                 className={inputClass("penanggung_jawab")}
               />
               {errors.penanggung_jawab && <p className="text-xs text-red-500">{errors.penanggung_jawab}</p>}
@@ -317,7 +317,7 @@ export default function CreatePosPengungsiPage() {
                 name="telepon"
                 value={formData.telepon}
                 onChange={handleChange}
-                placeholder="Contoh: 08123456789"
+                placeholder="Masukkan nomor telepon"
                 className={inputClass("telepon")}
               />
               {errors.telepon && <p className="text-xs text-red-500">{errors.telepon}</p>}

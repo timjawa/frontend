@@ -19,10 +19,8 @@ export default function AuthLayout({
               {/* <!-- ===== Common Grid Shape Start ===== --> */}
               <GridShape />
               <div className="flex flex-col items-center max-w-xs">
-                <Link href="/" className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500 text-white font-bold text-xl">
-                    JS
-                  </div>
+                <Link href="/" className="flex items-center gap-3 mb-4">
+                  <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain" />
                   <span className="text-2xl font-semibold text-white">
                     Jember Siaga
                   </span>

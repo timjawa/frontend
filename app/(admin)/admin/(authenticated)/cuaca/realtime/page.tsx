@@ -46,7 +46,7 @@ const bmkgCodeToDesc: Record<number, string> = {
   0:  "Cerah",
   1:  "Cerah Berawan",
   3:  "Berawan",
-  4:  "Berawan Tebal",
+  4:  "Berawan",
   5:  "Udara Kabur",
   60: "Hujan Ringan",
   61: "Hujan Sedang",
@@ -70,6 +70,7 @@ function weatherIcon(weatherCode?: number) {
 
 export default function CuacaRealtimePage() {
   const [search, setSearch] = useState("");
+  const [searchBy, setSearchBy] = useState("kecamatan");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [cuacaData, setCuacaData] = useState<any[]>([]);
@@ -123,10 +124,20 @@ export default function CuacaRealtimePage() {
     setCurrentPage(1);
   }, [search]);
 
-  const filtered = cuacaData?.filter((d) =>
-    (d.kecamatan?.nama?.toLowerCase() || "").includes(search.toLowerCase()) ||
-    (d.deskripsi?.toLowerCase() || "").includes(search.toLowerCase())
-  ) || [];
+  const filtered = cuacaData?.filter((d) => {
+    if (searchBy === "kecamatan") {
+      return (d.kecamatan?.nama?.toLowerCase() || "").includes(search.toLowerCase()) ||
+             (d.deskripsi?.toLowerCase() || "").includes(search.toLowerCase());
+    } else {
+      const fetchedAt = d.fetched_at || "";
+      let waktuStr = "";
+      if (fetchedAt) {
+        const dateObj = new Date(fetchedAt);
+        waktuStr = `${dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "2-digit" })} ${dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(".", ":")}`;
+      }
+      return waktuStr.includes(search);
+    }
+  }) || [];
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginatedData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -217,24 +228,34 @@ export default function CuacaRealtimePage() {
 
       {/* Table Card */}
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 dark:ring-gray-800 shadow-sm overflow-hidden">
 
           {/* Header Bar */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-gray-800">
             <div>
-              <h3 className="text-base font-bold text-[#1B2E4B]">Data Cuaca Realtime</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Data cuaca terkini per kecamatan dari API eksternal</p>
+              <h3 className="text-base font-bold text-[#1B2E4B] dark:text-white">Data Cuaca Realtime</h3>
+              <p className="text-xs text-slate-400 dark:text-gray-400 mt-0.5">Data cuaca terkini per kecamatan dari API eksternal</p>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari kecamatan..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white outline-none transition-all w-48"
-                />
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2">
+                <select 
+                  value={searchBy}
+                  onChange={(e) => setSearchBy(e.target.value)}
+                  className="py-2 pl-3 pr-8 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all cursor-pointer"
+                >
+                  <option value="kecamatan">Kecamatan</option>
+                  <option value="tanggal">Tanggal</option>
+                </select>
+                <div className="relative">
+                  <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={searchBy === "kecamatan" ? "Cari kecamatan..." : "Cari tanggal..."}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 outline-none transition-all w-48"
+                  />
+                </div>
               </div>
               <button
                 onClick={handleRefresh}
@@ -252,17 +273,17 @@ export default function CuacaRealtimePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-slate-50/80">
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 w-12 text-center">No</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Kecamatan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Kondisi</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Suhu</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Kelembapan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Diperbarui</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Aksi</th>
+                <tr className="bg-slate-50/80 dark:bg-gray-800/80 border-b border-slate-100 dark:border-gray-700">
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400 w-12 text-center">No</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kecamatan</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kondisi</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Suhu</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kelembapan</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Diperbarui</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400 text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
@@ -281,7 +302,7 @@ export default function CuacaRealtimePage() {
                   </tr>
                 ) : (
                   paginatedData.map((row, index) => (
-                    <tr key={row.id} className="hover:bg-blue-50/40 transition-colors">
+                    <tr key={row.id} className="hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-colors">
                       <td className="px-6 py-4 text-center text-slate-500 font-medium">{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                       <td className="px-6 py-4 font-semibold text-[#1B2E4B] dark:text-white">{row.kecamatan.nama}</td>
                       <td className="px-6 py-4">
@@ -323,16 +344,16 @@ export default function CuacaRealtimePage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-slate-50/50">
-            <p className="text-sm text-slate-500">
-              Menampilkan <span className="font-semibold text-slate-700">{(currentPage - 1) * itemsPerPage + (paginatedData.length > 0 ? 1 : 0)}–{(currentPage - 1) * itemsPerPage + paginatedData.length}</span> dari{" "}
-              <span className="font-semibold text-slate-700">{filtered.length}</span> data
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/50">
+            <p className="text-sm text-slate-500 dark:text-gray-400">
+              Menampilkan <span className="font-semibold text-slate-700 dark:text-gray-300">{(currentPage - 1) * itemsPerPage + (paginatedData.length > 0 ? 1 : 0)}–{(currentPage - 1) * itemsPerPage + paginatedData.length}</span> dari{" "}
+              <span className="font-semibold text-slate-700 dark:text-gray-300">{filtered.length}</span> data
             </p>
             <div className="flex items-center gap-1.5">
               <button 
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white transition-colors ${currentPage === 1 ? 'text-slate-400 cursor-not-allowed opacity-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors ${currentPage === 1 ? 'text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50' : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}
               >
                 ← Sebelumnya
               </button>
@@ -344,7 +365,7 @@ export default function CuacaRealtimePage() {
               <button 
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white transition-colors ${currentPage === totalPages || totalPages === 0 ? 'text-slate-400 cursor-not-allowed opacity-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors ${currentPage === totalPages || totalPages === 0 ? 'text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50' : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}
               >
                 Selanjutnya →
               </button>

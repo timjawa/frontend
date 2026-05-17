@@ -35,13 +35,6 @@ export default function FAQDetailPage({ params }: FAQDetailPageProps) {
             <HiOutlineArrowLeft className="w-4 h-4" />
             Kembali
           </Link>
-          <Link
-            href={`/admin/faq/${params.id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <HiOutlinePencil className="w-4 h-4" />
-            Edit FAQ
-          </Link>
         </div>
       </div>
 

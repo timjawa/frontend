@@ -65,17 +65,36 @@ export const refreshForecastWeather = async () => {
 };
 
 /**
- * Mengambil ringkasan harian cuaca per kecamatan.
- * Data berupa rata-rata suhu dan total curah hujan per hari per kecamatan.
+ * Mengambil data riwayat cuaca dari tabel historical_cuaca.
+ * Data berupa rata-rata suhu dan curah hujan per hari per kecamatan (7 hari terakhir).
  * 
- * @returns Data array ringkasan harian
+ * @returns Data object { [kecamatan]: { tanggal, suhu_avg, hujan_avg }[] }
  */
-export const fetchForecastSummary = async () => {
+export const fetchHistoricalWeather = async () => {
   try {
-    const response = await api.get(`/api/weather/forecast-summary`);
+    const response = await api.get(`/api/weather/historical`);
     return response.data;
   } catch (error) {
-    console.error(`Gagal mengambil ringkasan cuaca harian:`, error);
+    console.error(`Gagal mengambil data riwayat cuaca:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Mengambil data cuaca berdasarkan tanggal.
+ * Otomatis memilih sumber data:
+ * - Tanggal hari ini / ke depan → dari tabel perkiraan_cuaca (BMKG forecast)
+ * - Tanggal kemarin / ke belakang → dari tabel historical_cuaca (data riwayat)
+ * 
+ * @param date - Format YYYY-MM-DD
+ * @returns Data grouped per kecamatan dengan format yang sama
+ */
+export const fetchWeatherByDate = async (date: string) => {
+  try {
+    const response = await api.get(`/api/weather/by-date`, { params: { date } });
+    return response.data;
+  } catch (error) {
+    console.error(`Gagal mengambil data cuaca untuk tanggal ${date}:`, error);
     throw error;
   }
 };

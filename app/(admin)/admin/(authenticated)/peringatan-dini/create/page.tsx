@@ -19,7 +19,7 @@ export default function CreatePeringatanDiniPage() {
     kecamatan_id: "",
     deskripsi: "",
     tingkat_urgensi: "",
-    is_active: "1",
+    is_active: "",
   });
   const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,9 +34,6 @@ export default function CreatePeringatanDiniPage() {
         if (res.ok) {
           const json = await res.json();
           setKecamatanList(json.data || []);
-          if (json.data && json.data.length > 0) {
-            setFormData((prev) => ({ ...prev, kecamatan_id: json.data[0].id }));
-          }
         }
       } catch (err) {
         console.error("Gagal mengambil data kecamatan:", err);
@@ -163,7 +160,7 @@ export default function CreatePeringatanDiniPage() {
                   <option value="">Memuat data...</option>
                 ) : (
                   <>
-                    <option value="" disabled>Pilih Kecamatan</option>
+                    <option value="">Pilih kecamatan</option>
                     {kecamatanList.map((kec) => (
                       <option key={kec.id} value={kec.id}>
                         {kec.nama}
@@ -207,8 +204,10 @@ export default function CreatePeringatanDiniPage() {
                 name="is_active"
                 value={formData.is_active}
                 onChange={handleChange}
+                required
                 className={`${inputClass("is_active")} appearance-none`}
               >
+                <option value="">Pilih status peringatan</option>
                 <option value="1">Aktif (ditampilkan)</option>
                 <option value="0">Tidak Aktif (disembunyikan)</option>
               </select>

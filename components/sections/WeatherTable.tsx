@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiArrowTopRightOnSquare } from "react-icons/hi2";
@@ -11,7 +11,6 @@ const timeLabels = [
   { key: "siang",    label: "Siang",     range: [9, 14] },
   { key: "sore",     label: "Sore",      range: [14, 18] },
   { key: "malam",    label: "Malam",     range: [18, 24] },
-  { key: "dini_hari",label: "Dini Hari", range: [0, 5] },
 ];
 
 const mapConditionToIcon = (description: string) => {
@@ -36,8 +35,10 @@ const parseWaktuLokal = (waktu: string) => {
 export default function WeatherTable({ data = {} }: { data?: Record<string, any[]> }) {
   const [activeTab, setActiveTab] = useState(0);
 
-  // Mengambil data kecamatan dari props
-  const kecamatanList = Object.keys(data || {});
+  // Mengambil data kecamatan dari props dan mengurutkan secara alfabetis
+  const kecamatanList = useMemo(() => {
+    return Object.keys(data || {}).sort((a, b) => a.localeCompare(b));
+  }, [data]);
 
   return (
     <section className="py-10" style={{ backgroundColor: '#F3F8FF' }}>
@@ -46,21 +47,24 @@ export default function WeatherTable({ data = {} }: { data?: Record<string, any[
           Prediksi Cuaca
         </h2>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          {tabs.map((tab, i) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(i)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                activeTab === i
-                  ? "bg-primary text-white shadow-md"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-border"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        {/* Tabs & Source */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+          <div className="flex gap-2">
+            {tabs.map((tab, i) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(i)}
+                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  activeTab === i
+                    ? "bg-primary text-white shadow-md"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-border"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <span className="text-sm text-slate-500 font-medium">Sumber: BMKG</span>
         </div>
 
         {/* Table */}

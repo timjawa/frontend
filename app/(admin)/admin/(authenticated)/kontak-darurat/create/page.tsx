@@ -13,9 +13,9 @@ export default function CreateKontakDaruratPage() {
   const [formData, setFormData] = useState({
     nama: "",
     nomor: "",
-    kategori: "lainnya",
+    kategori: "",
     keterangan: "",
-    is_active: "1",
+    is_active: "",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -131,7 +131,7 @@ export default function CreateKontakDaruratPage() {
                 value={formData.nama}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: BPBD Kabupaten Jember"
+                placeholder="Masukkan nama instansi/layanan"
                 className={inputClass("nama")}
               />
               {errors.nama && <p className="text-xs text-red-500">{errors.nama}</p>}
@@ -149,7 +149,7 @@ export default function CreateKontakDaruratPage() {
                 value={formData.nomor}
                 onChange={handleChange}
                 required
-                placeholder="Contoh: 112 atau 0331-XXXXXX"
+                placeholder="Masukkan nomor telepon/handphone/whatsapp"
                 className={inputClass("nomor")}
               />
               {errors.nomor && <p className="text-xs text-red-500">{errors.nomor}</p>}
@@ -168,6 +168,7 @@ export default function CreateKontakDaruratPage() {
                 required
                 className={`${inputClass("kategori")} appearance-none`}
               >
+                <option value="">Pilih kategori</option>
                 <option value="polisi">Polisi</option>
                 <option value="pemadam">Pemadam Kebakaran</option>
                 <option value="ambulans">Ambulans / Rumah Sakit</option>
@@ -192,6 +193,7 @@ export default function CreateKontakDaruratPage() {
                 required
                 className={`${inputClass("is_active")} appearance-none`}
               >
+                <option value="">Pilih status</option>
                 <option value="1">Aktif</option>
                 <option value="0">Tidak Aktif</option>
               </select>

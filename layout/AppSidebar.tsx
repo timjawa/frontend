@@ -109,7 +109,7 @@ const AppSidebar: React.FC = () => {
 
   const getFilteredItems = (items: NavItem[]) => {
     if (!isBPBD) return items;
-    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Peringatan Dini", "Manajemen Pengaduan", "Laporan"];
+    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Pos Pengungsian", "Peringatan Dini", "Manajemen Pengaduan", "Laporan"];
     return items.filter(item => allowedForBPBD.includes(item.name));
   };
 
@@ -332,19 +332,11 @@ const AppSidebar: React.FC = () => {
         }`}
       >
         <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-500 text-white font-bold text-sm">
-                JS
-              </div>
-              <div>
-                <span className="text-base font-bold text-gray-800 dark:text-white">Jember</span>
-                <span className="text-base font-bold text-brand-500"> Siaga</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-500 text-white font-bold text-sm">
-              JS
+          <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain" />
+          {(isExpanded || isHovered || isMobileOpen) && (
+            <div>
+              <span className="text-base font-bold text-gray-800 dark:text-white">Jember</span>
+              <span className="text-base font-bold text-brand-500"> Siaga</span>
             </div>
           )}
         </Link>
