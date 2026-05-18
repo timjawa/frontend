@@ -31,7 +31,7 @@ export default function PeringkatanDiniPanel() {
       try {
         setLoading(true);
         // Load active or latest 5 warnings
-        const res = await fetchPeringatanDini({ per_page: 5 });
+        const res = await fetchPeringatanDini({ per_page: 5, is_active: 1 });
         setWarnings(res.data);
       } catch (error) {
         console.error("Gagal memuat peringatan dini:", error);
@@ -65,7 +65,7 @@ export default function PeringkatanDiniPanel() {
         <Table>
           <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
             <TableRow>
-              {["Kecamatan", "Jenis Ancaman", "Deskripsi", "Status", "Urgensi"].map((h) => (
+              {["Kecamatan", "Jenis Ancaman", "Deskripsi", "Urgensi"].map((h) => (
                 <TableCell
                   key={h}
                   isHeader
@@ -79,7 +79,7 @@ export default function PeringkatanDiniPanel() {
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {loading ? (
               <TableRow>
-                <td className="py-8 text-center" colSpan={5}>
+                <td className="py-8 text-center" colSpan={4}>
                   <div className="flex justify-center items-center gap-2 text-gray-400">
                     <HiArrowPath className="animate-spin" /> Memuat peringatan dini...
                   </div>
@@ -87,7 +87,7 @@ export default function PeringkatanDiniPanel() {
               </TableRow>
             ) : warnings.length === 0 ? (
               <TableRow>
-                <td className="py-8 text-center" colSpan={5}>
+                <td className="py-8 text-center" colSpan={4}>
                   <div className="text-gray-500">Belum ada data peringatan dini aktif.</div>
                 </td>
               </TableRow>
@@ -119,9 +119,6 @@ export default function PeringkatanDiniPanel() {
                     </TableCell>
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 max-w-[220px]">
                       <span className="line-clamp-1" title={w.deskripsi}>{w.deskripsi}</span>
-                    </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-xs dark:text-gray-400 whitespace-nowrap">
-                      {berlakuHingga}
                     </TableCell>
                     <TableCell className="py-3">
                       <Badge size="sm" color={color}>
