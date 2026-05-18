@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
-import PrediksiTableAction from "./PrediksiTableAction";
 import {
   HiMagnifyingGlass,
   HiArrowPath,
@@ -14,13 +14,17 @@ import {
   HiOutlineSun,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
+  HiChevronDown,
+  HiXMark,
+  HiOutlineEye,
+  HiOutlineMapPin,
 } from "react-icons/hi2";
 
 import { fetchWeatherForecast, refreshForecastWeather } from "@/services/weather";
+import PrediksiTableAction from "./PrediksiTableAction";
 
 function weatherIcon(code: number) {
   let iconFile = "berawan.svg";
-  
   if (code === 0) iconFile = "cerah.svg";
   else if (code <= 2) iconFile = "cerah-berawan.svg";
   else if (code <= 3) iconFile = "berawan.svg";
@@ -30,41 +34,129 @@ function weatherIcon(code: number) {
   else if (code <= 77) iconFile = "hujan-lebat.svg";
   else if (code <= 82) iconFile = "hujan-lebat.svg";
   else iconFile = "hujan-petir.svg";
-
   return <Image src={`/icons/${iconFile}`} alt="Cuaca" width={28} height={28} className="w-7 h-7 object-contain" />;
 }
 
-function curahHujanBadge(mm: number): { variant: "success" | "warning" | "danger" | "info"; label: string } {
-  if (mm === 0) return { variant: "success", label: "Tidak Hujan" };
-  if (mm < 5) return { variant: "info", label: "Ringan" };
-  if (mm < 20) return { variant: "warning", label: "Sedang" };
-  return { variant: "danger", label: "Lebat" };
+function curahHujanBadge(mm: number) {
+  if (mm === 0) return { variant: "success" as const, label: "Tidak Hujan" };
+  if (mm < 5) return { variant: "info" as const, label: "Ringan" };
+  if (mm < 20) return { variant: "warning" as const, label: "Sedang" };
+  return { variant: "danger" as const, label: "Lebat" };
+}
+
+interface DailyRow {
+  kecamatan_id: string;
+  kecamatan_nama: string;
+  dateStr: string; // YYYY-MM-DD
+  suhu_min: number;
+  suhu_max: number;
+  curah_hujan_total: number;
+  weather_code: number;
+  deskripsi_cuaca: string;
+  jumlah_prediksi: number;
 }
 
 export default function PrediksiCuacaPage() {
-  const [search, setSearch] = useState("");
-  const [searchBy, setSearchBy] = useState("kecamatan");
+  const [selectedKecamatan, setSelectedKecamatan] = useState("");
+  const [kecamatanSearchInput, setKecamatanSearchInput] = useState("");
+  const [isKecamatanOpen, setIsKecamatanOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [prediksiData, setPrediksiData] = useState<any[]>([]);
+
+  const getLocalDateString = (offsetDays = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  
+  const [allData, setAllData] = useState<any[]>([]);
+  const [rows, setRows] = useState<DailyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsKecamatanOpen(false);
+        setKecamatanSearchInput(selectedKecamatan);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedKecamatan]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Flatten grouped data from backend (keyed by kecamatan name) into a flat array
-  const flattenGroupedData = (grouped: Record<string, any[]>): any[] => {
+  const buildRows = (grouped: Record<string, any[]>) => {
     const flat: any[] = [];
     for (const kecamatan in grouped) {
       for (const item of grouped[kecamatan]) {
         flat.push(item);
       }
     }
-    return flat;
+
+    // Group by kecamatan + day
+    const dayGroups = new Map<string, any[]>();
+    for (const item of flat) {
+      if (!item.waktu_lokal) continue;
+      const d = new Date(item.waktu_lokal);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const kecId = item.kecamatan?.id || item.kecamatan_id || "";
+      const kecNama = item.kecamatan?.nama || "Unknown";
+      
+      const key = `${kecId}|${kecNama}|${dateStr}`;
+      if (!dayGroups.has(key)) {
+        dayGroups.set(key, []);
+      }
+      dayGroups.get(key)!.push(item);
+    }
+
+    const summaries: DailyRow[] = [];
+    dayGroups.forEach((items, key) => {
+      const [kecId, kecNama, dateStr] = key.split("|");
+      
+      // Pilih cuaca representatif (mendekati siang hari misal jam 12-14)
+      const representative = items.reduce((prev: any, curr: any) => {
+        const dPrev = new Date(prev.waktu_lokal).getHours();
+        const dCurr = new Date(curr.waktu_lokal).getHours();
+        const diffPrev = Math.abs(dPrev - 13);
+        const diffCurr = Math.abs(dCurr - 13);
+        return diffCurr < diffPrev ? curr : prev;
+      }, items[0]);
+
+      const suhus = items.map((d: any) => parseFloat(d.suhu) || 0).filter((s) => s > 0);
+      const minT = suhus.length > 0 ? Math.min(...suhus) : 0;
+      const maxT = suhus.length > 0 ? Math.max(...suhus) : 0;
+      
+      // Curah hujan akumulatif per hari
+      const totalHujan = items.reduce((acc, curr) => acc + (parseFloat(curr.curah_hujan) || 0), 0);
+
+      summaries.push({
+        kecamatan_id: kecId,
+        kecamatan_nama: kecNama,
+        dateStr: dateStr,
+        suhu_min: minT,
+        suhu_max: maxT,
+        curah_hujan_total: totalHujan,
+        weather_code: representative.weather_code,
+        deskripsi_cuaca: representative.deskripsi_cuaca,
+        jumlah_prediksi: items.length,
+      });
+    });
+
+    // Urutkan berdasarkan tanggal lalu kecamatan
+    summaries.sort((a, b) => {
+      if (a.dateStr === b.dateStr) return a.kecamatan_nama.localeCompare(b.kecamatan_nama);
+      return a.dateStr.localeCompare(b.dateStr);
+    });
+
+    return { flat, summaries };
   };
 
   const loadData = async () => {
@@ -72,7 +164,9 @@ export default function PrediksiCuacaPage() {
       setLoading(true);
       const res = await fetchWeatherForecast();
       if (res && res.data) {
-        setPrediksiData(flattenGroupedData(res.data));
+        const { flat, summaries } = buildRows(res.data);
+        setAllData(flat);
+        setRows(summaries);
       }
     } catch (error) {
       console.error("Gagal mengambil data prakiraan:", error);
@@ -81,25 +175,30 @@ export default function PrediksiCuacaPage() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
       const res = await refreshForecastWeather();
       if (res && res.data) {
-        // refreshForecast returns flat array (not grouped)
+        let grouped: Record<string, any[]>;
         if (Array.isArray(res.data)) {
-          setPrediksiData(res.data);
+          grouped = {};
+          for (const item of res.data) {
+            const nama = item.kecamatan?.nama || "Unknown";
+            if (!grouped[nama]) grouped[nama] = [];
+            grouped[nama].push(item);
+          }
         } else {
-          setPrediksiData(flattenGroupedData(res.data));
+          grouped = res.data;
         }
+        const { flat, summaries } = buildRows(grouped);
+        setAllData(flat);
+        setRows(summaries);
         showToast("success", "Data prakiraan cuaca berhasil diperbarui dari BMKG!");
       }
     } catch (error: any) {
-      console.error("Gagal refresh data prakiraan:", error);
       const msg = error?.response?.status === 401
         ? "Sesi login telah berakhir. Silakan login ulang."
         : "Gagal memperbarui data prakiraan. Silakan coba lagi.";
@@ -109,112 +208,103 @@ export default function PrediksiCuacaPage() {
     }
   };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
+  useEffect(() => { setCurrentPage(1); }, [selectedKecamatan, selectedDate]);
 
-  const filtered = prediksiData.filter((d) => {
-    if (searchBy === "kecamatan") {
-      const nama = d.kecamatan?.nama || "";
-      const deskripsi = d.deskripsi_cuaca || "";
-      return nama.toLowerCase().includes(search.toLowerCase()) ||
-             deskripsi.toLowerCase().includes(search.toLowerCase());
-    } else {
-      const waktuLokal = d.waktu_lokal || "";
-      let waktuStr = "";
-      if (waktuLokal) {
-        const dateObj = new Date(waktuLokal);
-        waktuStr = `${dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "2-digit" })} ${dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(".", ":")}`;
-      }
-      return waktuStr.includes(search);
-    }
+  // Extract unique list of kecamatan names from summaries
+  const uniqueKecamatans = Array.from(new Set(rows.map(r => r.kecamatan_nama))).sort();
+  const filteredKecamatans = uniqueKecamatans.filter((n) =>
+    n.toLowerCase().includes(kecamatanSearchInput.toLowerCase())
+  );
+
+  const filtered = rows.filter((s) => {
+    if (selectedKecamatan && s.kecamatan_nama.toLowerCase() !== selectedKecamatan.toLowerCase()) return false;
+    if (selectedDate && s.dateStr !== selectedDate) return false;
+    return true;
   });
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginatedData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Stat summary
-  const totalPrediksi = prediksiData.length;
-  const validCurahHujan = prediksiData.filter((d) => d.curah_hujan != null);
-  const maxCurahHujan = validCurahHujan.length > 0 ? Math.max(...validCurahHujan.map((d) => parseFloat(d.curah_hujan))) : 0;
-  const validSuhu = prediksiData.filter((d) => d.suhu != null);
-  const avgSuhu = validSuhu.length > 0 ? (validSuhu.reduce((s, d) => s + parseFloat(d.suhu), 0) / validSuhu.length).toFixed(1) : "0";
-  const validUV = prediksiData.filter((d) => d.uv_index != null);
-  const maxUV = validUV.length > 0 ? Math.max(...validUV.map((d) => parseFloat(d.uv_index))) : 0;
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range: number[] = [];
+    const rangeWithDots: (number | string)[] = [];
+    let l: number | undefined;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) range.push(i);
+    }
+    for (const i of range) {
+      if (l !== undefined) {
+        if (i - l === 2) rangeWithDots.push(l + 1);
+        else if (i - l > 2) rangeWithDots.push("...");
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+    return rangeWithDots;
+  };
 
-  // Last updated time
-  const updateTimeRaw = prediksiData[0]?.dibuat_pada;
+  // Stats
+  const validCH = allData.filter((d) => d.curah_hujan != null);
+  const maxCH = validCH.length > 0 ? Math.max(...validCH.map((d: any) => parseFloat(d.curah_hujan))) : 0;
+  const validSuhu = allData.filter((d) => d.suhu != null);
+  const avgSuhu = validSuhu.length > 0 ? (validSuhu.reduce((s: number, d: any) => s + parseFloat(d.suhu), 0) / validSuhu.length).toFixed(1) : "0";
+  const updateTimeRaw = allData[0]?.dibuat_pada;
   let updateDateStr = "-";
   let updateTimeStr = "-";
-
   if (updateTimeRaw) {
-    const dateObj = new Date(updateTimeRaw);
-    updateDateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
-    updateTimeStr = dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(".", ":");
+    const d = new Date(updateTimeRaw);
+    updateDateStr = d.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+    updateTimeStr = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(".", ":");
   }
 
   return (
     <div>
-      {/* Toast Notification */}
+      {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 animate-slide-in">
           <div className={`flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg border backdrop-blur-sm min-w-[320px] max-w-[440px] ${
-            toast.type === "success"
-              ? "bg-emerald-50/95 border-emerald-200 text-emerald-800"
-              : "bg-red-50/95 border-red-200 text-red-800"
+            toast.type === "success" ? "bg-emerald-50/95 border-emerald-200 text-emerald-800" : "bg-red-50/95 border-red-200 text-red-800"
           }`}>
             <span className="shrink-0 text-current">
               {toast.type === "success" ? <HiOutlineCheckCircle className="w-6 h-6" /> : <HiOutlineXCircle className="w-6 h-6" />}
             </span>
             <p className="text-sm font-medium flex-1">{toast.message}</p>
-            <button onClick={() => setToast(null)} className="text-current opacity-50 hover:opacity-100 transition-opacity shrink-0 ml-2">
-              ✕
-            </button>
+            <button onClick={() => setToast(null)} className="text-current opacity-50 hover:opacity-100 transition-opacity shrink-0 ml-2">✕</button>
           </div>
         </div>
       )}
+
       <PageBreadcrumb pageTitle="Prediksi Cuaca" />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0">
-            <HiOutlineCalendarDays className="w-5 h-5 text-blue-500" />
-          </div>
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 shrink-0"><HiOutlineMapPin className="w-5 h-5 text-blue-500" /></div>
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Total Prakiraan</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{totalPrediksi}</p>
+            <p className="text-xs text-gray-500 mb-0.5">Total Kecamatan</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{uniqueKecamatans.length}</p>
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 shrink-0">
-            <HiOutlineCloud className="w-5 h-5 text-cyan-500" />
-          </div>
+          <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 shrink-0"><HiOutlineCloud className="w-5 h-5 text-cyan-500" /></div>
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Curah Hujan Maks.</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {maxCurahHujan.toFixed(1)} <span className="text-sm font-normal text-gray-400">mm</span>
-            </p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{maxCH.toFixed(1)} <span className="text-sm font-normal text-gray-400">mm</span></p>
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-500/10 shrink-0">
-            <HiOutlineBeaker className="w-5 h-5 text-orange-500" />
-          </div>
+          <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-500/10 shrink-0"><HiOutlineBeaker className="w-5 h-5 text-orange-500" /></div>
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Rata-rata Suhu</p>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">{avgSuhu}°C</p>
           </div>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 shrink-0">
-            <HiOutlineSun className="w-5 h-5 text-yellow-500" />
-          </div>
+          <div className="p-3 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 shrink-0"><HiOutlineSun className="w-5 h-5 text-yellow-500" /></div>
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Terakhir Diperbarui</p>
-            <p className="text-sm font-bold text-gray-800 dark:text-white leading-tight">
-              {updateDateStr}
-            </p>
+            <p className="text-sm font-bold text-gray-800 dark:text-white leading-tight">{updateDateStr}</p>
             <p className="text-xs text-gray-400 mt-0.5">{updateTimeStr} WIB</p>
           </div>
         </div>
@@ -224,40 +314,77 @@ export default function PrediksiCuacaPage() {
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 dark:ring-gray-800 shadow-sm overflow-hidden">
 
-          {/* Header Bar */}
+          {/* Header */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-gray-800">
             <div>
-              <h3 className="text-base font-bold text-[#1B2E4B] dark:text-white">Data Prediksi Cuaca</h3>
-              <p className="text-xs text-slate-400 dark:text-gray-400 mt-0.5">Prakiraan cuaca per kecamatan berdasarkan data BMKG</p>
+              <h3 className="text-base font-bold text-[#1B2E4B] dark:text-white">Prediksi Harian</h3>
+              <p className="text-xs text-slate-400 dark:text-gray-400 mt-0.5">Rangkuman cuaca harian — BMKG</p>
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Search */}
-              <div className="flex items-center gap-2">
-                <select 
-                  value={searchBy}
-                  onChange={(e) => setSearchBy(e.target.value)}
-                  className="py-2 pl-3 pr-8 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all cursor-pointer"
-                >
-                  <option value="kecamatan">Kecamatan</option>
-                  <option value="tanggal">Tanggal</option>
-                </select>
+              {/* Kecamatan Search */}
+              <div className="relative" ref={dropdownRef}>
                 <div className="relative">
                   <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400" />
                   <input
                     type="text"
-                    placeholder={searchBy === "kecamatan" ? "Cari kecamatan / kondisi..." : "Cari tanggal..."}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 outline-none transition-all w-52"
+                    placeholder="Cari Kecamatan..."
+                    value={kecamatanSearchInput}
+                    onFocus={() => setIsKecamatanOpen(true)}
+                    onChange={(e) => {
+                      setKecamatanSearchInput(e.target.value);
+                      setIsKecamatanOpen(true);
+                      if (e.target.value === "") setSelectedKecamatan("");
+                    }}
+                    className="pl-9 pr-8 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 outline-none transition-all w-56 cursor-text"
                   />
+                  {kecamatanSearchInput ? (
+                    <button onClick={() => { setSelectedKecamatan(""); setKecamatanSearchInput(""); setIsKecamatanOpen(false); }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                      <HiXMark className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <HiChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
+                  )}
                 </div>
+                {isKecamatanOpen && (
+                  <div className="absolute left-0 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 z-50 py-1">
+                    {filteredKecamatans.length === 0 ? (
+                      <div className="px-4 py-2 text-xs text-slate-400 dark:text-gray-500">Tidak ada kecamatan ditemukan</div>
+                    ) : (
+                      filteredKecamatans.map((nama) => (
+                        <button key={nama}
+                          onClick={() => { setSelectedKecamatan(nama); setKecamatanSearchInput(nama); setIsKecamatanOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-gray-700/50 ${
+                            selectedKecamatan === nama ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-medium" : "text-slate-700 dark:text-gray-200"
+                          }`}>
+                          {nama}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing || loading}
-                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-sm whitespace-nowrap transition-all 
-                ${refreshing || loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-blue-200 dark:shadow-none'}`}
-              >
+
+              {/* Date Selector Dropdown */}
+              <div className="relative">
+                <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
+                <select
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="pl-9 pr-8 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 outline-none transition-all cursor-pointer font-medium appearance-none w-36"
+                >
+                  <option value="">Semua Hari</option>
+                  <option value={getLocalDateString(0)}>Hari Ini</option>
+                  <option value={getLocalDateString(1)}>Besok</option>
+                  <option value={getLocalDateString(2)}>Lusa</option>
+                </select>
+                <HiChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
+              </div>
+
+              <button onClick={handleRefresh} disabled={refreshing || loading}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-sm whitespace-nowrap transition-all ${
+                  refreshing || loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-blue-200 dark:shadow-none'
+                }`}>
                 <HiArrowPath className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                 {refreshing ? 'Memperbarui...' : 'Refresh Data'}
               </button>
@@ -271,105 +398,79 @@ export default function PrediksiCuacaPage() {
                 <tr className="bg-slate-50/80 dark:bg-gray-800/80 border-b border-slate-100 dark:border-gray-700">
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400 w-12 text-center">No</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kecamatan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Waktu Prakiraan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kondisi</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Suhu</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kelembapan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Curah Hujan</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Angin</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Tanggal</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Kondisi (Siang)</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Suhu (Min/Max)</th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400">Curah Hujan (Total)</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-400 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {loading ? (
-                  <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-slate-400">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <HiArrowPath className="w-8 h-8 animate-spin text-slate-300" />
-                        <p>Memuat data prakiraan cuaca...</p>
-                      </div>
-                    </td>
-                  </tr>
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-4 mx-auto" /></td>
+                      <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" /></td>
+                      <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" /></td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 bg-gray-200 dark:bg-gray-700 rounded-full shrink-0" />
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" /></td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12" />
+                          <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded w-16" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right"><div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 inline-block" /></td>
+                    </tr>
+                  ))
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-slate-400">
+                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
                       <HiOutlineCloud className="w-10 h-10 mx-auto mb-2 text-slate-300" />
                       <p>Tidak ada data prakiraan ditemukan.</p>
                     </td>
                   </tr>
                 ) : (
                   paginatedData.map((row, index) => {
-                    const hujan = curahHujanBadge(parseFloat(row.curah_hujan) || 0);
-                    const waktuLokal = row.waktu_lokal || "";
-                    let waktuDate = "";
-                    let waktuTime = "";
-                    if (waktuLokal) {
-                      const d = new Date(waktuLokal);
-                      waktuDate = d.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "2-digit" });
-                      waktuTime = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(".", ":");
+                    const hujan = curahHujanBadge(row.curah_hujan_total);
+                    let tanggalStr = "-";
+                    if (row.dateStr) {
+                      const d = new Date(row.dateStr);
+                      tanggalStr = d.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric", weekday: "short" });
                     }
                     return (
-                      <tr key={row.id} className="hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-colors">
-                        {/* No */}
+                      <tr key={`${row.kecamatan_id}-${row.dateStr}`} className="hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-colors">
                         <td className="px-6 py-4 text-center text-slate-500 font-medium">{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-
-                        {/* Kecamatan */}
-                        <td className="px-6 py-4 font-semibold text-[#1B2E4B] dark:text-white">
-                          {row.kecamatan?.nama || "-"}
-                        </td>
-
-                        {/* Waktu Prakiraan */}
                         <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                            {waktuDate}
-                          </p>
-                          <p className="text-xs text-slate-400">{waktuTime} WIB</p>
+                          <p className="font-semibold text-[#1B2E4B] dark:text-white">{row.kecamatan_nama}</p>
                         </td>
-
-                        {/* Kondisi */}
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{tanggalStr}</p>
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-xl leading-none">{weatherIcon(row.weather_code)}</span>
+                            <span className="leading-none">{weatherIcon(row.weather_code)}</span>
                             <span className="text-sm text-slate-600 dark:text-slate-400">{row.deskripsi_cuaca}</span>
                           </div>
                         </td>
-
-                        {/* Suhu */}
                         <td className="px-6 py-4">
-                          <p className="font-bold text-gray-800 dark:text-white">{row.suhu}°C</p>
+                          <p className="font-bold text-gray-800 dark:text-white">{row.suhu_min}° - {row.suhu_max}°C</p>
                         </td>
-
-                        {/* Kelembapan */}
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{row.kelembapan}%</span>
-                            <div className="w-14 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-400 rounded-full" style={{ width: `${row.kelembapan}%` }} />
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Curah Hujan */}
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1 items-start">
                             <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              {parseFloat(row.curah_hujan || 0).toFixed(1)} <span className="text-xs font-normal text-gray-400">mm</span>
+                              {row.curah_hujan_total.toFixed(1)} <span className="text-xs font-normal text-gray-400">mm</span>
                             </span>
                             <AdminBadge variant={hujan.variant}>{hujan.label}</AdminBadge>
                           </div>
                         </td>
-
-                        {/* Angin */}
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            {row.kecepatan_angin} <span className="text-xs font-normal text-gray-400">km/j</span>
-                          </p>
-                          <p className="text-xs text-slate-400">{row.arah_angin}</p>
-                        </td>
-
-                        {/* Aksi */}
                         <td className="px-6 py-4 text-right">
-                          <PrediksiTableAction id={row.id} />
+                          <PrediksiTableAction kecamatanId={row.kecamatan_id} dateStr={row.dateStr} />
                         </td>
                       </tr>
                     );
@@ -383,26 +484,29 @@ export default function PrediksiCuacaPage() {
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/50">
             <p className="text-sm text-slate-500 dark:text-gray-400">
               Menampilkan <span className="font-semibold text-slate-700 dark:text-gray-300">{(currentPage - 1) * itemsPerPage + (paginatedData.length > 0 ? 1 : 0)}–{(currentPage - 1) * itemsPerPage + paginatedData.length}</span> dari{" "}
-              <span className="font-semibold text-slate-700 dark:text-gray-300">{filtered.length}</span> prakiraan
+              <span className="font-semibold text-slate-700 dark:text-gray-300">{filtered.length}</span> baris harian
             </p>
             <div className="flex items-center gap-1.5">
-              <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors ${currentPage === 1 ? 'text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50' : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}
-              >
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors ${currentPage === 1 ? 'text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50' : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
                 ← Sebelumnya
               </button>
-              
-              <button className="w-9 h-9 rounded-lg text-sm font-semibold bg-[#1B2E4B] text-white shadow-md shadow-[#1B2E4B]/20">
-                {currentPage}
-              </button>
-              
-              <button 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors ${currentPage === totalPages || totalPages === 0 ? 'text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50' : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}
-              >
+              {getPageNumbers().map((page, idx) => {
+                if (page === "...") {
+                  return <span key={`dots-${idx}`} className="w-9 h-9 flex items-center justify-center text-slate-400 dark:text-gray-500 text-sm font-medium select-none">...</span>;
+                }
+                const pageNum = page as number;
+                return (
+                  <button key={`page-${pageNum}`} onClick={() => setCurrentPage(pageNum)}
+                    className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all ${
+                      currentPage === pageNum ? "bg-[#1B2E4B] text-white shadow-md shadow-[#1B2E4B]/20" : "border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700"
+                    }`}>
+                    {pageNum}
+                  </button>
+                );
+              })}
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors ${currentPage === totalPages || totalPages === 0 ? 'text-slate-400 dark:text-gray-500 cursor-not-allowed opacity-50' : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
                 Selanjutnya →
               </button>
             </div>

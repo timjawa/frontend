@@ -29,9 +29,11 @@ interface DatePickerProps {
   id?: string;
   minDate?: string; // "YYYY-MM-DD" — earliest selectable date
   maxDate?: string; // "YYYY-MM-DD" — latest selectable date
+  size?: "sm" | "md";
+  disableDarkMode?: boolean;
 }
 
-export default function DatePicker({ value, onChange, id, minDate, maxDate }: DatePickerProps) {
+export default function DatePicker({ value, onChange, id, minDate, maxDate, size = "md", disableDarkMode = false }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => {
     const d = value ? new Date(value + "T00:00:00") : new Date();
@@ -183,26 +185,29 @@ export default function DatePicker({ value, onChange, id, minDate, maxDate }: Da
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          group flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium
-          transition-all duration-300 ease-out cursor-pointer
+          group flex items-center gap-2 transition-all duration-300 ease-out cursor-pointer
+          ${size === "sm" ? "px-3 py-1.5 rounded-lg text-sm font-medium" : "px-4 py-2.5 rounded-xl text-sm font-medium"}
           ${
             isOpen
               ? "bg-primary text-white shadow-lg shadow-primary/25 scale-[1.02]"
-              : "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-secondary/50 hover:shadow-md hover:shadow-secondary/10"
+              : disableDarkMode
+                ? "bg-white text-slate-700 border border-slate-200 shadow-sm hover:border-secondary/50 hover:shadow-md hover:shadow-secondary/10"
+                : "bg-white dark:bg-gray-800 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-gray-700 shadow-sm hover:border-secondary/50 hover:shadow-md hover:shadow-secondary/10"
           }
         `}
       >
         <span
           className={`
-          flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300
+          flex items-center justify-center transition-all duration-300
+          ${size === "sm" ? "w-6 h-6 rounded-md" : "w-8 h-8 rounded-lg"}
           ${isOpen ? "bg-white/20" : "bg-secondary/10 group-hover:bg-secondary/20"}
         `}
         >
           <HiOutlineCalendar
-            className={`text-lg transition-colors duration-300 ${isOpen ? "text-white" : "text-secondary"}`}
+            className={`transition-colors duration-300 ${size === "sm" ? "text-base" : "text-lg"} ${isOpen ? "text-white" : "text-secondary"}`}
           />
         </span>
-        <span className="tracking-wide">{displayValue}</span>
+        <span className="tracking-wide text-xs sm:text-sm">{displayValue}</span>
         <svg
           className={`w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""} ${isOpen ? "text-white/70" : "text-slate-400"}`}
           fill="none"
@@ -226,7 +231,7 @@ export default function DatePicker({ value, onChange, id, minDate, maxDate }: Da
         ${isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}
       `}
       >
-        <div className="w-[320px] bg-white rounded-2xl shadow-2xl shadow-slate-900/15 border border-slate-100 overflow-hidden">
+        <div className={`w-[320px] bg-white rounded-2xl shadow-2xl shadow-slate-900/15 border border-slate-100 overflow-hidden ${disableDarkMode ? "" : "dark:bg-gray-800 dark:shadow-slate-950/40 dark:border-gray-700"}`}>
           {/* Header */}
           <div className="bg-gradient-to-r from-primary to-primary-light p-4">
             <div className="flex items-center justify-between">
@@ -262,7 +267,7 @@ export default function DatePicker({ value, onChange, id, minDate, maxDate }: Da
             {DAYS_ID.map((day) => (
               <div
                 key={day}
-                className="text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider py-1"
+                className={`text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider py-1 ${disableDarkMode ? "" : "dark:text-gray-400"}`}
               >
                 {day}
               </div>
@@ -291,14 +296,20 @@ export default function DatePicker({ value, onChange, id, minDate, maxDate }: Da
                   text-sm rounded-xl transition-all duration-200 m-[1px]
                   ${
                     cell.isDisabled
-                      ? "text-slate-200 cursor-not-allowed"
+                      ? disableDarkMode
+                        ? "text-slate-200 cursor-not-allowed"
+                        : "text-slate-200 dark:text-gray-600 cursor-not-allowed"
                       : cell.isSelected
                         ? "bg-secondary text-white font-bold shadow-md shadow-secondary/30 scale-105"
                         : cell.isToday
                           ? "bg-secondary/10 text-secondary font-bold ring-1 ring-secondary/30"
                           : cell.isCurrentMonth
-                            ? "text-slate-700 hover:bg-slate-100 hover:scale-105 font-medium"
-                            : "text-slate-300 hover:bg-slate-50 hover:text-slate-400"
+                            ? disableDarkMode
+                              ? "text-slate-700 hover:bg-slate-100 hover:scale-105 font-medium"
+                              : "text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-700 hover:scale-105 font-medium"
+                            : disableDarkMode
+                              ? "text-slate-300 hover:bg-slate-50 hover:text-slate-400"
+                              : "text-slate-300 dark:text-gray-500 hover:bg-slate-50 dark:hover:bg-gray-700/30 hover:text-slate-400"
                   }
                   active:scale-95
                 `}
@@ -312,7 +323,7 @@ export default function DatePicker({ value, onChange, id, minDate, maxDate }: Da
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+          <div className={`flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50/50 ${disableDarkMode ? "" : "dark:border-gray-700 dark:bg-gray-800/50"}`}>
             <button
               type="button"
               onClick={goToToday}
@@ -321,7 +332,7 @@ export default function DatePicker({ value, onChange, id, minDate, maxDate }: Da
               <span className="w-1.5 h-1.5 bg-secondary rounded-full" />
               Hari Ini
             </button>
-            <span className="text-[11px] text-slate-400 font-medium">
+            <span className={`text-[11px] text-slate-400 font-medium ${disableDarkMode ? "" : "dark:text-gray-400"}`}>
               {MONTHS_ID[today.getMonth()]} {today.getFullYear()}
             </span>
           </div>

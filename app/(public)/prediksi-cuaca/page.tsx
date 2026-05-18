@@ -200,6 +200,7 @@ export default function PrediksiCuacaPage() {
                 onChange={(val) => setSelectedDate(val)}
                 minDate={minDate}
                 maxDate={maxDate}
+                disableDarkMode={true}
               />
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs text-slate-500 mr-1 font-medium">Jam:</span>

@@ -62,7 +62,7 @@ export default function LaporanPage() {
   const openDatePicker = (input: HTMLInputElement | null) => {
     if (!input) return;
     input.focus();
-    if ("showPicker" in input) {
+    if (typeof input.showPicker === "function") {
       input.showPicker();
     } else {
       input.click();
@@ -175,12 +175,9 @@ export default function LaporanPage() {
           .print-logo-box {
             width: 56px;
             height: 56px;
-            border: 1px solid #111827;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
           }
           .print-agency {
             font-size: 15px;
@@ -437,7 +434,9 @@ export default function LaporanPage() {
       <div id="printable-report" className="print-report-card rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="print-only hidden">
           <div className="print-letterhead">
-            <div className="print-logo-box">JS</div>
+            <div className="print-logo-box">
+              <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
+            </div>
             <div>
               <div className="print-agency">Pemerintah Kabupaten Jember</div>
               <div className="print-system">Jember Siaga - Sistem Pengaduan Bencana</div>
@@ -445,7 +444,9 @@ export default function LaporanPage() {
                 Laporan administrasi pengaduan bencana masyarakat Kabupaten Jember
               </div>
             </div>
-            <div className="print-logo-box">JS</div>
+            <div className="print-logo-box">
+              <img src="/icon-mobile.svg" alt="Icon" className="w-full h-full object-contain" />
+            </div>
           </div>
 
           <div className="print-title">
