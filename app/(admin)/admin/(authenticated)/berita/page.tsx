@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
 import { HiMagnifyingGlass, HiPlus, HiOutlineNewspaper, HiOutlineCheckCircle, HiOutlineDocumentText, HiOutlineArchiveBox, HiOutlineExclamationTriangle } from "react-icons/hi2";
@@ -44,6 +45,44 @@ export default function AdminBeritaPage() {
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<{ total: number; published: number; draft: number; archived: number } | null>(null);
+
+  // Premium Toast and Confirm Dialog state
+  const [mounted, setMounted] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type: "danger" | "warning" | "success";
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const triggerConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    type: "danger" | "warning" | "success" = "warning"
+  ) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: () => {
+        onConfirm();
+        setConfirmModal(null);
+      },
+      type,
+    });
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -104,10 +143,14 @@ export default function AdminBeritaPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleSearch = () => {
-    setPage(1);
-    setSearch(searchInput);
-  };
+  // Debounced search reactive implementation
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(delayDebounce);
+  }, [searchInput]);
 
   const pages = meta ? Array.from({ length: meta.last_page }, (_, i) => i + 1) : [];
 
@@ -172,6 +215,16 @@ export default function AdminBeritaPage() {
               <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">Kelola konten berita dan informasi publik</p>
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="relative">
+                <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Cari berita..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all w-48 text-gray-700 dark:text-gray-200"
+                />
+              </div>
               <select
                 value={statusFilter}
                 onChange={(e) => {
@@ -282,7 +335,27 @@ export default function AdminBeritaPage() {
                         {row.views_count ?? 0}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <BeritaTableAction id={row.id} />
+                        <BeritaTableAction 
+                          id={row.id} 
+                          onDelete={(id) => {
+                            triggerConfirm(
+                              "Hapus Berita",
+                              "Apakah Anda yakin ingin menghapus berita ini? Berita yang dihapus akan hilang secara permanen dari publik dan dashboard.",
+                              async () => {
+                                try {
+                                  await api.delete(`/api/berita/${id}`);
+                                  showToast("Berita berhasil dihapus!");
+                                  fetchData();
+                                } catch (err: any) {
+                                  console.error(err);
+                                  const msg = err.response?.data?.message || 'Terjadi kesalahan.';
+                                  showToast(`Gagal menghapus berita: ${msg}`, "error");
+                                }
+                              },
+                              "danger"
+                            );
+                          }}
+                        />
                       </td>
                     </tr>
                   ))
@@ -336,6 +409,63 @@ export default function AdminBeritaPage() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification - Portaled to Body */}
+      {mounted && toast && typeof window !== "undefined" && createPortal(
+        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          toast.type === "success" 
+            ? "bg-emerald-500 border-emerald-400 text-white" 
+            : "bg-red-500 border-red-400 text-white"
+        }`}>
+          {toast.type === "success" ? <HiOutlineCheckCircle className="w-5 h-5 shrink-0" /> : <HiOutlineExclamationTriangle className="w-5 h-5 shrink-0" />}
+          <span className="font-bold text-sm">{toast.msg}</span>
+        </div>,
+        document.body
+      )}
+
+      {/* Custom Confirmation Dialog - Portaled to Body */}
+      {mounted && confirmModal && confirmModal.isOpen && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-150">
+          <div 
+            className="w-full max-w-sm bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl p-5 overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4">
+              <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-1.5 flex items-center gap-1.5">
+                {confirmModal.type === "danger" ? "❌ " : confirmModal.type === "success" ? "✅ " : "⚠️ "}
+                {confirmModal.title}
+              </h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                {confirmModal.message}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                className="px-3.5 py-2 font-medium text-gray-500 hover:text-gray-700 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmModal.onConfirm}
+                className={`px-3.5 py-2 font-bold text-white rounded-lg transition-colors ${
+                  confirmModal.type === "danger"
+                    ? "bg-red-500 hover:bg-red-650"
+                    : confirmModal.type === "success"
+                    ? "bg-emerald-500 hover:bg-emerald-650"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                Lanjutkan
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

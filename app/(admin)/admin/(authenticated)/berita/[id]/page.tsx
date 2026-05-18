@@ -5,14 +5,13 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlinePencil } from "react-icons/hi2";
-import api from "@/lib/api";
+import api, { getImageUrl } from "@/lib/api";
 
 export default function DetailBeritaPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
   const id = unwrappedParams.id;
   const [berita, setBerita] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const STORAGE_URL = 'http://192.168.0.194:8000/storage/uploads/berita/';
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -34,15 +33,8 @@ export default function DetailBeritaPage({ params }: { params: Promise<{ id: str
           parsedTags = data.tags.split(',').map((t: string) => t.trim());
         }
 
-        // Helper untuk foto
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.0.194:8000';
-        const coverImageUrl = data.foto_cover 
-          ? (data.foto_cover.startsWith('http') 
-              ? data.foto_cover 
-              : (data.foto_cover.includes('/') 
-                  ? `${backendUrl}/storage/${data.foto_cover.replace(/^\//, '')}`
-                  : `${STORAGE_URL}${data.foto_cover}`))
-          : "https://placehold.co/800x400/e2e8f0/1e293b?text=Tidak+Ada+Foto";
+        // Helper untuk foto menggunakan getImageUrl
+        const coverImageUrl = getImageUrl(data.foto_cover, 'uploads/berita/');
 
         // Map format backend Laravel ke format UI
         setBerita({

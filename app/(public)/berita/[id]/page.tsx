@@ -3,16 +3,12 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { getImageUrl } from "@/lib/api";
+import { getImageUrl, getBaseUrl } from "@/lib/api";
 import ShareButton from "@/components/berita/ShareButton";
-
-
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.0.194:8000";
 
 async function getBeritaData(id: string) {
   try {
-    const res = await fetch(`${backendUrl}/api/berita/${id}`, { cache: "no-store" });
+    const res = await fetch(`${getBaseUrl()}/api/berita/${id}`, { cache: "no-store" });
     if (!res.ok) return null;
     const json = await res.json();
     return json.berita || json.data || json;
