@@ -86,5 +86,5 @@ export default function MapPickerComponent({ latitude, longitude, onChange, clas
     }
   }, [latitude, longitude]);
 
-  return <div ref={mapRef} className={`w-full h-72 rounded-xl z-0 ${className}`} style={{ minHeight: "280px" }} />;
+  return <div ref={mapRef} className={`w-full rounded-xl z-0 ${className || 'h-72'}`} style={{ minHeight: "280px" }} />;
 }

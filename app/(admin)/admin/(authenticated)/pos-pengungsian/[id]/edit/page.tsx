@@ -237,21 +237,7 @@ export default function EditPosPengungsiPage() {
                 {errors.kecamatan_id && <p className="text-xs text-red-500">{errors.kecamatan_id}</p>}
               </div>
               
-              {/* Alamat */}
-              <div className="space-y-2 md:col-span-2">
-                <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Alamat
-                </label>
-                <input
-                  type="text"
-                  id="alamat"
-                  name="alamat"
-                  value={formData.alamat}
-                  onChange={handleChange}
-                  className={inputClass("alamat")}
-                />
-                {errors.alamat && <p className="text-xs text-red-500">{errors.alamat}</p>}
-              </div>
+
 
               {/* Coordinate Selection (Map + Inputs) */}
               <div className="md:col-span-2 space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-5 dark:bg-blue-900/10 dark:border-blue-800/30">
@@ -264,8 +250,9 @@ export default function EditPosPengungsiPage() {
                 </p>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                  <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm h-full">
                     <MapPicker
+                      className="h-full"
                       latitude={formData.latitude}
                       longitude={formData.longitude}
                       onChange={(lat, lng) => {
@@ -275,6 +262,16 @@ export default function EditPosPengungsiPage() {
                           longitude: lng.toFixed(7)
                         }));
                         setErrors(prev => ({ ...prev, latitude: "", longitude: "" }));
+                        
+                        // Auto fetch address
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=id`)
+                          .then(res => res.json())
+                          .then(data => {
+                            if (data && data.display_name) {
+                              setFormData(prev => ({ ...prev, alamat: data.display_name }));
+                            }
+                          })
+                          .catch(err => console.error("Error fetching address:", err));
                       }}
                     />
                   </div>
@@ -314,6 +311,24 @@ export default function EditPosPengungsiPage() {
                         className={`${inputClass("longitude")} disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 disabled:ring-0 dark:disabled:bg-gray-800 dark:disabled:text-gray-400`}
                       />
                       {errors.longitude && <p className="text-xs text-red-500">{errors.longitude}</p>}
+                    </div>
+
+                    {/* Alamat */}
+                    <div className="space-y-2">
+                      <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Alamat <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="alamat"
+                        name="alamat"
+                        value={formData.alamat}
+                        disabled
+                        required
+                        placeholder="Alamat akan terisi otomatis"
+                        rows={3}
+                        className={`${inputClass("alamat")} resize-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 disabled:ring-0 dark:disabled:bg-gray-800 dark:disabled:text-gray-400`}
+                      />
+                      {errors.alamat && <p className="text-xs text-red-500">{errors.alamat}</p>}
                     </div>
                   </div>
                 </div>
