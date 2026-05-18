@@ -57,20 +57,8 @@ export default function FaqPage() {
     );
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus FAQ ini?")) {
-      try {
-        const response = await api.delete(`/api/faq/${id}`);
-        if (response.data.success) {
-          setFaqs(faqs.filter((f) => f.id !== id));
-        } else {
-          alert("Gagal menghapus FAQ");
-        }
-      } catch (err) {
-        console.error("Error deleting FAQ:", err);
-        alert("Terjadi kesalahan saat menghapus");
-      }
-    }
+  const handleDeleteUI = (id: string) => {
+    setFaqs(faqs.filter((f) => f.id !== id));
   };
 
   return (
@@ -222,7 +210,7 @@ export default function FaqPage() {
                         </AdminBadge>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <FaqTableAction id={row.id} onDelete={() => handleDelete(row.id)} />
+                        <FaqTableAction id={row.id} onDeleted={handleDeleteUI} />
                       </td>
                     </tr>
                   ))

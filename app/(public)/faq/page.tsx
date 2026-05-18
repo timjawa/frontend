@@ -65,8 +65,13 @@ export default function FaqPage() {
         <section className="flex-1 pt-4 pb-10 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="border-b border-border/50 last:border-b-0 px-6 py-5 flex justify-between items-center">
+                    <div className="h-5 bg-slate-200 rounded w-3/4 md:w-1/2 animate-pulse"></div>
+                    <div className="h-5 w-5 bg-slate-200 rounded animate-pulse"></div>
+                  </div>
+                ))}
               </div>
             ) : faqs.length > 0 ? (
               <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">

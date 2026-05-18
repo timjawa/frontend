@@ -3,6 +3,7 @@ import api from "../lib/api";
 export interface LaporanStats {
   total: number;
   baru: number;
+  diinvestigasi: number;
   diverifikasi: number;
   ditolak: number;
   selesai: number;

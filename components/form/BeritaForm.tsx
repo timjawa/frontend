@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { HiOutlineCheckCircle, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import InputField from "./input/InputField";
 import TextArea from "./input/TextArea";
 import FileInput from "./input/FileInput";
@@ -41,6 +43,18 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
     tags: initialData?.tags || "",
     status: initialData?.status || "draft"
   });
+
+  const [mounted, setMounted] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const [dragActive, setDragActive] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(initialData?.coverImage || null);
@@ -187,8 +201,12 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
         }
       });
 
-      alert(`Berita berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`);
-      window.location.href = '/admin/berita'; // Redirect ke halaman list
+      showToast(`Berita berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, "success");
+      
+      // Delay redirect to let user see premium toast transition
+      setTimeout(() => {
+        window.location.href = '/admin/berita'; // Redirect ke halaman list
+      }, 1200);
 
     } catch (error: any) {
       console.error('API Error:', error);
@@ -197,7 +215,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
       if (error.response && error.response.data) {
         errorMessage = error.response.data.message || 'Periksa kembali isian Anda.';
       }
-      alert(`Gagal: ${errorMessage}`);
+      showToast(`Gagal: ${errorMessage}`, "error");
     }
   };
 
@@ -400,6 +418,19 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
           {isEdit ? "Perbarui Berita" : "Simpan Berita"}
         </AdminButton>
       </div>
+
+      {/* Toast Notification - Portaled to Body */}
+      {mounted && toast && typeof window !== "undefined" && createPortal(
+        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          toast.type === "success" 
+            ? "bg-emerald-500 border-emerald-400 text-white" 
+            : "bg-red-500 border-red-400 text-white"
+        }`}>
+          {toast.type === "success" ? <HiOutlineCheckCircle className="w-5 h-5 shrink-0" /> : <HiOutlineExclamationTriangle className="w-5 h-5 shrink-0" />}
+          <span className="font-bold text-sm">{toast.msg}</span>
+        </div>,
+        document.body
+      )}
     </form>
   );
 };

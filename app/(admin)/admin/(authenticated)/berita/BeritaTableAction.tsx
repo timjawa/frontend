@@ -5,7 +5,7 @@ import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { HiEllipsisVertical, HiOutlineEye, HiOutlinePencil, HiOutlineTrash } from "react-icons/hi2";
 
-export default function BeritaTableAction({ id }: { id: string | number }) {
+export default function BeritaTableAction({ id, onDelete }: { id: string | number; onDelete: (id: string | number) => void }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -29,19 +29,9 @@ export default function BeritaTableAction({ id }: { id: string | number }) {
           </DropdownItem>
           <DropdownItem 
             tag="button" 
-            onClick={async () => {
-              if (confirm('Yakin ingin menghapus berita ini?')) {
-                try {
-                  const { default: api } = await import('@/lib/api');
-                  await api.delete(`/api/berita/${id}`);
-                  alert('Berita berhasil dihapus!');
-                  window.location.reload();
-                } catch (err: any) {
-                  console.error(err);
-                  const msg = err.response?.data?.message || 'Terjadi kesalahan.';
-                  alert(`Gagal menghapus berita: ${msg}`);
-                }
-              }
+            onClick={() => {
+              setIsOpen(false);
+              onDelete(id);
             }} 
             className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50"
           >

@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import BeritaForm from "@/components/form/BeritaForm";
-import api from "@/lib/api";
+import api, { getImageUrl } from "@/lib/api";
 import Link from "next/link";
-import { HiOutlineArrowLeft } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineExclamationTriangle } from "react-icons/hi2";
 
 export default function EditBeritaPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
   const id = unwrappedParams.id;
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const STORAGE_URL = 'http://192.168.0.194:8000/storage/uploads/berita/';
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchBerita = async () => {
@@ -35,15 +35,8 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
           tagsString = data.tags;
         }
 
-        // Helper untuk foto (preview)
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.0.194:8000';
-        const coverImageUrl = data.foto_cover 
-          ? (data.foto_cover.startsWith('http') 
-              ? data.foto_cover 
-              : (data.foto_cover.includes('/') 
-                  ? `${backendUrl}/storage/${data.foto_cover.replace(/^\//, '')}`
-                  : `${STORAGE_URL}${data.foto_cover}`))
-          : null;
+        // Helper untuk foto (preview) menggunakan getImageUrl
+        const coverImageUrl = data.foto_cover ? getImageUrl(data.foto_cover, 'uploads/berita/') : null;
 
         // Map field dari backend ke field yang dibutuhkan BeritaForm
         setInitialData({
@@ -60,7 +53,7 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
         });
       } catch (err) {
         console.error(err);
-        alert("Gagal memuat data berita.");
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -74,6 +67,27 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
       <div>
         <PageBreadcrumb pageTitle="Edit Berita" className="mb-0" />
         <p className="mt-4 px-5">Memuat data berita...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <PageBreadcrumb pageTitle="Edit Berita" className="mb-0" />
+          <Link
+            href="/admin/berita"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <HiOutlineArrowLeft className="w-4 h-4" />
+            Kembali
+          </Link>
+        </div>
+        <div className="mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 text-red-600 text-sm flex items-center gap-3">
+          <HiOutlineExclamationTriangle className="w-5 h-5 shrink-0 text-red-500" />
+          <span>Gagal memuat data berita. Silakan coba beberapa saat lagi.</span>
+        </div>
       </div>
     );
   }

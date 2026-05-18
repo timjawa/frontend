@@ -8,6 +8,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
 const initialStatusData = [
   { label: "Selesai", value: 0, color: "#10b981" },
+  { label: "Diinvestigasi", value: 0, color: "#eab308" },
   { label: "Diverifikasi", value: 0, color: "#465fff" },
   { label: "Baru", value: 0, color: "#f97316" },
   { label: "Ditolak", value: 0, color: "#ef4444" },
@@ -26,6 +27,7 @@ export default function StatusLaporanChart() {
         
         setStatusData([
           { label: "Selesai", value: stats.selesai, color: "#10b981" },
+          { label: "Diinvestigasi", value: stats.diinvestigasi, color: "#eab308" },
           { label: "Diverifikasi", value: stats.diverifikasi, color: "#465fff" },
           { label: "Baru", value: stats.baru, color: "#f97316" },
           { label: "Ditolak", value: stats.ditolak, color: "#ef4444" },
