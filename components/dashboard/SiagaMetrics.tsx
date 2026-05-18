@@ -103,7 +103,7 @@ export function SiagaMetrics({ isBPBD = false }: SiagaMetricsProps) {
         if (isBPBD) {
           const [laporan, peringatan] = await Promise.all([
             fetchLaporanStats(),
-            fetchPeringatanDini({ per_page: 100 }),
+            fetchPeringatanDini({ per_page: 100, is_active: 1 }),
           ]);
           
           const kritisCount = peringatan.data.filter(w => w.tingkat_urgensi === 'kritis').length;
@@ -130,7 +130,7 @@ export function SiagaMetrics({ isBPBD = false }: SiagaMetricsProps) {
           const [users, laporan, peringatan, kecamatan] = await Promise.all([
             fetchUserStats(),
             fetchLaporanStats(),
-            fetchPeringatanDini({ per_page: 1 }), // Hanya butuh get total
+            fetchPeringatanDini({ per_page: 1, is_active: 1 }), // Hanya butuh get total yang aktif
             fetchKecamatanStats(),
           ]);
 
@@ -183,10 +183,6 @@ export function SiagaMetrics({ isBPBD = false }: SiagaMetricsProps) {
                 {loading ? "..." : m.value}
               </h4>
             </div>
-            <Badge color={m.badgeColor}>
-              {m.trend === "up" ? <ArrowUpIcon /> : <ArrowDownIcon className={`text-${m.badgeColor}-500`} />}
-              {m.badgeValue}
-            </Badge>
           </div>
         </div>
       ))}

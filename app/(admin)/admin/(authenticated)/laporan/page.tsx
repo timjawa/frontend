@@ -48,7 +48,7 @@ export default function LaporanPage() {
       const end = new Date();
       const start = new Date();
       start.setDate(end.getDate() - days);
-      
+
       setEndDate(end.toISOString().split('T')[0]);
       setStartDate(start.toISOString().split('T')[0]);
     }
@@ -62,8 +62,8 @@ export default function LaporanPage() {
   const openDatePicker = (input: HTMLInputElement | null) => {
     if (!input) return;
     input.focus();
-    if ("showPicker" in input) {
-      input.showPicker();
+    if (typeof (input as any).showPicker === "function") {
+      (input as any).showPicker();
     } else {
       input.click();
     }
@@ -88,7 +88,7 @@ export default function LaporanPage() {
     month: "long",
     day: "numeric",
   });
-  
+
   // Ambil data untuk laporan. Kita fetch dengan per_page besar agar bisa diprint semua hasil filter.
   const fetchLaporan = useCallback(async () => {
     setLoading(true);
@@ -120,7 +120,8 @@ export default function LaporanPage() {
   return (
     <>
       {/* CSS untuk mengatur tampilan saat di-print (sembunyikan sidebar, navbar, dll) */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @media print {
           html,
           body {
@@ -354,9 +355,9 @@ export default function LaporanPage() {
                   className={dateInputClass}
                   placeholder="dd/mm/yyyy"
                 />
-                <input 
+                <input
                   ref={startDateRef}
-                  type="date" 
+                  type="date"
                   value={startDate}
                   onChange={(e) => {
                     setStartDate(e.target.value);
@@ -389,9 +390,9 @@ export default function LaporanPage() {
                   className={dateInputClass}
                   placeholder="dd/mm/yyyy"
                 />
-                <input 
+                <input
                   ref={endDateRef}
-                  type="date" 
+                  type="date"
                   value={endDate}
                   onChange={(e) => {
                     setEndDate(e.target.value);
@@ -403,11 +404,11 @@ export default function LaporanPage() {
                 />
               </div>
             </div>
-            
+
             {/* Filter Hari */}
             <div>
               <label className={filterLabelClass}>Filter Periode</label>
-              <select 
+              <select
                 value={filterHari}
                 onChange={(e) => handleFilterHariChange(e.target.value)}
                 className={`${filterControlClass} md:w-56`}
@@ -422,7 +423,7 @@ export default function LaporanPage() {
 
           {/* Tombol Aksi */}
           <div className="flex gap-3 mt-4 md:mt-0">
-            <button 
+            <button
               onClick={handlePrint}
               disabled={data.length === 0}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
@@ -472,11 +473,11 @@ export default function LaporanPage() {
               Laporan Pengaduan Bencana
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              {startDate && endDate 
+              {startDate && endDate
                 ? `Periode: ${formatDate(startDate)} - ${formatDate(endDate)}`
                 : startDate ? `Mulai dari: ${formatDate(startDate)}`
-                : endDate ? `Hingga: ${formatDate(endDate)}`
-                : "Semua Waktu"}
+                  : endDate ? `Hingga: ${formatDate(endDate)}`
+                    : "Semua Waktu"}
             </p>
           </div>
           <div className="text-right">
@@ -492,14 +493,13 @@ export default function LaporanPage() {
                 {["No", "Tanggal", "Pelapor", "Jenis Bencana", "Kecamatan", "Alamat", "Status"].map((h) => (
                   <th
                     key={h}
-                    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 whitespace-nowrap ${
-                      h === "No" ? "print-no" :
-                      h === "Tanggal" ? "print-date" :
-                      h === "Pelapor" ? "print-person" :
-                      h === "Jenis Bencana" ? "print-type" :
-                      h === "Kecamatan" ? "print-district" :
-                      h === "Status" ? "print-status" : ""
-                    }`}
+                    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 whitespace-nowrap ${h === "No" ? "print-no" :
+                        h === "Tanggal" ? "print-date" :
+                          h === "Pelapor" ? "print-person" :
+                            h === "Jenis Bencana" ? "print-type" :
+                              h === "Kecamatan" ? "print-district" :
+                                h === "Status" ? "print-status" : ""
+                      }`}
                   >
                     {h}
                   </th>
@@ -557,7 +557,7 @@ export default function LaporanPage() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Footer Laporan hanya muncul di mode print */}
         <div className="hidden print:block mt-16 text-sm text-gray-600">
           <div className="print-signatures">
