@@ -68,7 +68,7 @@ export default function Navbar() {
             <Link href="/" className="flex items-center gap-4">
               <div className="relative w-11 h-12 flex items-center justify-center">
                 <img 
-                  src="/logo.png" 
+                  src="/logo.svg" 
                   alt="Logo Jember" 
                   className="w-full h-full object-contain"
                   onError={(e) => {

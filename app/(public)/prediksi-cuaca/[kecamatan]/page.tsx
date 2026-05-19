@@ -166,6 +166,7 @@ export default function KecamatanDetailPage({
                   onChange={(val) => setSelectedDate(val)}
                   minDate={minDate}
                   maxDate={maxDate}
+                  disableDarkMode={true}
                 />
               </div>
               <span className="text-xs text-slate-400 font-medium">

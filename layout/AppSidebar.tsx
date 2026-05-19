@@ -332,7 +332,7 @@ const AppSidebar: React.FC = () => {
         }`}
       >
         <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain" />
+          <img src="/logo.svg" alt="Logo" className="w-9 h-9 object-contain" />
           {(isExpanded || isHovered || isMobileOpen) && (
             <div>
               <span className="text-base font-bold text-gray-800 dark:text-white">Jember</span>

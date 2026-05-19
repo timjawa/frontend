@@ -163,7 +163,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
             const iconName = bmkgCodeToIcon(bmkgCode);
             const deskripsi =
               bmkgCodeToDesc[bmkgCode] ?? loc.deskripsi ?? "Tidak diketahui";
-            const time = formatTime(loc.updated_at || loc.created_at);
+            const time = formatTime(loc.fetched_at || loc.updated_at || loc.created_at);
 
             return (
               <div

@@ -12,7 +12,7 @@ export default function CuacaTableAction({ id }: { id: string }) {
     <div className="relative inline-block text-left">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="dropdown-toggle p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+        className="dropdown-toggle p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-gray-800 dark:hover:text-slate-200 transition-colors"
       >
         <HiEllipsisVertical className="w-5 h-5" />
       </button>

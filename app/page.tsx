@@ -4,6 +4,7 @@ import HeroSection from "@/components/sections/HeroSection";
 import WeatherCards from "@/components/sections/WeatherCards";
 import InfoBanner from "@/components/ui/InfoBanner";
 import { fetchRealtimeWeather, fetchWeatherForecast } from "@/services/weather";
+import { fetchPeringatanDini } from "@/services/peringatan-dini";
 
 // Lazy load below-the-fold sections for performance
 const WeatherTable = dynamic(() => import("@/components/sections/WeatherTable"), {
@@ -20,24 +21,27 @@ const Footer = dynamic(() => import("@/components/layout/Footer"));
 export default async function Home() {
   let realtimeData = [];
   let forecastData = {};
+  let peringatanDiniData = [];
   
   try {
-    const [realtimeRes, forecastRes] = await Promise.all([
+    const [realtimeRes, forecastRes, peringatanRes] = await Promise.all([
       fetchRealtimeWeather(),
-      fetchWeatherForecast()
+      fetchWeatherForecast(),
+      fetchPeringatanDini({ is_active: true, per_page: 5 })
     ]);
     
     realtimeData = realtimeRes?.data || [];
     forecastData = forecastRes?.data || {};
+    peringatanDiniData = peringatanRes?.data || [];
   } catch (error) {
-    console.error("Gagal memuat data cuaca di halaman Home", error);
+    console.error("Gagal memuat data di halaman Home", error);
   }
 
   return (
     <>
       <Navbar />
       <main className="flex-1" style={{ backgroundColor: '#F3F8FF' }}>
-        <HeroSection />
+        <HeroSection peringatanData={peringatanDiniData} />
         <WeatherCards data={realtimeData} />
         <InfoBanner />
         <WeatherTable data={forecastData} />

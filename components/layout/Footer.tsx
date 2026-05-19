@@ -14,7 +14,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <div className="w-9 h-9 flex items-center justify-center">
-                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-bold text-lg">
                 Jember <span className="text-secondary-light">Siaga</span>

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-import { HiEllipsisVertical, HiOutlineEye, HiOutlinePencil, HiOutlineTrash, HiOutlineExclamationTriangle } from "react-icons/hi2";
+import { HiEllipsisVertical, HiOutlinePencil, HiOutlineTrash, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import api from "@/lib/api";
 
 export default function FaqTableAction({ 
@@ -48,10 +48,6 @@ export default function FaqTableAction({
 
         <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 right-0 top-full z-50">
           <div className="py-1">
-            <DropdownItem tag="a" href={`/admin/faq/${id}`} className="flex items-center gap-2">
-              <HiOutlineEye className="w-4 h-4" />
-              Detail
-            </DropdownItem>
             <DropdownItem tag="a" href={`/admin/faq/${id}/edit`} className="flex items-center gap-2">
               <HiOutlinePencil className="w-4 h-4" />
               Edit

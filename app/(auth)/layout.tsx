@@ -20,7 +20,7 @@ export default function AuthLayout({
               <GridShape />
               <div className="flex flex-col items-center max-w-xs">
                 <Link href="/" className="flex items-center gap-3 mb-4">
-                  <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain" />
+                  <img src="/logo.svg" alt="Logo" className="w-12 h-12 object-contain" />
                   <span className="text-2xl font-semibold text-white">
                     Jember Siaga
                   </span>
