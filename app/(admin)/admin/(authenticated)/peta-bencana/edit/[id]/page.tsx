@@ -57,6 +57,7 @@ export default function EditPetaMarkerPage() {
     tipe_marker: "titik" as "titik" | "garis",
     latitude: "",
     longitude: "",
+    radius: "",
   });
   const [pathPoints, setPathPoints] = useState<[number, number][]>([]);
   const [loading, setLoading] = useState(false);
@@ -80,6 +81,7 @@ export default function EditPetaMarkerPage() {
           tipe_marker: data.tipe_marker || "titik",
           latitude: data.latitude ? data.latitude.toString() : "",
           longitude: data.longitude ? data.longitude.toString() : "",
+          radius: data.radius ? data.radius.toString() : "",
         });
 
         if (data.tipe_marker === "garis" && data.path_data) {
@@ -143,6 +145,7 @@ export default function EditPetaMarkerPage() {
         label: formData.label.trim() || null,
         kategori: formData.kategori,
         tingkat_bahaya: formData.tingkat_bahaya,
+        radius: formData.radius ? parseInt(formData.radius) : null,
       };
 
       await api.put(`/api/admin/peta-marker/${id}`, payload);
@@ -326,6 +329,29 @@ export default function EditPetaMarkerPage() {
                 </select>
                 {errors.tingkat_bahaya && <p className="text-xs text-red-500">{errors.tingkat_bahaya}</p>}
               </div>
+
+              {/* Radius Area Bencana */}
+              {formData.tipe_marker === "titik" && formData.kategori !== "POS PENGUNGSIAN" && (
+                <div className="space-y-2">
+                  <label htmlFor="radius" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Radius Dampak / Bahaya (Meter)
+                  </label>
+                  <input
+                    type="number"
+                    id="radius"
+                    name="radius"
+                    value={formData.radius}
+                    onChange={handleChange}
+                    min="0"
+                    placeholder="Contoh: 250 (Kosongkan untuk otomatis)"
+                    className={inputClass("radius")}
+                  />
+                  <p className="text-[11px] text-gray-400 italic">
+                    * Kosongkan untuk menggunakan radius bawaan otomatis berdasarkan tingkat kerawanan.
+                  </p>
+                  {errors.radius && <p className="text-xs text-red-500">{errors.radius}</p>}
+                </div>
+              )}
 
               {/* Tipe Marker */}
               <div className="space-y-2">

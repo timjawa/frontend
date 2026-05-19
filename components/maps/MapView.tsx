@@ -15,6 +15,7 @@ export type PetaMarker = {
   kategori: string;
   label: string | null;
   tingkat_bahaya: string;
+  radius?: number | null;
   dibuat_pada?: string;
   source?: string;
   status?: string;
@@ -44,12 +45,13 @@ function getMarkerColor(kategori: string, tingkatBahaya: string): string {
 
 interface Props {
   selectedMarkerId?: string | null;
+  panToCoord?: [number, number] | null;
   onMapClick?: () => void;
   onMarkerClick?: (id: string) => void;
   markers: PetaMarker[]; // Terima data dari parent
 }
 
-export default function MapView({ selectedMarkerId, onMapClick, onMarkerClick, markers }: Props) {
+export default function MapView({ selectedMarkerId, panToCoord, onMapClick, onMarkerClick, markers }: Props) {
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<L.LayerGroup | null>(null);
   const markerRefs = useRef<Record<string, L.Marker | L.Polyline>>({});
@@ -139,6 +141,10 @@ export default function MapView({ selectedMarkerId, onMapClick, onMarkerClick, m
             <div style="font-size:12px; color:#444;">
               Kategori: <b>${m.kategori}</b><br/>
               Bahaya: <b style="color:${color}">${m.tingkat_bahaya.toUpperCase()}</b>
+              <hr style="margin:8px 0; border:0; border-top:1px solid #e5e7eb;"/>
+              <a href="https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:6px 10px; background-color:#3B82F6; color:white; border-radius:8px; font-size:10px; font-weight:bold; text-decoration:none; transition:background-color 0.2s;">
+                🗺️ Google Maps
+              </a>
             </div>
           </div>
         `, { closeButton: false });
@@ -172,6 +178,20 @@ export default function MapView({ selectedMarkerId, onMapClick, onMarkerClick, m
 
         const marker = L.marker([m.latitude, m.longitude], { icon: markerIcon }).addTo(layersRef.current!);
         
+        // Tambahkan Radius Area Bahaya / Dampak (Kecuali Pos Pengungsian)
+        if (!isPos && m.radius && Number(m.radius) > 0) {
+          const radiusMeters = Number(m.radius);
+
+          L.circle([m.latitude, m.longitude], {
+            radius: radiusMeters,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.12,
+            weight: 1.5,
+            dashArray: "3, 5"
+          }).addTo(layersRef.current!);
+        }
+
         marker.on("click", (e) => {
           L.DomEvent.stopPropagation(e);
           if (onMarkerClick) onMarkerClick(m.id);
@@ -190,11 +210,17 @@ export default function MapView({ selectedMarkerId, onMapClick, onMarkerClick, m
                 Status: <span style="font-weight:750; color:${m.status === 'aktif' ? '#10B981' : m.status === 'penuh' ? '#EF4444' : '#3B82F6'};">${(m.status || 'standby').toUpperCase()}</span><br/>
                 Kapasitas: <b>${m.terisi || 0} / ${m.kapasitas || 0} Jiwa</b><br/>
                 <hr style="margin:8px 0; border:0; border-top:1px solid #e5e7eb;"/>
-                <span style="font-size:10px; color:#9ca3af; font-family:monospace;">Koordinat: ${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}</span>
+                <span style="font-size:10px; color:#9ca3af; font-family:monospace; display:block; margin-bottom:6px;">Koordinat: ${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}</span>
+                <a href="https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:6px 10px; background-color:#3B82F6; color:white; border-radius:8px; font-size:10px; font-weight:bold; text-decoration:none; transition:background-color 0.2s;">
+                  🗺️ Google Maps
+                </a>
               </div>
             </div>
           `;
         } else {
+          const hasRadius = m.radius && Number(m.radius) > 0;
+          const radiusRow = hasRadius ? `Radius Dampak: <b>±${m.radius} meter</b><br/>` : "";
+
           popupHtml = `
             <div style="min-width:180px; font-family:system-ui,-apple-system,sans-serif;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -204,8 +230,12 @@ export default function MapView({ selectedMarkerId, onMapClick, onMarkerClick, m
               <div style="font-size:12px; color:#4b5563; line-height:1.5;">
                 Kategori: <b>${m.kategori}</b><br/>
                 Bahaya: <b style="color:${color}">${(m.tingkat_bahaya || "sedang").toUpperCase()}</b><br/>
+                ${radiusRow}
                 <hr style="margin:8px 0; border:0; border-top:1px solid #e5e7eb;"/>
-                <span style="font-size:10px; color:#9ca3af; font-family:monospace;">Koordinat: ${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}</span>
+                <span style="font-size:10px; color:#9ca3af; font-family:monospace; display:block; margin-bottom:6px;">Koordinat: ${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}</span>
+                <a href="https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:6px 10px; background-color:#3B82F6; color:white; border-radius:8px; font-size:10px; font-weight:bold; text-decoration:none; transition:background-color 0.2s;">
+                  🗺️ Google Maps
+                </a>
               </div>
             </div>
           `;
@@ -275,6 +305,15 @@ export default function MapView({ selectedMarkerId, onMapClick, onMarkerClick, m
       }
     }
   }, [selectedMarkerId]);
+
+  // 5. Logika Gerak Peta ke Koordinat Spesifik
+  useEffect(() => {
+    if (!panToCoord || !mapRef.current) return;
+    mapRef.current.setView(panToCoord, 14, {
+      animate: true,
+      duration: 0.8,
+    });
+  }, [panToCoord]);
 
   return (
     <>
