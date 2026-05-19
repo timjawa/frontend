@@ -65,8 +65,45 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
   if (loading) {
     return (
       <div>
-        <PageBreadcrumb pageTitle="Edit Berita" className="mb-0" />
-        <p className="mt-4 px-5">Memuat data berita...</p>
+        <div className="flex items-center justify-between mb-6 animate-pulse">
+          <PageBreadcrumb pageTitle="Edit Berita" className="mb-0" />
+          <div className="w-24 h-10 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] animate-pulse">
+          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 space-y-2">
+            <div className="h-5 bg-gray-200 dark:bg-gray-800 rounded w-1/4" />
+            <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-1/3" />
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-20" />
+              <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-16" />
+                <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-16" />
+                <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-24" />
+              <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-20" />
+              <div className="h-40 bg-gray-200 dark:bg-gray-800 rounded-lg w-full" />
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="w-24 h-10 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+              <div className="w-28 h-10 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

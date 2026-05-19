@@ -34,14 +34,7 @@ export default function EditFAQPage({ params }: { params: Promise<{ id: string }
     fetchFaq();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
+  
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -63,7 +56,36 @@ export default function EditFAQPage({ params }: { params: Promise<{ id: string }
           </p>
         </div>
         <div className="p-6">
-          {error ? (
+          {loading ? (
+             <div className="space-y-6 animate-pulse">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/4"></div>
+                      <div className="h-11 bg-gray-200 dark:bg-gray-800 rounded-xl w-full"></div>
+                   </div>
+                   <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/4"></div>
+                      <div className="h-11 bg-gray-200 dark:bg-gray-800 rounded-xl w-full"></div>
+                   </div>
+                   <div className="md:col-span-2 space-y-2">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/5"></div>
+                      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded-full w-12"></div>
+                   </div>
+                   <div className="md:col-span-2 space-y-2">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/4"></div>
+                      <div className="h-11 bg-gray-200 dark:bg-gray-800 rounded-xl w-full"></div>
+                   </div>
+                   <div className="md:col-span-2 space-y-2">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/5"></div>
+                      <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-xl w-full"></div>
+                   </div>
+                </div>
+                <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                   <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-xl w-24"></div>
+                   <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-xl w-32"></div>
+                </div>
+             </div>
+          ) : error ? (
              <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm mb-6">
                 {error}
              </div>

@@ -412,7 +412,7 @@ export default function AdminBeritaPage() {
 
       {/* Toast Notification - Portaled to Body */}
       {mounted && toast && typeof window !== "undefined" && createPortal(
-        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        <div className={`fixed top-6 right-6 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
           toast.type === "success" 
             ? "bg-emerald-500 border-emerald-400 text-white" 
             : "bg-red-500 border-red-400 text-white"
@@ -425,37 +425,54 @@ export default function AdminBeritaPage() {
 
       {/* Custom Confirmation Dialog - Portaled to Body */}
       {mounted && confirmModal && confirmModal.isOpen && typeof window !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
+          {/* Backdrop click */}
+          <div className="absolute inset-0" onClick={() => setConfirmModal(null)} />
+
           <div 
-            className="w-full max-w-sm bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl p-5 overflow-hidden animate-in zoom-in-95 duration-150"
+            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-150 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-4">
-              <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-1.5 flex items-center gap-1.5">
-                {confirmModal.type === "danger" ? "❌ " : confirmModal.type === "success" ? "✅ " : "⚠️ "}
-                {confirmModal.title}
-              </h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                {confirmModal.message}
-              </p>
+            <div className="flex flex-col items-center text-center gap-3 mb-5">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                confirmModal.type === "danger" 
+                  ? "bg-red-50 dark:bg-red-500/10" 
+                  : confirmModal.type === "success" 
+                  ? "bg-emerald-50 dark:bg-emerald-500/10" 
+                  : "bg-yellow-50 dark:bg-yellow-500/10"
+              }`}>
+                {confirmModal.type === "danger" ? (
+                  <HiOutlineExclamationTriangle className="w-7 h-7 text-red-500" />
+                ) : confirmModal.type === "success" ? (
+                  <HiOutlineCheckCircle className="w-7 h-7 text-emerald-500" />
+                ) : (
+                  <HiOutlineExclamationTriangle className="w-7 h-7 text-yellow-500" />
+                )}
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">{confirmModal.title}</h3>
+                <p className="text-sm text-gray-550 dark:text-gray-400 mt-1 leading-relaxed">
+                  {confirmModal.message}
+                </p>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 text-xs">
+            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setConfirmModal(null)}
-                className="px-3.5 py-2 font-medium text-gray-500 hover:text-gray-700 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={confirmModal.onConfirm}
-                className={`px-3.5 py-2 font-bold text-white rounded-lg transition-colors ${
+                className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl active:scale-95 transition-all shadow-sm ${
                   confirmModal.type === "danger"
-                    ? "bg-red-500 hover:bg-red-650"
+                    ? "bg-red-600 hover:bg-red-700"
                     : confirmModal.type === "success"
-                    ? "bg-emerald-500 hover:bg-emerald-650"
+                    ? "bg-emerald-600 hover:bg-emerald-700"
                     : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >

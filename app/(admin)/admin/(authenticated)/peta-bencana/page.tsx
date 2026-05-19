@@ -128,6 +128,7 @@ export default function PetaBencanaPage() {
   // Controls collapse state of sidebar cards
   const [isLaporanOpen, setIsLaporanOpen] = useState(false);
   const [isKecamatanOpen, setIsKecamatanOpen] = useState(false);
+  const [isPosOpen, setIsPosOpen] = useState(false);
 
   // Kecamatan list state
   const [kecamatans, setKecamatans] = useState<any[]>([]);
@@ -243,6 +244,20 @@ export default function PetaBencanaPage() {
     }
   }, []);
 
+  const handleRefreshAll = useCallback(async () => {
+    try {
+      await Promise.all([
+        fetchLaporan(),
+        fetchMarkers(),
+        fetchKecamatans(),
+        fetchPeringatanDini()
+      ]);
+      showToast("Data peta bencana berhasil dimuat ulang!");
+    } catch {
+      showToast("Gagal memuat ulang data bencana", "error");
+    }
+  }, [fetchLaporan, fetchMarkers, fetchKecamatans, fetchPeringatanDini]);
+
   // Menjalankan fetch data secara otomatis saat halaman pertama kali dibuka
   useEffect(() => { 
     fetchLaporan(); 
@@ -311,6 +326,10 @@ export default function PetaBencanaPage() {
     });
 
     return layers;
+  }, [manualMarkers]);
+
+  const posPengungsianList = useMemo(() => {
+    return manualMarkers.filter(m => m.source === "pos_pengungsian" || m.kategori?.toUpperCase().replace(/ /g, "_") === "POS_PENGUNGSIAN");
   }, [manualMarkers]);
 
   const laporanWithCoords = laporan.filter((l) => {
@@ -450,7 +469,7 @@ export default function PetaBencanaPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={fetchLaporan}
+                  onClick={handleRefreshAll}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                 >
                   <HiOutlineArrowPath className="w-3.5 h-3.5" />
@@ -516,8 +535,20 @@ export default function PetaBencanaPage() {
                     Klik card untuk memfokuskan peta. Gunakan "Tandai Lokasi" untuk mengisi form marker.
                   </p>
                   {loading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, idx) => (
+                        <div key={idx} className="p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-white/[0.02] space-y-2.5 animate-pulse">
+                          <div className="flex items-center justify-between">
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+                            <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+                          </div>
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+                          <div className="flex gap-2">
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full w-14" />
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full w-14" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : activeLaporan.length === 0 ? (
                     <p className="text-center text-xs text-gray-400 py-6">Belum ada laporan masuk.</p>
@@ -625,8 +656,16 @@ export default function PetaBencanaPage() {
                   {/* Scrollable List */}
                   <div className="flex-1 overflow-y-auto space-y-2 pr-0.5">
                     {loadingKecamatan ? (
-                      <div className="flex items-center justify-center py-6">
-                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <div className="space-y-2">
+                        {Array.from({ length: 4 }).map((_, idx) => (
+                          <div key={idx} className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-white/[0.02] animate-pulse space-y-2">
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-28" />
+                            <div className="flex gap-1.5">
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12" />
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ) : filteredKecamatans.length === 0 ? (
                       <p className="text-center text-xs text-gray-400 py-4">Kecamatan tidak ditemukan.</p>
@@ -636,10 +675,6 @@ export default function PetaBencanaPage() {
                         const lng = Number(k.longitude);
                         const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
                         const isSelected = panToCoord && hasCoords && panToCoord[0] === lat && panToCoord[1] === lng;
-
-                        const levelRawanColor = k.level_rawan === "tinggi" ? "bg-red-50 text-red-750 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/40"
-                          : k.level_rawan === "sedang" ? "bg-yellow-50 text-yellow-750 border-yellow-100 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-yellow-900/40"
-                          : "bg-green-50 text-green-750 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/40";
 
                         return (
                           <div
@@ -660,16 +695,125 @@ export default function PetaBencanaPage() {
                               <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-none">
                                 {k.nama}
                               </span>
-                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${levelRawanColor}`}>
-                                RAWAN: {(k.level_rawan || "rendah").toUpperCase()}
-                              </span>
                             </div>
                             {hasCoords && (
                               <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-[8px] font-mono text-gray-400">
+                                <span className="inline-flex items-center gap-1 text-[8px] font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800/30">
                                   Lat: {lat.toFixed(5)}
                                 </span>
-                                <span className="text-[8px] font-mono text-gray-400">
+                                <span className="inline-flex items-center gap-1 text-[8px] font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800/30">
+                                  Lng: {lng.toFixed(5)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+          {/* Pos Pengungsian Card */}
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
+              {/* Card Header */}
+              <div 
+                onClick={() => setIsPosOpen(!isPosOpen)}
+                className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <HiOutlineHome className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span className="text-sm font-bold text-gray-800 dark:text-white">Pos Pengungsian</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-750 dark:bg-purple-950/40 dark:text-purple-450 shrink-0">
+                    {posPengungsianList.length} pos
+                  </span>
+                </div>
+                {isPosOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              </div>
+
+              {/* Scrollable Contents */}
+              {isPosOpen && (
+                <div className="p-3 flex flex-col gap-2.5 max-h-[350px] overflow-hidden transition-all">
+                  <p className="text-[11px] text-gray-400 italic px-1">
+                    Klik pos untuk memfokuskan lokasi pengungsian di peta.
+                  </p>
+
+                  <div className="flex-1 overflow-y-auto space-y-2 pr-0.5">
+                    {loadingMarkers ? (
+                      <div className="space-y-2">
+                        {Array.from({ length: 3 }).map((_, idx) => (
+                          <div key={idx} className="p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-white/[0.02] animate-pulse space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full w-12" />
+                            </div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+                            <div className="flex gap-1.5">
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12" />
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : posPengungsianList.length === 0 ? (
+                      <p className="text-center text-xs text-gray-400 py-4">Belum ada pos pengungsian.</p>
+                    ) : (
+                      posPengungsianList.map((p) => {
+                        const lat = Number(p.latitude);
+                        const lng = Number(p.longitude);
+                        const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+                        const isSelected = panToCoord && hasCoords && panToCoord[0] === lat && panToCoord[1] === lng;
+
+                        // Tentukan warna badge status
+                        const status = (p.status || "standby").toLowerCase();
+                        let badgeColor = "bg-blue-50 text-blue-700 border-blue-150 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/40";
+                        if (status === "aktif") {
+                          badgeColor = "bg-emerald-50 text-emerald-705 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40";
+                        } else if (status === "penuh") {
+                          badgeColor = "bg-red-50 text-red-705 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/40";
+                        }
+
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => {
+                              if (hasCoords) {
+                                setPanToCoord([lat, lng]);
+                                setClickedCoord(null);
+                              }
+                            }}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                              isSelected
+                                ? "border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-blue-500/20 shadow-md"
+                                : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-blue-300 hover:bg-blue-50/5"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                              <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                                {p.label || p.kategori}
+                              </span>
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${badgeColor}`}>
+                                {status.toUpperCase()}
+                              </span>
+                            </div>
+
+                            {/* Kapasitas / Terisi */}
+                            {(p.kapasitas !== undefined || p.terisi !== undefined) && (
+                              <div className="text-[10px] text-gray-505 dark:text-gray-400 mb-1.5 flex items-center gap-1.5">
+                                <span className="font-medium">Kapasitas:</span>
+                                <span className="font-bold text-gray-705 dark:text-gray-200">
+                                  {p.terisi ?? 0} / {p.kapasitas ?? 0} Jiwa
+                                </span>
+                              </div>
+                            )}
+
+                            {hasCoords && (
+                              <div className="flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 text-[8px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 px-1.5 py-0.5 rounded border border-purple-100 dark:border-purple-800/30">
+                                  Lat: {lat.toFixed(5)}
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-[8px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 px-1.5 py-0.5 rounded border border-purple-100 dark:border-purple-800/30">
                                   Lng: {lng.toFixed(5)}
                                 </span>
                               </div>
@@ -687,7 +831,7 @@ export default function PetaBencanaPage() {
 
       {/* Toast Notification - Portaled to Body to escape z-index boundaries */}
       {mounted && toast && typeof window !== "undefined" && createPortal(
-        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        <div className={`fixed top-6 right-6 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
           toast.type === "success" 
             ? "bg-emerald-500 border-emerald-400 text-white" 
             : "bg-red-500 border-red-400 text-white"

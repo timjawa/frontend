@@ -421,7 +421,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
 
       {/* Toast Notification - Portaled to Body */}
       {mounted && toast && typeof window !== "undefined" && createPortal(
-        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        <div className={`fixed top-6 right-6 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
           toast.type === "success" 
             ? "bg-emerald-500 border-emerald-400 text-white" 
             : "bg-red-500 border-red-400 text-white"
