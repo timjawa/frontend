@@ -140,8 +140,41 @@ export default function EditPeringatanDiniPage() {
 
   if (fetchingData) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse"></div>
+          <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] animate-pulse">
+          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+            <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded-md mb-2"></div>
+            <div className="h-4 w-72 bg-gray-100 dark:bg-gray-800 rounded-md"></div>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                <div className="h-10 w-full bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                <div className="h-10 w-full bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                <div className="h-10 w-full bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                <div className="h-28 w-full bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+              </div>
+            </div>
+            <div className="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+              <div className="h-10 w-40 bg-gray-300 dark:bg-gray-600 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

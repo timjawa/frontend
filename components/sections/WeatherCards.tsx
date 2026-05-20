@@ -132,7 +132,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
               disabled={!canScrollLeft}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
                 canScrollLeft
-                  ? "bg-primary text-white hover:bg-primary-light shadow-md hover:shadow-lg"
+                  ? "bg-[#1f2a56] text-white hover:bg-[#2c3a75] shadow-md hover:shadow-lg"
                   : "bg-slate-100 text-slate-300 cursor-not-allowed"
               }`}
               aria-label="Geser kiri"
@@ -144,7 +144,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
               disabled={!canScrollRight}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
                 canScrollRight
-                  ? "bg-primary text-white hover:bg-primary-light shadow-md hover:shadow-lg"
+                  ? "bg-[#1f2a56] text-white hover:bg-[#2c3a75] shadow-md hover:shadow-lg"
                   : "bg-slate-100 text-slate-300 cursor-not-allowed"
               }`}
               aria-label="Geser kanan"
