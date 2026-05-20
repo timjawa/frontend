@@ -325,7 +325,7 @@ export default function PengaduanPage() {
                           <div className="font-medium text-[#1B2E4B] dark:text-gray-200">
                             {item.kecamatan?.nama ?? "—"}
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-gray-400 max-w-[150px] truncate" title={item.alamat_lengkap}>
+                          <div className="text-xs text-slate-500 dark:text-gray-400 max-w-[150px] truncate" title={item.alamat_lengkap ?? undefined}>
                             {item.alamat_lengkap}
                           </div>
                         </td>

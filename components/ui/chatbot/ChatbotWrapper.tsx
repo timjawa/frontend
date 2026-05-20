@@ -12,14 +12,9 @@ const FloatingChatbot = dynamic(() => import("./FloatingChatbot"), {
 export default function ChatbotWrapper() {
   const pathname = usePathname();
 
-  // Only render on landing page and public pages
-  // Do not render on admin or auth pages
-  const shouldRender = 
-    pathname === "/" || // Landing page
-    (pathname.startsWith("/") && 
-     !pathname.startsWith("/admin") && 
-     !pathname.startsWith("/login") && 
-     !pathname.startsWith("/register"));
+  // Only render on landing page (beranda)
+  const shouldRender = pathname === "/";
+
 
   if (!shouldRender) {
     return null;

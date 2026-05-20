@@ -108,7 +108,7 @@ export default function WeatherTable() {
                 onClick={() => setActiveTab(i)}
                 className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   activeTab === i
-                    ? "bg-primary text-white shadow-md"
+                    ? "bg-[#1f2a56] text-white shadow-md"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-border"
                 }`}
               >
@@ -124,8 +124,8 @@ export default function WeatherTable() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-primary text-white">
-                  <th className="text-left px-5 py-3.5 text-sm font-semibold sticky left-0 bg-primary z-10 min-w-[140px]">
+                <tr className="bg-[#1f2a56] text-white">
+                  <th className="text-left px-5 py-3.5 text-sm font-semibold sticky left-0 bg-[#1f2a56] z-10 min-w-[140px]">
                     Kecamatan
                   </th>
                   {uniqueTimes.length === 0 && (

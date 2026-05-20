@@ -6,16 +6,18 @@ import { forwardRef } from "react";
 interface ToggleButtonProps {
   isOpen: boolean;
   onClick: () => void;
+  bottomOffset?: number;
 }
 
 const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
-  ({ isOpen, onClick }, ref) => {
+  ({ isOpen, onClick, bottomOffset = 32 }, ref) => {
     return (
       <button
         ref={ref}
         onClick={onClick}
         aria-label={isOpen ? "Tutup chat" : "Buka asisten chat"}
-        className="fixed bottom-6 right-6 sm:bottom-4 sm:right-4 w-14 h-14 min-w-[44px] min-h-[44px] bg-[#1f2a56] hover:bg-[#1f2a56]/90 rounded-full shadow-lg flex items-center justify-center transition-colors duration-200 z-40"
+        style={{ bottom: `${bottomOffset}px` }}
+        className="fixed right-8 w-14 h-14 min-w-[44px] min-h-[44px] bg-[#1f2a56] hover:bg-[#2d3f7a] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-50"
       >
         {isOpen ? (
           <HiXMark className="text-white text-2xl" />
@@ -27,6 +29,6 @@ const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
   }
 );
 
-ToggleButton.displayName = 'ToggleButton';
+ToggleButton.displayName = "ToggleButton";
 
 export default ToggleButton;
