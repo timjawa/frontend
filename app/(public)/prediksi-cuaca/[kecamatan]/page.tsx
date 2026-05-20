@@ -208,9 +208,16 @@ export default function KecamatanDetailPage({
                     {weatherData.map((data, idx) => {
                       const timeStr = data.waktu_lokal || data.waktu || "";
                       let hour = "00:00";
-                      const timeParts = timeStr.includes('T') ? timeStr.split('T') : timeStr.split(' ');
-                      if (timeParts.length > 1) {
-                        hour = timeParts[1].substring(0, 5);
+                      if (timeStr) {
+                        const d = new Date(timeStr);
+                        if (!isNaN(d.getTime())) {
+                          hour = d.getHours().toString().padStart(2, '0') + ":00";
+                        } else {
+                          const timeParts = timeStr.includes('T') ? timeStr.split('T') : timeStr.split(' ');
+                          if (timeParts.length > 1) {
+                            hour = timeParts[1].substring(0, 5);
+                          }
+                        }
                       }
                       const iconType = mapConditionToIcon(data.deskripsi_cuaca);
                       

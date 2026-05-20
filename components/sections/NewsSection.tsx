@@ -54,7 +54,8 @@ export default async function NewsSection() {
         ) : (
           <div className={gridClass}>
             {newsList.map((item) => (
-              <div 
+              <Link 
+                href={`/berita/${item.id}`}
                 key={item.id} 
                 className={`group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col ${newsList.length === 1 ? 'w-full max-w-md' : 'w-full'}`}
               >
@@ -75,44 +76,15 @@ export default async function NewsSection() {
                 
                 {/* Content */}
                 <div className="p-6 flex flex-col flex-1">
-                  <h3 className="font-bold text-slate-800 text-lg leading-snug mb-3 line-clamp-2 hover:text-secondary transition-colors">
-                    <Link href={`/berita/${item.slug || item.id}`}>
-                      {item.judul}
-                    </Link>
+                  <h3 className="font-bold text-slate-800 text-lg leading-snug mb-3 line-clamp-2 group-hover:text-secondary transition-colors">
+                    {item.judul}
                   </h3>
                   
-                  <p className="text-sm text-slate-600 mb-5 line-clamp-3 flex-1 leading-relaxed">
+                  <p className="text-sm text-slate-600 line-clamp-3 flex-1 leading-relaxed">
                     {item.ringkasan || item.konten.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...'}
                   </p>
-                  
-                  {/* Tags */}
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-5">
-                      {item.tags.slice(0, 3).map(tag => (
-                        <span key={tag.id} className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-medium">
-                          <HiTag className="text-secondary/70" />
-                          {tag.tag}
-                        </span>
-                      ))}
-                      {item.tags.length > 3 && (
-                        <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-100 text-slate-600 px-2 py-1 rounded-md text-[10px] font-medium">
-                          +{item.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between text-xs text-slate-500 mt-auto pt-4 border-t border-slate-100/80">
-                    <div className="flex items-center gap-1.5">
-                      <HiCalendar className="text-sm text-primary/60" />
-                      <span>{new Date(item.dibuat_pada).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                    </div>
-                    {item.author && (
-                      <span className="font-medium bg-slate-50 px-2 py-1 rounded-md">{item.author.name}</span>
-                    )}
-                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
