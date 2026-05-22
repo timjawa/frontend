@@ -27,7 +27,7 @@ import { resolveMediaSrc, isYouTubeUrl, toYouTubeEmbed } from "@/lib/mediaUrl";
 
 import api from "@/lib/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.jembersiaga.my.id/api";
 
 interface Laporan {
   id: string;

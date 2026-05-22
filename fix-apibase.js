@@ -26,7 +26,7 @@ files.forEach(file => {
   let changed = false;
 
   if (content.includes('const API_BASE = process.env.NEXT_PUBLIC_API_URL')) {
-    content = content.replace(/const API_BASE = process\.env\.NEXT_PUBLIC_API_URL[^;]+;/, 'const getApiBase = () => typeof window !== \'undefined\' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");');
+    content = content.replace(/const API_BASE = process\.env\.NEXT_PUBLIC_API_URL[^;]+;/, 'const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== \'undefined\' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");');
     content = content.replace(/\$\{API_BASE\}/g, '${getApiBase()}');
     changed = true;
   }
