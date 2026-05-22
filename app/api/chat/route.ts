@@ -180,7 +180,7 @@ async function buildContext(question: string): Promise<ContextResult> {
   const apiBase =
     process.env.BACKEND_API_URL ??
     process.env.NEXT_PUBLIC_API_URL ??
-    "http://127.0.0.1:8000/api";
+    "https://api.jembersiaga.my.id/api";
   const keywords = question.toLowerCase();
   const kecamatan = findKecamatan(keywords);
   const sections: string[] = [];

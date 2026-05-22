@@ -12,7 +12,7 @@ import {
   HiPlus,
 } from "react-icons/hi2";
 
-const getApiBase = () => typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:8000/api` : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api");
+const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");
 
 interface PeringatanDini {
   id: string;

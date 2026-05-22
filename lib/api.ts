@@ -1,11 +1,19 @@
 import axios from "axios";
 
+const PRODUCTION_BACKEND_URL = "https://api.jembersiaga.my.id";
+
 export const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    // Gunakan hostname yang sama dengan yang diakses di browser untuk menghindari masalah CORS/SameSite cookie
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+    return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "");
   }
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.0.171:8000";
+
+  if (typeof window !== "undefined") {
+    if (["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+  }
+
+  return PRODUCTION_BACKEND_URL;
 };
 
 export const getImageUrl = (path: string | undefined | null, defaultFolder = 'uploads/berita/'): string => {
