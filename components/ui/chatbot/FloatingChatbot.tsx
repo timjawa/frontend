@@ -182,7 +182,7 @@ export default function FloatingChatbot() {
   useEffect(() => {
     const fetchKontak = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.jembersiaga.my.id/api";
         const res = await fetch(`${baseUrl}/kontak-darurat?per_page=100`);
         if (res.ok) {
           const json = await res.json();

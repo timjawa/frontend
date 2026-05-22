@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
         hostname: 'placehold.co',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.jembersiaga.my.id',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'jembersiaga.my.id',
+        pathname: '/**',
+      },
     ],
   },
   webpack(config) {

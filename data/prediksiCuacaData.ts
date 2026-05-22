@@ -10,10 +10,14 @@ export interface WeatherSlot {
 
 export interface KecamatanPrediction {
   kecamatan: string;
-  slot1: WeatherSlot; // 06:00
-  slot2: WeatherSlot; // 12:00
-  slot3: WeatherSlot; // 18:00
-  slot4: WeatherSlot; // 19:00
+  slot1: WeatherSlot; // 00:00
+  slot2: WeatherSlot; // 03:00
+  slot3: WeatherSlot; // 06:00
+  slot4: WeatherSlot; // 09:00
+  slot5: WeatherSlot; // 12:00
+  slot6: WeatherSlot; // 15:00
+  slot7: WeatherSlot; // 18:00
+  slot8: WeatherSlot; // 21:00
 }
 
 export const allKecamatanNames = [
@@ -25,10 +29,14 @@ export const allKecamatanNames = [
 ];
 
 export const timeSlots = [
-  { key: "slot1", label: "Pagi", time: "06:00", range: [5, 8] },
-  { key: "slot2", label: "Siang", time: "12:00", range: [9, 14] },
-  { key: "slot3", label: "Sore", time: "15:00", range: [14, 18] },
-  { key: "slot4", label: "Malam", time: "20:00", range: [18, 23] },
+  { key: "slot1", label: "01:00", time: "01:00", range: [0, 3] },
+  { key: "slot2", label: "04:00", time: "04:00", range: [3, 6] },
+  { key: "slot3", label: "07:00", time: "07:00", range: [6, 9] },
+  { key: "slot4", label: "10:00", time: "10:00", range: [9, 12] },
+  { key: "slot5", label: "13:00", time: "13:00", range: [12, 15] },
+  { key: "slot6", label: "16:00", time: "16:00", range: [15, 18] },
+  { key: "slot7", label: "19:00", time: "19:00", range: [18, 21] },
+  { key: "slot8", label: "22:00", time: "22:00", range: [21, 24] },
 ];
 
 // ===================== HOURLY WEATHER DATA =====================

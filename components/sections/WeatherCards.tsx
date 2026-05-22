@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
+import { WeatherCardsSkeleton } from "@/components/ui/WeatherSkeletons";
 
 // Map OpenWeather ID → BMKG code
 const getBmkgCode = (weatherCode?: number): number => {
@@ -80,10 +81,29 @@ const formatTime = (dateStr?: string) => {
   }
 };
 
-export default function WeatherCards({ data = [] }: { data?: any[] }) {
+export default function WeatherCards() {
+  const [data, setData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        // We need to import fetchRealtimeWeather, so we'll do it at the top
+        const { fetchRealtimeWeather } = await import("@/services/weather");
+        const res = await fetchRealtimeWeather();
+        setData(res?.data || []);
+      } catch (error) {
+        console.error("Gagal memuat realtime cuaca", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   // Jika data dari backend kosong, fallback sementara
   const displayData = useMemo(() => {
@@ -118,6 +138,12 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
       behavior: "smooth",
     });
   };
+
+  if (isLoading) {
+    // Import skeleton dynamically or assume it's imported (we'll just use inline require or import at top)
+    // Actually, we can just return a skeleton here. We'll import it at the top of the file in another chunk.
+    return <WeatherCardsSkeleton />;
+  }
 
   if (displayData.length === 0) return null;
 
@@ -156,7 +182,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
 
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto hide-scrollbar pb-2"
+          className="flex gap-4 overflow-x-auto hide-scrollbar py-4"
         >
           {displayData.map((loc) => {
             const bmkgCode = getBmkgCode(loc.weather_code);
@@ -168,7 +194,7 @@ export default function WeatherCards({ data = [] }: { data?: any[] }) {
             return (
               <div
                 key={loc.id}
-                className="flex-shrink-0 w-[220px] relative overflow-hidden rounded-2xl p-5 cursor-pointer group hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                className="flex-shrink-0 w-[220px] relative overflow-hidden rounded-2xl p-5 cursor-pointer group hover:shadow-md hover:-translate-y-1 transition-all duration-300"
                 style={{ backgroundColor: "#DFEAF6" }}
               >
                 {/* Shield watermarks at corners */}
