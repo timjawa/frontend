@@ -143,13 +143,15 @@ export default function PrediksiCuacaPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-12 pr-14 py-3.5 rounded-xl bg-white text-slate-700 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-secondary border border-border shadow-sm transition-all duration-200"
                     />
-                    {searchQuery && (
+                    {searchQuery ? (
                       <button
                         onClick={() => setSearchQuery("")}
                         className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                       >
                         ✕
                       </button>
+                    ) : (
+                      <HiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none" />
                     )}
                   </div>
                   {searchQuery && !isLoading && (
