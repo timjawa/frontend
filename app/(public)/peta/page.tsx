@@ -54,13 +54,12 @@ export default function PetaPage() {
   const [loadingKecamatan, setLoadingKecamatan] = useState(true);
   
   const [kecamatanSearch, setKecamatanSearch] = useState("");
+  // State selected marker & pan
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [panToCoord, setPanToCoord] = useState<[number, number] | null>(null);
 
-  // States untuk collapse/expand sidebar cards
-  const [isLaporanOpen, setIsLaporanOpen] = useState(false);
-  const [isKecamatanOpen, setIsKecamatanOpen] = useState(false);
-  const [isPosOpen, setIsPosOpen] = useState(false);
+  // State accordion sidebar
+  const [openCard, setOpenCard] = useState<"laporan" | "kecamatan" | "pos" | null>("laporan");
 
   // Fetch seluruh data peta bencana
   const fetchMapData = useCallback(async () => {
@@ -118,79 +117,16 @@ export default function PetaPage() {
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
 
-      <main className="flex-grow pt-[88px] pb-16">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          {/* Header Bencana */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-                PETA PEMETAAN BENCANA
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Visualisasi data titik bencana terverifikasi, wilayah kecamatan rawan, dan lokasi pos pengungsian aktif.
-              </p>
-            </div>
-            
-            <button
-              onClick={handleRefresh}
-              className="self-start md:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 active:scale-95 transition-all shadow-sm shrink-0"
-            >
-              <HiOutlineArrowPath className={`w-4 h-4 text-gray-500 ${loading || loadingKecamatan ? "animate-spin" : ""}`} />
-              Refresh Peta
-            </button>
-          </div>
-
+      <main className="flex-grow pt-[112px] flex flex-col">
+        <div className="w-full flex-1 flex flex-col">
           {/* Grid Layout Peta & Sidebar */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-0 items-stretch flex-1 h-[calc(100vh-112px)] min-h-[750px]">
             
             {/* KIRI: Peta Visual Utama (3 Kolom) */}
-            <div className="xl:col-span-3 bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col min-h-[550px] md:min-h-[650px]">
+            <div className="xl:col-span-3 flex flex-col h-full overflow-hidden">
               
-              {/* Top Header Map */}
-              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-500/10">
-                    <HiOutlineMapPin className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-850 dark:text-white leading-tight">
-                      Peta Interaktif Kabupaten Jember
-                    </h3>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-                      {markers.length} penanda aktif terpetakan di wilayah Jember
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Legenda Layer */}
-              <div className="px-5 py-2.5 border-b border-gray-100 dark:border-gray-800 flex flex-wrap items-center gap-x-4 gap-y-1.5 bg-gray-50/50 dark:bg-white/[0.01]">
-                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Legenda Layer:</span>
-                
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0 shadow-sm shadow-red-500/20" />
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Bahaya Kritis</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0 shadow-sm shadow-orange-500/20" />
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Bahaya Tinggi</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 shrink-0 shadow-sm shadow-yellow-500/20" />
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Bahaya Sedang</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 shadow-sm shadow-blue-500/20" />
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Aman / Rendah</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0 shadow-sm shadow-purple-500/20" />
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Pos Pengungsian</span>
-                </div>
-              </div>
-
               {/* Map Canvas */}
-              <div className="flex-grow relative h-[500px] md:h-[550px] z-0 overflow-hidden">
+              <div className="flex-grow relative h-full z-0 overflow-hidden">
                 <MapView
                   markers={markers}
                   selectedMarkerId={selectedMarkerId}
@@ -201,30 +137,60 @@ export default function PetaPage() {
                     setPanToCoord(null);
                   }}
                 />
+
+                {/* Floating Legenda Layer di Kanan Atas */}
+                <div className="absolute right-4 top-4 z-[400] bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg flex flex-col gap-3">
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Legenda
+                  </span>
+                  
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full bg-red-600 shrink-0 shadow-sm shadow-red-500/20" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Kritis</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0 shadow-sm shadow-orange-500/20" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Tinggi</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full bg-yellow-400 shrink-0 shadow-sm shadow-yellow-500/20" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Sedang</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0 shadow-sm shadow-blue-500/20" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Aman / Rendah</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <HiOutlineHome className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Pos Pengungsian</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* KANAN: Tiga Dropdown Sidebar (1 Kolom) */}
-            <div className="xl:col-span-1 space-y-4">
+            <div className="xl:col-span-1 flex flex-col gap-4 p-4 h-full overflow-hidden z-10 border-l border-gray-200 dark:border-gray-800">
               
-              {/* CARD 1: LAPORAN WARGA (Diverifikasi) */}
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
-                <div
-                  onClick={() => setIsLaporanOpen(!isLaporanOpen)}
-                  className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+              {/* SECTION 1: LAPORAN WARGA (Diverifikasi) */}
+              <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
+                <div 
+                  onClick={() => setOpenCard(openCard === "laporan" ? null : "laporan")}
+                  className="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0"
                 >
-                  <div className="flex items-center gap-2">
-                    <HiOutlineExclamationTriangle className="w-4 h-4 text-orange-500 shrink-0" />
-                    <span className="text-sm font-bold text-gray-800 dark:text-white">Laporan Warga</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400 shrink-0">
-                      {laporanList.length} aktif
-                    </span>
+                  <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
+                    <HiOutlineExclamationTriangle className="w-6 h-6 text-orange-500" />
                   </div>
-                  {isLaporanOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Laporan Warga</div>
+                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{laporanList.length}</div>
+                  </div>
+                  <div className="shrink-0 pl-1">
+                    {openCard === "laporan" ? <HiChevronUp className="w-5 h-5 text-gray-400" /> : <HiChevronDown className="w-5 h-5 text-gray-400" />}
+                  </div>
                 </div>
 
-                {isLaporanOpen && (
-                  <div className="p-3 space-y-2.5 max-h-[300px] overflow-y-auto transition-all">
+                {openCard === "laporan" && (
+                  <div className="px-4 pb-4 space-y-2 max-h-[350px] overflow-y-auto border-t border-gray-50 dark:border-gray-800/50 pt-3">
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 italic px-1">
                       Klik laporan untuk memfokuskan lokasi bencana di peta.
                     </p>
@@ -250,7 +216,7 @@ export default function PetaPage() {
                               setSelectedMarkerId(l.id);
                               setPanToCoord(null);
                             }}
-                            className={`p-3 rounded-xl border transition-all cursor-pointer border-l-4 border-l-orange-500 ${
+                            className={`p-3 rounded-xl border transition-all cursor-pointer ${
                               isSelected
                                 ? "border-orange-500 bg-orange-50/10 dark:bg-orange-950/10 shadow-sm"
                                 : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-orange-300 hover:bg-orange-50/5"
@@ -261,14 +227,7 @@ export default function PetaPage() {
                                 {l.label || "Laporan Bencana"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center gap-1 text-[8px] font-mono text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-850/30">
-                                Lat: {l.latitude.toFixed(5)}
-                              </span>
-                              <span className="inline-flex items-center gap-1 text-[8px] font-mono text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-850/30">
-                                Lng: {l.longitude.toFixed(5)}
-                              </span>
-                            </div>
+
                           </div>
                         );
                       })
@@ -277,24 +236,26 @@ export default function PetaPage() {
                 )}
               </div>
 
-              {/* CARD 2: KECAMATAN RAWAN */}
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
-                <div
-                  onClick={() => setIsKecamatanOpen(!isKecamatanOpen)}
-                  className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+              {/* SECTION 2: KECAMATAN RAWAN */}
+              <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
+                <div 
+                  onClick={() => setOpenCard(openCard === "kecamatan" ? null : "kecamatan")}
+                  className="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0"
                 >
-                  <div className="flex items-center gap-2">
-                    <HiOutlineShieldExclamation className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span className="text-sm font-bold text-gray-800 dark:text-white">Kecamatan Rawan</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
-                      {kecamatans.length} daerah
-                    </span>
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <HiOutlineShieldExclamation className="w-6 h-6 text-emerald-500" />
                   </div>
-                  {isKecamatanOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Kecamatan Rawan</div>
+                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{kecamatans.length}</div>
+                  </div>
+                  <div className="shrink-0 pl-1">
+                    {openCard === "kecamatan" ? <HiChevronUp className="w-5 h-5 text-gray-400" /> : <HiChevronDown className="w-5 h-5 text-gray-400" />}
+                  </div>
                 </div>
 
-                {isKecamatanOpen && (
-                  <div className="p-3 flex flex-col gap-2.5 max-h-[350px] overflow-hidden transition-all">
+                {openCard === "kecamatan" && (
+                  <div className="px-4 pb-4 flex flex-col gap-3 max-h-[350px] border-t border-gray-50 dark:border-gray-800/50 pt-3">
                     {/* Search Kecamatan */}
                     <div className="relative shrink-0">
                       <HiMagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -303,12 +264,12 @@ export default function PetaPage() {
                         placeholder="Cari kecamatan..."
                         value={kecamatanSearch}
                         onChange={(e) => setKecamatanSearch(e.target.value)}
-                        className="w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 py-1.5 text-xs text-gray-900 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-900/65 dark:text-gray-100"
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 py-1.5 text-xs text-gray-900 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-900/65 dark:text-gray-100"
                       />
                     </div>
 
                     {/* Scrollable list */}
-                    <div className="flex-grow overflow-y-auto space-y-2 pr-0.5">
+                    <div className="flex-grow overflow-y-auto space-y-2 pr-1">
                       {loadingKecamatan ? (
                         <div className="space-y-2">
                           {Array.from({ length: 3 }).map((_, idx) => (
@@ -347,16 +308,7 @@ export default function PetaPage() {
                                   {k.nama}
                                 </span>
                               </div>
-                              {hasCoords && (
-                                <div className="flex items-center gap-1.5 mt-1">
-                                  <span className="inline-flex items-center gap-1 text-[8px] font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800/30">
-                                    Lat: {lat.toFixed(5)}
-                                  </span>
-                                  <span className="inline-flex items-center gap-1 text-[8px] font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800/30">
-                                    Lng: {lng.toFixed(5)}
-                                  </span>
-                                </div>
-                              )}
+
                             </div>
                           );
                         })
@@ -366,24 +318,26 @@ export default function PetaPage() {
                 )}
               </div>
 
-              {/* CARD 3: POS PENGUNGSIAN */}
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
-                <div
-                  onClick={() => setIsPosOpen(!isPosOpen)}
-                  className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+              {/* SECTION 3: POS PENGUNGSIAN */}
+              <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
+                <div 
+                  onClick={() => setOpenCard(openCard === "pos" ? null : "pos")}
+                  className="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0"
                 >
-                  <div className="flex items-center gap-2">
-                    <HiOutlineHome className="w-4 h-4 text-purple-500 shrink-0" />
-                    <span className="text-sm font-bold text-gray-800 dark:text-white">Pos Pengungsian</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 shrink-0">
-                      {posPengungsianList.length} pos
-                    </span>
+                  <div className="w-14 h-14 rounded-2xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
+                    <HiOutlineHome className="w-6 h-6 text-purple-500" />
                   </div>
-                  {isPosOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Pos Pengungsian</div>
+                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{posPengungsianList.length}</div>
+                  </div>
+                  <div className="shrink-0 pl-1">
+                    {openCard === "pos" ? <HiChevronUp className="w-5 h-5 text-gray-400" /> : <HiChevronDown className="w-5 h-5 text-gray-400" />}
+                  </div>
                 </div>
 
-                {isPosOpen && (
-                  <div className="p-3 space-y-2.5 max-h-[300px] overflow-y-auto transition-all">
+                {openCard === "pos" && (
+                  <div className="px-4 pb-4 space-y-2 max-h-[350px] overflow-y-auto border-t border-gray-50 dark:border-gray-800/50 pt-3">
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 italic px-1">
                       Klik pos untuk memfokuskan lokasi pengungsian di peta.
                     </p>
@@ -402,14 +356,6 @@ export default function PetaPage() {
                     ) : (
                       posPengungsianList.map((p) => {
                         const isSelected = selectedMarkerId === p.id;
-                        const status = (p.status || "standby").toLowerCase();
-                        let badgeColor = "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/40";
-                        if (status === "aktif") {
-                          badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40";
-                        } else if (status === "penuh") {
-                          badgeColor = "bg-red-50 text-red-700 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/40";
-                        }
-
                         return (
                           <div
                             key={p.id}
@@ -417,7 +363,7 @@ export default function PetaPage() {
                               setSelectedMarkerId(p.id);
                               setPanToCoord(null);
                             }}
-                            className={`p-3 rounded-xl border transition-all cursor-pointer border-l-4 border-l-purple-500 ${
+                            className={`p-3 rounded-xl border transition-all cursor-pointer ${
                               isSelected
                                 ? "border-purple-500 bg-purple-50/10 dark:bg-purple-950/10 shadow-sm"
                                 : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-purple-300 hover:bg-purple-50/5"
@@ -427,25 +373,13 @@ export default function PetaPage() {
                               <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
                                 {p.label || "Pos Pengungsian"}
                               </span>
-                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${badgeColor}`}>
-                                {status.toUpperCase()}
-                              </span>
                             </div>
                             
                             {(p.kapasitas !== undefined || p.terisi !== undefined) && (
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-1.5">
+                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0">
                                 Terisi: <span className="font-bold">{p.terisi ?? 0}</span> / {p.kapasitas ?? 0} Jiwa
                               </p>
                             )}
-
-                            <div className="flex items-center gap-1.5">
-                              <span className="inline-flex items-center gap-1 text-[8px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 px-1.5 py-0.5 rounded border border-purple-100 dark:border-purple-850/30">
-                                Lat: {p.latitude.toFixed(5)}
-                              </span>
-                              <span className="inline-flex items-center gap-1 text-[8px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20 px-1.5 py-0.5 rounded border border-purple-100 dark:border-purple-850/30">
-                                Lng: {p.longitude.toFixed(5)}
-                              </span>
-                            </div>
                           </div>
                         );
                       })

@@ -74,7 +74,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5">
               {[
-                { name: "Peta Bencana", href: "/peta-bencana" },
+                { name: "Peta Bencana", href: "/peta" },
                 { name: "Pengaduan Bencana", href: "/pengaduan-bencana" },
                 { name: "FAQ", href: "/faq" },
               ].map((link) => (
