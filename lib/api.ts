@@ -1,11 +1,16 @@
 import axios from "axios";
 
 export const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+    return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "");
+  }
+
   if (typeof window !== "undefined") {
     // Gunakan hostname yang sama dengan yang diakses di browser untuk menghindari masalah CORS/SameSite cookie
     return `${window.location.protocol}//${window.location.hostname}:8000`;
   }
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.0.199:8000";
+
+  return "https://api.jembersiaga.my.id";
 };
 
 export const getImageUrl = (path: string | undefined | null, defaultFolder = 'uploads/berita/'): string => {

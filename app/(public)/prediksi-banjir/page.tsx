@@ -33,6 +33,19 @@ const rawanStyle: Record<FloodPredictionRow["level_rawan"], string> = {
   tinggi: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
+const statusStyle: Record<"aman" | "waspada" | "banjir", string> = {
+  aman: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  waspada: "bg-amber-50 text-amber-700 border-amber-200",
+  banjir: "bg-red-50 text-red-700 border-red-200",
+};
+
+function getOperationalStatus(row: FloodPredictionRow): "aman" | "waspada" | "banjir" {
+  if (row.status_operasional) return row.status_operasional;
+  if (row.label === "banjir") return "banjir";
+  if (row.kategori_risiko === "tinggi" || row.kategori_risiko === "kritis") return "waspada";
+  return "aman";
+}
+
 function formatPercent(value: number | null | undefined) {
   if (value == null || Number.isNaN(value)) return "-";
   return `${Math.round(value * 100)}%`;
@@ -70,6 +83,17 @@ function RiskBadge({ value }: { value: FloodPredictionRow["kategori_risiko"] }) 
 function RawanBadge({ value }: { value: FloodPredictionRow["level_rawan"] }) {
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${rawanStyle[value]}`}>
+      {value}
+    </span>
+  );
+}
+
+function StatusBadge({ value }: { value: "aman" | "waspada" | "banjir" }) {
+  const Icon = value === "banjir" ? HiOutlineExclamationTriangle : HiOutlineShieldCheck;
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle[value]}`}>
+      <Icon className="w-4 h-4" />
       {value}
     </span>
   );
@@ -168,7 +192,7 @@ export default function PrediksiBanjirPage() {
                   <HiOutlineExclamationTriangle className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Prediksi Banjir</p>
+                  <p className="text-xs text-gray-500 mb-0.5">Status Banjir</p>
                   <p className="text-2xl font-bold text-gray-800">{summary?.prediksi_banjir ?? 0}</p>
                 </div>
               </div>
@@ -254,7 +278,7 @@ export default function PrediksiBanjirPage() {
                       <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 min-w-[160px]">Kecamatan</th>
                       <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Probabilitas</th>
                       <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Risiko</th>
-                      <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Prediksi</th>
+                      <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
                       <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Cuaca</th>
                       <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Kerawanan</th>
                       <th className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">Laporan 7 Hari</th>
@@ -312,14 +336,7 @@ export default function PrediksiBanjirPage() {
                             <RiskBadge value={row.kategori_risiko} />
                           </td>
                           <td className="px-5 py-4">
-                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${
-                              row.prediksi === 1
-                                ? "bg-red-50 text-red-700 border-red-200"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            }`}>
-                              {row.prediksi === 1 ? <HiOutlineExclamationTriangle className="w-4 h-4" /> : <HiOutlineShieldCheck className="w-4 h-4" />}
-                              {row.label}
-                            </span>
+                            <StatusBadge value={getOperationalStatus(row)} />
                           </td>
                           <td className="px-5 py-4">
                             <p className="font-semibold text-slate-700">{formatNumber(row.curah_hujan, " mm")}</p>

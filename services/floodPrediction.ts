@@ -16,7 +16,8 @@ export interface FloodPredictionRow {
   probabilitas_tidak_banjir: number;
   threshold: number;
   prediksi: 0 | 1;
-  label: "banjir" | "tidak banjir";
+  label: "aman" | "waspada" | "banjir" | "tidak banjir";
+  status_operasional?: "aman" | "waspada" | "banjir";
   kategori_risiko: "rendah" | "sedang" | "tinggi" | "kritis";
 }
 
@@ -26,6 +27,7 @@ export interface FloodPredictionSummary {
   probabilitas_rata_rata: number;
   probabilitas_maksimum: number;
   risiko: Record<"rendah" | "sedang" | "tinggi" | "kritis", number>;
+  status_operasional?: Record<"aman" | "waspada" | "banjir", number>;
   terakhir_diperbarui: string | null;
 }
 
@@ -38,20 +40,20 @@ export interface FloodPredictionResponse {
   data: FloodPredictionRow[];
 }
 
-export const getPredictionApiBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_PREDICTION_API_URL) {
-    return process.env.NEXT_PUBLIC_PREDICTION_API_URL.replace(/\/$/, "");
+export const getFloodPredictionApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
   }
 
   if (typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
-    return `${window.location.protocol}//${window.location.hostname}:8010`;
+    return `${window.location.protocol}//${window.location.hostname}:8000/api`;
   }
 
-  return "https://abinugroh00-prediksi-banjir.hf.space";
+  return "https://api.jembersiaga.my.id/api";
 };
 
 export async function fetchRealtimeFloodPredictions(): Promise<FloodPredictionResponse> {
-  const response = await fetch(`${getPredictionApiBaseUrl()}/predict/realtime`, {
+  const response = await fetch(`${getFloodPredictionApiBaseUrl()}/prediksi-banjir/realtime`, {
     method: "GET",
     headers: {
       Accept: "application/json",
