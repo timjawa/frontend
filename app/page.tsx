@@ -35,7 +35,7 @@ export default async function Home() {
         <WeatherCards />
         <InfoBanner />
         <WeatherTable />
-        <EarlyWarning />
+        {/* <EarlyWarning /> */}
         <ActionCards />
         <ReportSection />
         <NewsSection />
