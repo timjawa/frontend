@@ -6,7 +6,9 @@ import Footer from "@/components/layout/Footer";
 import { getImageUrl, getBaseUrl } from "@/lib/api";
 import ShareButton from "@/components/berita/ShareButton";
 
-async function getBeritaData(id: string) {
+import { cache } from "react";
+
+const getBeritaData = cache(async (id: string) => {
   try {
     const res = await fetch(`${getBaseUrl()}/api/berita/${id}`, { cache: "no-store" });
     if (!res.ok) return null;
@@ -16,7 +18,7 @@ async function getBeritaData(id: string) {
     console.error("Error fetching berita detail:", error);
     return null;
   }
-}
+});
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -85,7 +87,7 @@ export default async function BeritaDetail({ params }: { params: Promise<{ id: s
             {source && (
               <figcaption className="text-center text-[12px] font-medium text-slate-500 px-4 md:px-12 leading-relaxed">
                 Ilustrasi kondisi terkait: {news.judul}. (Sumber:{" "}
-                <a href= {source} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                <a href={source} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
                   {source}
                 </a>
                 )
@@ -100,7 +102,7 @@ export default async function BeritaDetail({ params }: { params: Promise<{ id: s
                 {news.ringkasan}
               </div>
             )}
-            
+
             <div className="space-y-8 text-[18px] md:text-[19px] leading-[1.9] text-slate-800 text-justify font-normal">
               {news.konten?.split('\n').filter((p: string) => p.trim() !== '').map((para: string, i: number) => (
                 <p key={i} className="m-0 indent-8 md:indent-12 first:indent-0">

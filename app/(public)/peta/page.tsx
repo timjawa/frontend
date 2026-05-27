@@ -31,9 +31,9 @@ const MapView = dynamic<{
     loading: () => (
       <div className="w-full h-full bg-gray-100 dark:bg-gray-950 animate-pulse flex items-center justify-center relative overflow-hidden min-h-[500px]">
         {/* Grid Peta Palsu */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ 
+        <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)',
-          backgroundSize: '50px 50px' 
+          backgroundSize: '50px 50px'
         }}></div>
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm z-10">
           <div className="flex items-center gap-2">
@@ -49,10 +49,10 @@ const MapView = dynamic<{
 export default function PetaPage() {
   const [markers, setMarkers] = useState<PetaMarker[]>([]);
   const [kecamatans, setKecamatans] = useState<any[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [loadingKecamatan, setLoadingKecamatan] = useState(true);
-  
+
   const [kecamatanSearch, setKecamatanSearch] = useState("");
   // State selected marker & pan
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
@@ -121,10 +121,10 @@ export default function PetaPage() {
         <div className="w-full flex-1 flex flex-col">
           {/* Grid Layout Peta & Sidebar */}
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-0 items-stretch flex-1 h-[calc(100vh-112px)] min-h-[750px]">
-            
+
             {/* KIRI: Peta Visual Utama (3 Kolom) */}
             <div className="xl:col-span-3 flex flex-col h-full overflow-hidden">
-              
+
               {/* Map Canvas */}
               <div className="flex-grow relative h-full z-0 overflow-hidden">
                 <MapView
@@ -143,7 +143,7 @@ export default function PetaPage() {
                   <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center border-b border-gray-200 dark:border-gray-700 pb-2">
                     Legenda
                   </span>
-                  
+
                   <div className="flex items-center gap-2.5">
                     <span className="w-3 h-3 rounded-full bg-red-600 shrink-0 shadow-sm shadow-red-500/20" />
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Kritis</span>
@@ -170,10 +170,10 @@ export default function PetaPage() {
 
             {/* KANAN: Tiga Dropdown Sidebar (1 Kolom) */}
             <div className="xl:col-span-1 flex flex-col gap-4 p-4 h-full overflow-hidden z-10 border-l border-gray-200 dark:border-gray-800">
-              
+
               {/* SECTION 1: LAPORAN WARGA (Diverifikasi) */}
               <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
-                <div 
+                <div
                   onClick={() => setOpenCard(openCard === "laporan" ? null : "laporan")}
                   className="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0"
                 >
@@ -181,7 +181,7 @@ export default function PetaPage() {
                     <HiOutlineExclamationTriangle className="w-6 h-6 text-orange-500" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Laporan Warga</div>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Lokasi Bencana</div>
                     <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{laporanList.length}</div>
                   </div>
                   <div className="shrink-0 pl-1">
@@ -194,7 +194,7 @@ export default function PetaPage() {
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 italic px-1">
                       Klik laporan untuk memfokuskan lokasi bencana di peta.
                     </p>
-                    
+
                     {loading ? (
                       <div className="space-y-2.5">
                         {Array.from({ length: 2 }).map((_, idx) => (
@@ -216,11 +216,10 @@ export default function PetaPage() {
                               setSelectedMarkerId(l.id);
                               setPanToCoord(null);
                             }}
-                            className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                              isSelected
+                            className={`p-3 rounded-xl border transition-all cursor-pointer ${isSelected
                                 ? "border-orange-500 bg-orange-50/10 dark:bg-orange-950/10 shadow-sm"
                                 : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-orange-300 hover:bg-orange-50/5"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
@@ -238,7 +237,7 @@ export default function PetaPage() {
 
               {/* SECTION 2: KECAMATAN RAWAN */}
               <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
-                <div 
+                <div
                   onClick={() => setOpenCard(openCard === "kecamatan" ? null : "kecamatan")}
                   className="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0"
                 >
@@ -246,7 +245,7 @@ export default function PetaPage() {
                     <HiOutlineShieldExclamation className="w-6 h-6 text-emerald-500" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Kecamatan Rawan</div>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Kecamatan</div>
                     <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{kecamatans.length}</div>
                   </div>
                   <div className="shrink-0 pl-1">
@@ -297,11 +296,10 @@ export default function PetaPage() {
                                   setSelectedMarkerId(null);
                                 }
                               }}
-                              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                                isSelected
+                              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${isSelected
                                   ? "border-blue-500 bg-blue-50/10 dark:bg-blue-950/20 shadow-sm"
                                   : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-blue-300 hover:bg-blue-50/5"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-none">
@@ -320,7 +318,7 @@ export default function PetaPage() {
 
               {/* SECTION 3: POS PENGUNGSIAN */}
               <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
-                <div 
+                <div
                   onClick={() => setOpenCard(openCard === "pos" ? null : "pos")}
                   className="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0"
                 >
@@ -341,7 +339,7 @@ export default function PetaPage() {
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 italic px-1">
                       Klik pos untuk memfokuskan lokasi pengungsian di peta.
                     </p>
-                    
+
                     {loading ? (
                       <div className="space-y-2.5">
                         {Array.from({ length: 2 }).map((_, idx) => (
@@ -363,18 +361,17 @@ export default function PetaPage() {
                               setSelectedMarkerId(p.id);
                               setPanToCoord(null);
                             }}
-                            className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                              isSelected
+                            className={`p-3 rounded-xl border transition-all cursor-pointer ${isSelected
                                 ? "border-purple-500 bg-purple-50/10 dark:bg-purple-950/10 shadow-sm"
                                 : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-purple-300 hover:bg-purple-50/5"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
                                 {p.label || "Pos Pengungsian"}
                               </span>
                             </div>
-                            
+
                             {(p.kapasitas !== undefined || p.terisi !== undefined) && (
                               <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0">
                                 Terisi: <span className="font-bold">{p.terisi ?? 0}</span> / {p.kapasitas ?? 0} Jiwa
