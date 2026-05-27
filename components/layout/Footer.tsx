@@ -5,9 +5,9 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0f1b2d] text-white">
+    <footer className="bg-[#1f2a56] text-white">
       {/* Top bar: Logo + Social Icons */}
-      <div className="bg-[#0f1b2d] border-b border-white/10">
+      <div className="bg-[#1f2a56] border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center justify-center">
@@ -29,27 +29,47 @@ export default function Footer() {
             <h4 className="font-semibold text-sm mb-4 text-white">
               Akses Cepat
             </h4>
-            <ul className="space-y-2.5">
-              {[
-                { name: "Beranda", href: "/" },
-                { name: "Data", href: "/prediksi-cuaca" },
-                { name: "Peta Informasi Banjir", href: "/peta" },
-                { name: "Peta Banjir Berbasiskan RT", href: "/prediksi-banjir" },
-              ].map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-white/60 hover:text-white text-sm transition-colors duration-200"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+              {/* Kolom kiri */}
+              <ul className="space-y-2.5">
+                {[
+                  { name: "Beranda", href: "/" },
+                  { name: "Prediksi Cuaca", href: "/prediksi-cuaca" },
+                  { name: "Prediksi Banjir", href: "/prediksi-banjir" },
+                  { name: "Peta Bencana", href: "/peta" },
+                ].map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-white/60 hover:text-white text-sm transition-colors duration-200"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {/* Kolom kanan */}
+              <ul className="space-y-2.5">
+                {[
+                  { name: "Pengaduan Bencana", href: "/pengaduan-bencana" },
+                  { name: "Berita", href: "/berita" },
+                  { name: "FAQ", href: "/faq" },
+                ].map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-white/60 hover:text-white text-sm transition-colors duration-200"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Alamat */}
-          <div>
+          <div className="md:pl-8">
             <h4 className="font-semibold text-sm mb-4 text-white">
               Alamat
             </h4>
@@ -61,7 +81,7 @@ export default function Footer() {
           </div>
 
           {/* Laman Terkait */}
-          <div>
+          <div className="md:pl-8">
             <h4 className="font-semibold text-sm mb-4 text-white">
               Laman terkait
             </h4>

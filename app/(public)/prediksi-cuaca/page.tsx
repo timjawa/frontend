@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useDeferredValue } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import DatePicker from "@/components/ui/DatePicker";
-import { fetchWeatherByDate, fetchWeatherForecast } from "@/services/weather";
+import { fetchWeatherForecast } from "@/services/weather";
 import InfoBanner from "@/components/ui/InfoBanner";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiOutlineSearch, HiChevronDown } from "react-icons/hi";
@@ -44,58 +43,30 @@ const formatJamIndonesia = (waktu: string) => {
   return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(/\./g, ":") + " WIB";
 };
 
+const tabs = ["Hari Ini", "Besok", "Lusa"];
+
 export default function PrediksiCuacaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTimeSlot, setActiveTimeSlot] = useState<string | null>(null);
   const [rawData, setRawData] = useState<Record<string, any[]>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [dataSource, setDataSource] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const deferredActiveTab = useDeferredValue(activeTab);
 
-  // Date picker state — defaults to today (local date, not UTC)
-  const getLocalDateStr = (offsetDays = 0) => {
+  // Target date based on active tab
+  const targetDateString = useMemo(() => {
     const d = new Date();
-    d.setDate(d.getDate() + offsetDays);
+    d.setDate(d.getDate() + deferredActiveTab);
     return d.toLocaleDateString('en-CA'); // YYYY-MM-DD local
-  };
-  const todayStr = getLocalDateStr(0);
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-
-  // Date limits: 7 days back, 3 days forward (local dates)
-  const minDate = getLocalDateStr(-7);
-  const maxDate = getLocalDateStr(3);
+  }, [deferredActiveTab]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-
-        if (selectedDate >= todayStr) {
-          // For today/future: use same endpoint as WeatherTable, filter client-side by local date
-          const res = await fetchWeatherForecast();
-          const allData: Record<string, any[]> = res?.data || {};
-
-          // Filter each kecamatan's forecasts to only include entries matching the selected LOCAL date
-          const filtered: Record<string, any[]> = {};
-          for (const [kecamatan, forecasts] of Object.entries(allData)) {
-            const matching = forecasts.filter((f: any) => {
-              const { date } = parseWaktuLokal(f.waktu_lokal);
-              return date === selectedDate;
-            });
-            if (matching.length > 0) {
-              filtered[kecamatan] = matching;
-            }
-          }
-
-          setRawData(filtered);
-          setDataSource("forecast");
-        } else {
-          // For past dates: use by-date endpoint (historical data)
-          const res = await fetchWeatherByDate(selectedDate);
-          setRawData(res?.data || {});
-          setDataSource(res?.source || "");
-        }
-
+        const res = await fetchWeatherForecast();
+        setRawData(res?.data || {});
         setActiveTimeSlot(null);
       } catch (error) {
         console.error("Gagal memuat data cuaca:", error);
@@ -105,22 +76,22 @@ export default function PrediksiCuacaPage() {
     };
 
     loadData();
-  }, [selectedDate, todayStr]);
+  }, []);
 
-  // Extract unique times from already-filtered data
+  // Extract unique times for the target date
   const uniqueTimes = useMemo(() => {
     const timesMap = new Map<number, string>();
     Object.values(rawData).forEach(forecasts => {
       forecasts.forEach((f: any) => {
-        const { timestamp } = parseWaktuLokal(f.waktu_lokal);
-        if (timestamp > 0) {
+        const { date, timestamp } = parseWaktuLokal(f.waktu_lokal);
+        if (date === targetDateString && timestamp > 0) {
           timesMap.set(timestamp, f.waktu_lokal);
         }
       });
     });
     const sortedTimestamps = Array.from(timesMap.keys()).sort((a, b) => a - b);
     return sortedTimestamps.map(ts => timesMap.get(ts) as string);
-  }, [rawData]);
+  }, [rawData, targetDateString]);
 
   const selectedSlotLabel = useMemo(() => {
     if (!activeTimeSlot) return "Semua Jam";
@@ -144,14 +115,17 @@ export default function PrediksiCuacaPage() {
     ? uniqueTimes.filter((t) => t === activeTimeSlot)
     : uniqueTimes;
 
+  const isPending = activeTab !== deferredActiveTab;
+  const showSkeleton = isLoading || isPending;
+
   return (
     <>
       <Navbar />
       <main className="flex-1 bg-[#F3F8FF]">
         {/* Hero */}
-        <section className="pt-36 pb-8">
+        <section className="pt-28 pb-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative p-8 sm:p-10">
+            <div className="relative p-6 sm:p-8">
               <div className="relative z-10 text-center">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 tracking-tight">
                   Prediksi Cuaca Jember
@@ -195,19 +169,27 @@ export default function PrediksiCuacaPage() {
         </section>
 
         {/* Filter Bar */}
-        <section className="py-3">
+        <section className="py-2">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <DatePicker
-                id="date-picker"
-                value={selectedDate}
-                onChange={(val) => setSelectedDate(val)}
-                minDate={minDate}
-                maxDate={maxDate}
-                disableDarkMode={true}
-              />
+              {/* Day Tabs */}
+              <div className="flex gap-2">
+                {tabs.map((tab, i) => (
+                  <button
+                    key={tab}
+                    onClick={() => { setActiveTab(i); setActiveTimeSlot(null); }}
+                    className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                      activeTab === i
+                        ? "bg-[#1f2a56] text-white shadow-md"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-border"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex items-center gap-4 flex-wrap">
-                <span className="text-sm text-slate-500 font-medium">Sumber: BMKG</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500 font-medium">Jam:</span>
                   <div className="relative">
@@ -222,8 +204,8 @@ export default function PrediksiCuacaPage() {
 
                     {isDropdownOpen && (
                       <>
-                        <div 
-                          className="fixed inset-0 z-40" 
+                        <div
+                          className="fixed inset-0 z-40"
                           onClick={() => setIsDropdownOpen(false)}
                         />
                         <div className="absolute right-0 mt-1.5 w-44 rounded-xl bg-white border border-border shadow-lg py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-100 origin-top-right">
@@ -263,8 +245,11 @@ export default function PrediksiCuacaPage() {
         </section>
 
         {/* Weather Table */}
-        <section className="py-10">
+        <section className="pt-3 pb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-end mb-3">
+              <span className="text-sm font-semibold text-slate-500">Sumber: BMKG</span>
+            </div>
             <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full" id="weather-prediction-table">
@@ -284,7 +269,7 @@ export default function PrediksiCuacaPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {isLoading ? (
+                    {showSkeleton ? (
                       Array.from({ length: 5 }).map((_, idx) => (
                         <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"} animate-pulse`}>
                           <td className={`px-5 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
@@ -339,7 +324,7 @@ export default function PrediksiCuacaPage() {
                             )}
                             {visibleTimes.map((waktu) => {
                               const matchingForecast = forecasts.find((f: any) => f.waktu_lokal === waktu);
-                              
+
                               const suhu = matchingForecast ? Math.round(matchingForecast.suhu) + '°C' : '--';
                               const cuacaDesc = matchingForecast ? matchingForecast.deskripsi_cuaca : '-';
                               const iconName = matchingForecast ? mapConditionToIcon(cuacaDesc) : 'partly-cloudy';
@@ -373,7 +358,7 @@ export default function PrediksiCuacaPage() {
               </div>
             </div>
 
-            {!isLoading && (
+            {!showSkeleton && (
               <div className="mt-3 text-xs text-slate-400 text-right">
                 Menampilkan {filteredKecamatanList.length} dari {kecamatanList.length} kecamatan
               </div>
@@ -381,7 +366,9 @@ export default function PrediksiCuacaPage() {
           </div>
         </section>
 
-        <InfoBanner />
+        <div className="pb-12">
+          <InfoBanner />
+        </div>
       </main>
       <Footer />
     </>
