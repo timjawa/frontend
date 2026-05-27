@@ -70,10 +70,24 @@ export default function CuacaWidget() {
   const currentData = (historicalData[selectedKecamatan] || [])
     .sort((a, b) => a.tanggal.localeCompare(b.tanggal));
 
-  // Prepare chart data
-  const categories = currentData.map((d) =>
-    new Date(d.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })
-  );
+  // Prepare chart data safely from timezone shifts and parsing issues
+  const categories = currentData.map((d) => {
+    if (!d.tanggal) return "";
+    const parts = d.tanggal.split("-");
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // JS Date months are 0-indexed
+      const day = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+      }
+    }
+    const fallbackDate = new Date(d.tanggal);
+    return isNaN(fallbackDate.getTime())
+      ? d.tanggal
+      : fallbackDate.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+  });
   const suhuSeries = currentData.map((d) => d.suhu_avg);
   const hujanSeries = currentData.map((d) => d.hujan_avg);
 
