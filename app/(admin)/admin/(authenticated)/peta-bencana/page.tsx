@@ -106,6 +106,7 @@ type ManualMarker = {
   status?: string;
   kapasitas?: number;
   terisi?: number;
+  radius?: number | string | null;
 };
 
 const inputClass =
