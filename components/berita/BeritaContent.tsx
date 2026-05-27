@@ -160,7 +160,10 @@ export default function BeritaContent({
           setDisplayedNews([]);
         }
       } else {
-        setDisplayedNews((prev) => [...prev, ...mapped]);
+        setDisplayedNews((prev) => {
+          const newItems = mapped.filter((item) => !prev.some((p) => p.id === item.id));
+          return [...prev, ...newItems];
+        });
       }
 
       setPage(currentPage);

@@ -1,13 +1,13 @@
 import axios from "axios";
 
 export const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
-    return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "");
-  }
-
   if (typeof window !== "undefined") {
     // Gunakan hostname yang sama dengan yang diakses di browser untuk menghindari masalah CORS/SameSite cookie
     return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+
+  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+    return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "");
   }
 
   return "https://api.jembersiaga.my.id";
@@ -16,12 +16,12 @@ export const getBaseUrl = () => {
 export const getImageUrl = (path: string | undefined | null, defaultFolder = 'uploads/berita/'): string => {
   if (!path) return "https://placehold.co/800x600/e2e8f0/1e293b?text=Foto";
   if (path.startsWith("http")) return path;
-  
+
   const baseUrl = getBaseUrl();
   if (path.includes("/")) {
     return `${baseUrl}/storage/${path.replace(/^\//, "")}`;
   }
-  
+
   return `${baseUrl}/storage/${defaultFolder}${path}`;
 };
 
