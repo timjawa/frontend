@@ -283,7 +283,7 @@ export default function PetaBencanaPage() {
       tipe_marker: m.tipe_marker,
       path_data: m.path_data || undefined,
       tingkat_bahaya: m.tingkat_bahaya || "sedang",
-      radius: m.radius || undefined,
+      radius: m.radius ? Number(m.radius) : undefined,
       status: m.status || undefined,
       kapasitas: m.kapasitas || undefined,
       terisi: m.terisi || undefined,
@@ -507,7 +507,8 @@ export default function PetaBencanaPage() {
               />
             </div>
           </div>
-        </div>        {/* Sidebar */}
+        </div>
+        {/* Sidebar */}
         <div className="xl:col-span-1 order-1 xl:order-2 space-y-4">
           {/* Laporan Warga Card */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
