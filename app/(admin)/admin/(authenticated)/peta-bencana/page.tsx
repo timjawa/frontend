@@ -126,9 +126,7 @@ export default function PetaBencanaPage() {
   const [showLaporanSub, setShowLaporanSub] = useState(false);
 
   // Controls collapse state of sidebar cards
-  const [isLaporanOpen, setIsLaporanOpen] = useState(false);
-  const [isKecamatanOpen, setIsKecamatanOpen] = useState(false);
-  const [isPosOpen, setIsPosOpen] = useState(false);
+  const [openCard, setOpenCard] = useState<"laporan" | "kecamatan" | "pos" | null>("laporan");
 
   // Kecamatan list state
   const [kecamatans, setKecamatans] = useState<any[]>([]);
@@ -284,6 +282,7 @@ export default function PetaBencanaPage() {
       tipe_marker: m.tipe_marker,
       path_data: m.path_data || undefined,
       tingkat_bahaya: m.tingkat_bahaya || "sedang",
+      radius: m.radius || undefined,
       status: m.status || undefined,
       kapasitas: m.kapasitas || undefined,
       terisi: m.terisi || undefined,
@@ -464,7 +463,7 @@ export default function PetaBencanaPage() {
                 <HiOutlineMapPin className="w-5 h-5 text-blue-500" />
                 <div>
                   <h3 className="text-sm font-bold text-gray-800 dark:text-white">Peta Bencana Kabupaten Jember</h3>
-                  <p className="text-xs text-gray-400">{manualMarkers.length} marker aktif · klik peta untuk pilih koordinat</p>
+                  <p className="text-xs text-gray-400">{manualMarkers.length} marker aktif</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -512,19 +511,23 @@ export default function PetaBencanaPage() {
           {/* Laporan Warga Card */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
             {/* Card Header */}
-            <div 
-              onClick={() => setIsLaporanOpen(!isLaporanOpen)}
-              className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+            <div
+              onClick={() => setOpenCard(openCard === "laporan" ? null : "laporan")}
+              className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent"
             >
-              <div className="flex items-center gap-2">
-                <HiOutlineExclamationTriangle className="w-4 h-4 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
+                  <HiOutlineExclamationTriangle className="w-4 h-4 text-orange-500" />
+                </div>
                 <span className="text-sm font-bold text-gray-800 dark:text-white">Laporan Warga</span>
               </div>
-              {isLaporanOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              <div className="shrink-0 pl-1">
+                {openCard === "laporan" ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              </div>
             </div>
 
             {/* Scrollable Contents */}
-            {isLaporanOpen && (
+            {openCard === "laporan" && (
               <div className="p-3 space-y-2.5 max-h-[350px] overflow-y-auto transition-all">
 
                 {loading ? (
@@ -552,15 +555,12 @@ export default function PetaBencanaPage() {
                         key={l.id} 
                         onClick={() => {
                           if (hasCoords) {
-                            setClickedCoord([lat, lng]);
-                            setPanToCoord(null);
+                            useCoordFromLaporan(l);
+                          } else {
+                            showToast("Laporan ini tidak memiliki koordinat lokasi yang valid.", "error");
                           }
                         }}
-                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                          clickedCoord && clickedCoord[0] === lat && clickedCoord[1] === lng
-                            ? "border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-blue-500/20 shadow-md"
-                            : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-blue-300 hover:bg-blue-50/5"
-                        }`}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-blue-300 hover:bg-blue-50/5`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
@@ -578,19 +578,23 @@ export default function PetaBencanaPage() {
           {/* Kecamatan Rawan Card */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
             {/* Card Header */}
-            <div 
-              onClick={() => setIsKecamatanOpen(!isKecamatanOpen)}
-              className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+            <div
+              onClick={() => setOpenCard(openCard === "kecamatan" ? null : "kecamatan")}
+              className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent"
             >
-              <div className="flex items-center gap-2">
-                <HiOutlineShieldExclamation className="w-4 h-4 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <HiOutlineShieldExclamation className="w-4 h-4 text-blue-500" />
+                </div>
                 <span className="text-sm font-bold text-gray-800 dark:text-white">Kerawanan Kecamatan</span>
               </div>
-              {isKecamatanOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              <div className="shrink-0 pl-1">
+                {openCard === "kecamatan" ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              </div>
             </div>
 
             {/* Scrollable Contents */}
-            {isKecamatanOpen && (
+            {openCard === "kecamatan" && (
               <div className="p-3 flex flex-col gap-2.5 max-h-[400px] overflow-hidden transition-all">
                 {/* Search Box */}
                 <div className="relative shrink-0">
@@ -658,19 +662,23 @@ export default function PetaBencanaPage() {
           {/* Pos Pengungsian Card */}
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden flex flex-col">
             {/* Card Header */}
-            <div 
-              onClick={() => setIsPosOpen(!isPosOpen)}
-              className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/30 dark:bg-transparent shrink-0 cursor-pointer select-none hover:bg-gray-100/30 dark:hover:bg-white/[0.01] transition-colors"
+            <div
+              onClick={() => setOpenCard(openCard === "pos" ? null : "pos")}
+              className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors shrink-0 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-transparent"
             >
-              <div className="flex items-center gap-2">
-                <HiOutlineHome className="w-4 h-4 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
+                  <HiOutlineHome className="w-4 h-4 text-purple-500" />
+                </div>
                 <span className="text-sm font-bold text-gray-800 dark:text-white">Pos Pengungsian</span>
               </div>
-              {isPosOpen ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              <div className="shrink-0 pl-1">
+                {openCard === "pos" ? <HiChevronUp className="w-4 h-4 text-gray-500" /> : <HiChevronDown className="w-4 h-4 text-gray-500" />}
+              </div>
             </div>
 
             {/* Scrollable Contents */}
-            {isPosOpen && (
+            {openCard === "pos" && (
               <div className="p-3 flex flex-col gap-2.5 max-h-[350px] overflow-hidden transition-all">
                 <div className="flex-1 overflow-y-auto space-y-2 pr-0.5">
                   {loadingMarkers ? (

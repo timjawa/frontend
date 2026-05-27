@@ -24,23 +24,20 @@ export type PetaMarker = {
 };
 
 // --- CONFIG & HELPERS ---
-const BAHAYA_COLORS: Record<string, string> = {
-  kritis: "#DC2626", // Merah
-  tinggi: "#F97316", // Oranye
-  sedang: "#FACC15", // Kuning
-  rendah: "#3B82F6", // Biru
-};
-
 const KATEGORI_COLORS: Record<string, string> = {
+  BANJIR: "#2563EB",       // Biru
+  GEMPA_BUMI: "#7C3AED",    // Ungu
+  TANAH_LONGSOR: "#D97706", // Oranye
+  KEBAKARAN: "#DC2626",     // Merah
+  CUACA_EKSTREM: "#0891B2", // Cyan
+  PERINGATAN_DINI: "#B91C1C", // Merah Tua
   POS_PENGUNGSIAN: "#9333EA", // Ungu Violet
+  UMUM: "#6B7280",          // Abu-abu
 };
 
 function getMarkerColor(kategori: string, tingkatBahaya: string): string {
   const normKategori = kategori?.toUpperCase().replace(/ /g, "_");
-  if (KATEGORI_COLORS[normKategori]) {
-    return KATEGORI_COLORS[normKategori];
-  }
-  return BAHAYA_COLORS[tingkatBahaya?.toLowerCase()] || "#6B7280";
+  return KATEGORI_COLORS[normKategori] || "#6B7280";
 }
 
 interface Props {
@@ -61,8 +58,8 @@ export default function MapView({ selectedMarkerId, panToCoord, onMapClick, onMa
     if (mapRef.current) return;
     
     const jemberBounds = L.latLngBounds(
-      L.latLng(-8.55, 113.20),
-      L.latLng(-7.90, 114.15)
+      L.latLng(-8.80, 113.00),
+      L.latLng(-7.60, 114.30)
     );
 
     const map = L.map("map", {
@@ -147,7 +144,7 @@ export default function MapView({ selectedMarkerId, panToCoord, onMapClick, onMa
               </a>
             </div>
           </div>
-        `, { closeButton: false });
+        `, { closeButton: false, autoPan: false });
         markerRefs.current[m.id] = polyline;
       } else {
         const isPos = m.kategori?.toUpperCase().replace(/ /g, "_") === "POS_PENGUNGSIAN";
@@ -210,7 +207,6 @@ export default function MapView({ selectedMarkerId, panToCoord, onMapClick, onMa
                 Status: <span style="font-weight:750; color:${m.status === 'aktif' ? '#10B981' : m.status === 'penuh' ? '#EF4444' : '#3B82F6'};">${(m.status || 'standby').toUpperCase()}</span><br/>
                 Kapasitas: <b>${m.terisi || 0} / ${m.kapasitas || 0} Jiwa</b><br/>
                 <hr style="margin:8px 0; border:0; border-top:1px solid #e5e7eb;"/>
-                <span style="font-size:10px; color:#9ca3af; font-family:monospace; display:block; margin-bottom:6px;">Koordinat: ${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}</span>
                 <a href="https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:6px 10px; background-color:#3B82F6; color:white; border-radius:8px; font-size:10px; font-weight:bold; text-decoration:none; transition:background-color 0.2s;">
                   🗺️ Google Maps
                 </a>
@@ -232,7 +228,6 @@ export default function MapView({ selectedMarkerId, panToCoord, onMapClick, onMa
                 Bahaya: <b style="color:${color}">${(m.tingkat_bahaya || "sedang").toUpperCase()}</b><br/>
                 ${radiusRow}
                 <hr style="margin:8px 0; border:0; border-top:1px solid #e5e7eb;"/>
-                <span style="font-size:10px; color:#9ca3af; font-family:monospace; display:block; margin-bottom:6px;">Koordinat: ${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}</span>
                 <a href="https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:6px 10px; background-color:#3B82F6; color:white; border-radius:8px; font-size:10px; font-weight:bold; text-decoration:none; transition:background-color 0.2s;">
                   🗺️ Google Maps
                 </a>
@@ -241,7 +236,7 @@ export default function MapView({ selectedMarkerId, panToCoord, onMapClick, onMa
           `;
         }
 
-        marker.bindPopup(popupHtml, { closeButton: false });
+        marker.bindPopup(popupHtml, { closeButton: false, autoPan: false });
         markerRefs.current[m.id] = marker;
       }
     });

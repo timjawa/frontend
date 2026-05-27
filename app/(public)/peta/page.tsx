@@ -127,41 +127,68 @@ export default function PetaPage() {
 
               {/* Map Canvas */}
               <div className="flex-grow relative h-full z-0 overflow-hidden">
-                <MapView
-                  markers={markers}
-                  selectedMarkerId={selectedMarkerId}
-                  panToCoord={panToCoord}
-                  onMarkerClick={(id) => setSelectedMarkerId(id)}
-                  onMapClick={() => {
-                    setSelectedMarkerId(null);
-                    setPanToCoord(null);
-                  }}
-                />
+                {loading || loadingKecamatan ? (
+                  <div className="w-full h-full bg-gray-100 dark:bg-gray-950 animate-pulse flex items-center justify-center relative overflow-hidden min-h-[500px]">
+                    <div className="absolute inset-0 opacity-[0.03]" style={{
+                      backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)',
+                      backgroundSize: '50px 50px'
+                    }}></div>
+                    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm z-10">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-ping" />
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Memuat data peta...</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <MapView
+                    markers={markers}
+                    selectedMarkerId={selectedMarkerId}
+                    panToCoord={panToCoord}
+                    onMarkerClick={(id) => setSelectedMarkerId(id)}
+                    onMapClick={() => {
+                      setSelectedMarkerId(null);
+                      setPanToCoord(null);
+                    }}
+                  />
+                )}
 
                 {/* Floating Legenda Layer di Kanan Atas */}
                 <div className="absolute right-4 top-4 z-[400] bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg flex flex-col gap-3">
                   <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center border-b border-gray-200 dark:border-gray-700 pb-2">
-                    Legenda
+                    Legenda (Jenis Bencana)
                   </span>
 
                   <div className="flex items-center gap-2.5">
-                    <span className="w-3 h-3 rounded-full bg-red-600 shrink-0 shadow-sm shadow-red-500/20" />
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Kritis</span>
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#2563EB" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Banjir</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0 shadow-sm shadow-orange-500/20" />
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Tinggi</span>
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#7C3AED" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Gempa Bumi</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <span className="w-3 h-3 rounded-full bg-yellow-400 shrink-0 shadow-sm shadow-yellow-500/20" />
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Bahaya Sedang</span>
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#D97706" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Tanah Longsor</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0 shadow-sm shadow-blue-500/20" />
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Aman / Rendah</span>
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#DC2626" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Kebakaran</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <HiOutlineHome className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#0891B2" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Cuaca Ekstrem</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#B91C1C" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Peringatan Dini</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: "#6B7280" }} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Umum</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 border-t border-gray-200 dark:border-gray-700 pt-2">
+                    <HiOutlineHome className="w-4 h-4 text-[#9333EA] shrink-0" />
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Pos Pengungsian</span>
                   </div>
                 </div>
@@ -182,7 +209,9 @@ export default function PetaPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Lokasi Bencana</div>
-                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{laporanList.length}</div>
+                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">
+                      {loading ? "-" : laporanList.length}
+                    </div>
                   </div>
                   <div className="shrink-0 pl-1">
                     {openCard === "laporan" ? <HiChevronUp className="w-5 h-5 text-gray-400" /> : <HiChevronDown className="w-5 h-5 text-gray-400" />}
@@ -191,10 +220,6 @@ export default function PetaPage() {
 
                 {openCard === "laporan" && (
                   <div className="px-4 pb-4 space-y-2 max-h-[350px] overflow-y-auto border-t border-gray-50 dark:border-gray-800/50 pt-3">
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 italic px-1">
-                      Klik laporan untuk memfokuskan lokasi bencana di peta.
-                    </p>
-
                     {loading ? (
                       <div className="space-y-2.5">
                         {Array.from({ length: 2 }).map((_, idx) => (
@@ -246,7 +271,9 @@ export default function PetaPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Kecamatan</div>
-                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{kecamatans.length}</div>
+                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">
+                      {loadingKecamatan ? "-" : kecamatans.length}
+                    </div>
                   </div>
                   <div className="shrink-0 pl-1">
                     {openCard === "kecamatan" ? <HiChevronUp className="w-5 h-5 text-gray-400" /> : <HiChevronDown className="w-5 h-5 text-gray-400" />}
@@ -327,7 +354,9 @@ export default function PetaPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-snug mb-1.5">Pos Pengungsian</div>
-                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">{posPengungsianList.length}</div>
+                    <div className="text-[28px] font-bold text-gray-900 dark:text-white leading-none tracking-tight">
+                      {loading ? "-" : posPengungsianList.length}
+                    </div>
                   </div>
                   <div className="shrink-0 pl-1">
                     {openCard === "pos" ? <HiChevronUp className="w-5 h-5 text-gray-400" /> : <HiChevronDown className="w-5 h-5 text-gray-400" />}
@@ -336,9 +365,6 @@ export default function PetaPage() {
 
                 {openCard === "pos" && (
                   <div className="px-4 pb-4 space-y-2 max-h-[350px] overflow-y-auto border-t border-gray-50 dark:border-gray-800/50 pt-3">
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 italic px-1">
-                      Klik pos untuk memfokuskan lokasi pengungsian di peta.
-                    </p>
 
                     {loading ? (
                       <div className="space-y-2.5">
@@ -370,13 +396,7 @@ export default function PetaPage() {
                               <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
                                 {p.label || "Pos Pengungsian"}
                               </span>
-                            </div>
-
-                            {(p.kapasitas !== undefined || p.terisi !== undefined) && (
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0">
-                                Terisi: <span className="font-bold">{p.terisi ?? 0}</span> / {p.kapasitas ?? 0} Jiwa
-                              </p>
-                            )}
+                            </div>  
                           </div>
                         );
                       })

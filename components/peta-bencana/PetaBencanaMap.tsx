@@ -17,6 +17,7 @@ export type MarkerData = {
   tingkat_bahaya?: string;
   kapasitas?: number;
   terisi?: number;
+  radius?: number | null;
 };
 
 // --- KONFIGURASI WARNA ---
@@ -269,15 +270,51 @@ export default function PetaBencanaMap({
         `, { closeButton: true });
       } else {
         // Render Standard Marker
-        const icon = createIcon(m.kategori, m.source);
-        const marker = L.marker([m.lat, m.lng], { icon });
+        const isPos = m.source === "pos_pengungsian" || m.kategori?.toUpperCase().replace(/ /g, "_") === "POS_PENGUNGSIAN";
+        let markerIcon;
+
+        if (isPos) {
+          const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="15" fill="white" stroke="${color}" stroke-width="2.5"/>
+              <path d="M16 7.5 L8 14.5 H10.5 V23.5 H14 V19.5 H18 V23.5 H21.5 V14.5 H24 Z" fill="${color}"/>
+            </svg>`;
+          markerIcon = L.divIcon({
+            html: svg,
+            className: `custom-marker marker-id-${m.id}`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -34],
+          });
+        } else {
+          markerIcon = L.divIcon({
+            html: `<div class="marker-core" style="background-color:${color}; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+            className: `custom-marker marker-id-${m.id}`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+          });
+        }
+
+        const marker = L.marker([m.lat, m.lng], { icon: markerIcon });
+        
+        // Tambahkan Radius Area Bahaya / Dampak (Kecuali Pos Pengungsian)
+        if (!isPos && m.radius && Number(m.radius) > 0) {
+          const radiusMeters = Number(m.radius);
+          L.circle([m.lat, m.lng], {
+            radius: radiusMeters,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.12,
+            weight: 1.5,
+            dashArray: "3, 5"
+          }).addTo(layerGroupRef.current!);
+        }
 
         if (m.source === "manual") {
           // No immediate click handler to edit, let popup open normally
         }
 
         let popupContent = "";
-        const isPos = m.source === "pos_pengungsian";
 
         if (isPos) {
           popupContent = `
@@ -307,6 +344,7 @@ export default function PetaBencanaMap({
               </div>
               <div style="font-size:11px;color:#4B5563;margin-bottom:4px;"><b>Kategori:</b> ${m.kategori}</div>
               ${m.tingkat_bahaya ? `<div style="font-size:11px;color:#4B5563;margin-bottom:4px;"><b>Bahaya:</b> <span style="font-weight:750;color:${m.tingkat_bahaya === "kritis" ? "#EF4444" : m.tingkat_bahaya === "tinggi" ? "#F97316" : m.tingkat_bahaya === "sedang" ? "#EAB308" : "#10B981"};">${m.tingkat_bahaya.toUpperCase()}</span></div>` : ""}
+              ${m.radius ? `<div style="font-size:11px;color:#4B5563;margin-bottom:4px;"><b>Radius Dampak:</b> ±${m.radius} meter</div>` : ""}
               <div style="margin-top:6px;font-size:10px;color:#9CA3AF;font-family:monospace;margin-bottom:6px;">${m.lat.toFixed(6)}, ${m.lng.toFixed(6)}</div>
               
               ${m.source === "manual" ? `

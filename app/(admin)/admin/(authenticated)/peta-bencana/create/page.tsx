@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineMapPin, HiOutlineTrash } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineMapPin, HiOutlineTrash, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import api from "@/lib/api";
 import dynamic from "next/dynamic";
 
@@ -59,7 +59,18 @@ export default function CreatePetaMarkerPage() {
   const [pathPoints, setPathPoints] = useState<[number, number][]>([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: "success" | "error"}>({
+    show: false,
+    message: "",
+    type: "success"
+  });
+
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ show: true, message: msg, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -92,18 +103,31 @@ export default function CreatePetaMarkerPage() {
     e.preventDefault();
     setLoading(true);
     setErrors({});
-    setServerError(null);
 
     const lat = parseFloat(formData.latitude);
     const lng = parseFloat(formData.longitude);
 
-    // Form validation
     const errs: Record<string, string> = {};
+    
+    if (!formData.label.trim()) {
+      errs.label = "Label kejadian wajib diisi.";
+    }
+    if (!formData.kategori) {
+      errs.kategori = "Kategori bencana wajib dipilih.";
+    }
+    if (!formData.tingkat_bahaya) {
+      errs.tingkat_bahaya = "Tingkat kerawanan wajib dipilih.";
+    }
+
     if (formData.tipe_marker === "titik") {
       if (isNaN(lat) || isNaN(lng)) {
         errs.latitude = "Koordinat latitude dan longitude wajib ditentukan.";
       } else if (lat < -8.55 || lat > -7.85 || lng < 113.10 || lng > 114.15) {
         errs.latitude = "Koordinat harus berada di dalam Kabupaten Jember!";
+      }
+
+      if (formData.kategori !== "POS PENGUNGSIAN" && (!formData.radius || parseInt(formData.radius) <= 0)) {
+        errs.radius = "Radius dampak wajib diisi secara manual.";
       }
     } else {
       if (pathPoints.length < 2) {
@@ -120,6 +144,7 @@ export default function CreatePetaMarkerPage() {
 
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
+      showToast("Mohon lengkapi semua data yang wajib diisi!", "error");
       setLoading(false);
       return;
     }
@@ -143,7 +168,7 @@ export default function CreatePetaMarkerPage() {
       router.push("/admin/peta-bencana");
     } catch (err: any) {
       console.error(err);
-      setServerError(err.response?.data?.message || "Gagal menyimpan marker bencana. Silakan coba lagi.");
+      showToast(err.response?.data?.message || "Gagal menyimpan marker bencana. Silakan coba lagi.", "error");
     } finally {
       setLoading(false);
     }
@@ -167,8 +192,8 @@ export default function CreatePetaMarkerPage() {
         }
       }
 
-      // Auto-switch tipe_marker ke "titik" jika kategori POS PENGUNGSIAN
-      if (name === "kategori" && value === "POS PENGUNGSIAN" && prev.tipe_marker !== "titik") {
+      // Auto-switch tipe_marker ke "titik" jika kategori bukan BANJIR
+      if (name === "kategori" && value !== "BANJIR" && prev.tipe_marker !== "titik") {
         updates.tipe_marker = "titik";
         const hasPath = pathPoints.length > 0;
         updates.latitude = hasPath ? pathPoints[0][0].toFixed(7) : prev.latitude;
@@ -235,12 +260,6 @@ export default function CreatePetaMarkerPage() {
           </p>
         </div>
 
-        {serverError && (
-          <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-650 text-sm dark:bg-red-950/20 dark:border-red-900/50 dark:text-red-400">
-            {serverError}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
@@ -257,7 +276,6 @@ export default function CreatePetaMarkerPage() {
                   name="label"
                   value={formData.label}
                   onChange={handleChange}
-                  required
                   placeholder="Contoh: Banjir Bandang Sungai Bedadung"
                   className={inputClass("label")}
                 />
@@ -274,7 +292,6 @@ export default function CreatePetaMarkerPage() {
                   name="kategori"
                   value={formData.kategori}
                   onChange={handleChange}
-                  required
                   className={inputClass("kategori")}
                 >
                   {KATEGORI_OPTIONS.map((opt) => (
@@ -296,7 +313,6 @@ export default function CreatePetaMarkerPage() {
                   name="tingkat_bahaya"
                   value={formData.tingkat_bahaya}
                   onChange={handleChange}
-                  required
                   className={inputClass("tingkat_bahaya")}
                 >
                   {BAHAYA_OPTIONS.map((opt) => (
@@ -312,7 +328,7 @@ export default function CreatePetaMarkerPage() {
               {formData.tipe_marker === "titik" && formData.kategori !== "POS PENGUNGSIAN" && (
                 <div className="space-y-2">
                   <label htmlFor="radius" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Radius Dampak / Bahaya (Meter)
+                    Radius Dampak / Bahaya (Meter) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -320,13 +336,10 @@ export default function CreatePetaMarkerPage() {
                     name="radius"
                     value={formData.radius}
                     onChange={handleChange}
-                    min="0"
-                    placeholder="Contoh: 250 (Kosongkan untuk otomatis)"
+                    min="1"
+                    placeholder="Contoh: 250"
                     className={inputClass("radius")}
                   />
-                  <p className="text-[11px] text-gray-400 italic">
-                    * Kosongkan untuk menggunakan radius bawaan otomatis berdasarkan tingkat kerawanan.
-                  </p>
                   {errors.radius && <p className="text-xs text-red-500">{errors.radius}</p>}
                 </div>
               )}
@@ -359,12 +372,12 @@ export default function CreatePetaMarkerPage() {
                     />
                     Titik Tunggal
                   </label>
-                  <label className={`flex items-center gap-2 text-sm font-medium ${formData.kategori === "POS PENGUNGSIAN" ? "opacity-40 cursor-not-allowed text-gray-400" : "cursor-pointer text-gray-700 dark:text-gray-300"}`}>
+                  <label className={`flex items-center gap-2 text-sm font-medium ${formData.kategori !== "BANJIR" ? "opacity-40 cursor-not-allowed text-gray-400" : "cursor-pointer text-gray-700 dark:text-gray-300"}`}>
                     <input
                       type="radio"
                       name="tipe_marker"
                       value="garis"
-                      disabled={formData.kategori === "POS PENGUNGSIAN"}
+                      disabled={formData.kategori !== "BANJIR"}
                       checked={formData.tipe_marker === "garis"}
                       onChange={() => {
                         setFormData((prev) => {
@@ -386,9 +399,9 @@ export default function CreatePetaMarkerPage() {
                     Garis / Jalur Bencana
                   </label>
                 </div>
-                {formData.kategori === "POS PENGUNGSIAN" && (
-                  <p className="text-[11px] text-purple-600 dark:text-purple-400 font-medium italic mt-1.5">
-                    * Pos Pengungsian selalu bertipe Titik Tunggal (berdasarkan koordinat).
+                {formData.kategori !== "BANJIR" && (
+                  <p className="text-[11px] text-red-600 dark:text-red-400 font-medium italic mt-1.5">
+                    * Jalur Bencana hanya tersedia khusus untuk kategori BANJIR.
                   </p>
                 )}
               </div>
@@ -525,6 +538,24 @@ export default function CreatePetaMarkerPage() {
           </div>
         </form>
       </div>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed bottom-4 right-4 z-50 animate-fade-in-up">
+          <div className={`flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border ${
+            toast.type === "success" 
+              ? "bg-white border-green-100 text-green-700 dark:bg-gray-900 dark:border-green-900/30 dark:text-green-400" 
+              : "bg-white border-red-100 text-red-700 dark:bg-gray-900 dark:border-red-900/30 dark:text-red-400"
+          }`}>
+            {toast.type === "success" ? (
+              <HiOutlineCheck className="w-5 h-5" />
+            ) : (
+              <HiOutlineExclamationTriangle className="w-5 h-5" />
+            )}
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
