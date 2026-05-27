@@ -1,10 +1,14 @@
 "use client";
+import dynamic from "next/dynamic";
+import { ApexOptions } from "apexcharts";
 import { MoreDotIcon } from "@/icons";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useState, useEffect, useRef } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { fetchHistoricalWeather, refreshRealtimeWeather } from "@/services/weather";
 import { HiArrowPath } from "react-icons/hi2";
+
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface DailyEntry {
   tanggal: string;
@@ -62,9 +66,111 @@ export default function CuacaWidget() {
   // Get unique kecamatan names from the grouped data
   const kecamatanList = Object.keys(historicalData).sort();
 
-  // Get data for selected kecamatan, sorted by date
+  // Get data for selected kecamatan, sorted by date ascending for chart
   const currentData = (historicalData[selectedKecamatan] || [])
-    .sort((a, b) => b.tanggal.localeCompare(a.tanggal)); // Mengurutkan dari tanggal terbaru
+    .sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+  // Prepare chart data
+  const categories = currentData.map((d) =>
+    new Date(d.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })
+  );
+  const suhuSeries = currentData.map((d) => d.suhu_avg);
+  const hujanSeries = currentData.map((d) => d.hujan_avg);
+
+  const chartOptions: ApexOptions = {
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "area",
+      height: 310,
+      toolbar: { show: false },
+      zoom: { enabled: false },
+    },
+    colors: ["#f97316", "#3b82f6"],
+    dataLabels: { enabled: false },
+    stroke: {
+      curve: "smooth",
+      width: [2.5, 2.5],
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.4,
+        opacityTo: 0.05,
+        stops: [0, 90, 100],
+      },
+    },
+    xaxis: {
+      categories,
+      labels: {
+        style: {
+          colors: "#9ca3af",
+          fontSize: "11px",
+          fontFamily: "Outfit, sans-serif",
+        },
+        rotate: -45,
+        rotateAlways: currentData.length > 10,
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
+    },
+    yaxis: [
+      {
+        title: {
+          text: "Suhu (°C)",
+          style: { color: "#f97316", fontSize: "12px", fontFamily: "Outfit, sans-serif" },
+        },
+        labels: {
+          style: { colors: "#f97316", fontSize: "11px", fontFamily: "Outfit, sans-serif" },
+          formatter: (val) => val.toFixed(1),
+        },
+      },
+      {
+        opposite: true,
+        title: {
+          text: "Curah Hujan (mm)",
+          style: { color: "#3b82f6", fontSize: "12px", fontFamily: "Outfit, sans-serif" },
+        },
+        labels: {
+          style: { colors: "#3b82f6", fontSize: "11px", fontFamily: "Outfit, sans-serif" },
+          formatter: (val) => val.toFixed(1),
+        },
+      },
+    ],
+    grid: {
+      borderColor: "#f3f4f6",
+      strokeDashArray: 4,
+      padding: { left: 8, right: 8 },
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "right",
+      fontSize: "12px",
+      fontFamily: "Outfit, sans-serif",
+      markers: { size: 5, shape: "circle" as const },
+      labels: { colors: "#6b7280" },
+      itemMargin: { horizontal: 12 },
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      theme: "light",
+      y: {
+        formatter: (val, opts) =>
+          opts?.seriesIndex === 0 ? `${val.toFixed(1)} °C` : `${val.toFixed(1)} mm`,
+      },
+    },
+    markers: {
+      size: 0,
+      hover: { size: 5 },
+    },
+  };
+
+  const chartSeries = [
+    { name: "Suhu (°C)", data: suhuSeries },
+    { name: "Curah Hujan (mm)", data: hujanSeries },
+  ];
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 pb-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
@@ -141,47 +247,26 @@ export default function CuacaWidget() {
         </div>
       </div>
 
-      <div className="mt-6 flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-          <thead className="sticky top-0 bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-            <tr>
-              <th scope="col" className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold">Tanggal</th>
-              <th scope="col" className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-center">Suhu (°C)</th>
-              <th scope="col" className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-center">Curah Hujan (mm)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={3} className="px-6 py-10 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
-                    <HiArrowPath className="w-6 h-6 animate-spin text-gray-300" />
-                    <span className="text-sm">Memuat data cuaca...</span>
-                  </div>
-                </td>
-              </tr>
-            ) : currentData.length > 0 ? (
-              currentData.map((d, i) => (
-                <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
-                  <td className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    {new Date(d.tanggal).toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
-                  </td>
-                  <td className="px-6 py-3 text-center">{d.suhu_avg}</td>
-                  <td className="px-6 py-3 text-center">{d.hujan_avg}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={3} className="px-6 py-10 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
-                    <span className="text-sm">Belum ada data riwayat cuaca untuk kecamatan ini.</span>
-                    <span className="text-xs text-gray-400">Data riwayat akan terisi otomatis setiap kali cuaca realtime diperbarui.</span>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Chart Area */}
+      <div className="mt-4 flex-1">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-[310px] gap-2 text-gray-400">
+            <HiArrowPath className="w-6 h-6 animate-spin text-gray-300" />
+            <span className="text-sm">Memuat data cuaca...</span>
+          </div>
+        ) : currentData.length > 0 ? (
+          <ReactApexChart
+            options={chartOptions}
+            series={chartSeries}
+            type="area"
+            height={310}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[310px] gap-2 text-gray-500">
+            <span className="text-sm">Belum ada data riwayat cuaca untuk kecamatan ini.</span>
+            <span className="text-xs text-gray-400">Data riwayat akan terisi otomatis setiap kali cuaca realtime diperbarui.</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -436,7 +436,7 @@ export default function LaporanPage() {
         <div className="print-only hidden">
           <div className="print-letterhead">
             <div className="print-logo-box">
-              <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
+              <img src="/Lambang-kabupaten-jember.png" alt="Lambang Kabupaten Jember" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="print-agency">Pemerintah Kabupaten Jember</div>
@@ -446,7 +446,7 @@ export default function LaporanPage() {
               </div>
             </div>
             <div className="print-logo-box">
-              <img src="/icon-mobile.svg" alt="Icon" className="w-full h-full object-contain" />
+              <img src="/logo.svg" alt="Logo Jember Siaga" className="w-full h-full object-contain" />
             </div>
           </div>
 

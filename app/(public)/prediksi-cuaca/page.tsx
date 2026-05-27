@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DatePicker from "@/components/ui/DatePicker";
-import { fetchWeatherByDate } from "@/services/weather";
+import { fetchWeatherByDate, fetchWeatherForecast } from "@/services/weather";
 import InfoBanner from "@/components/ui/InfoBanner";
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiOutlineSearch, HiChevronDown } from "react-icons/hi";
@@ -52,22 +52,51 @@ export default function PrediksiCuacaPage() {
   const [dataSource, setDataSource] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Date picker state — defaults to today
-  const todayStr = new Date().toISOString().split("T")[0];
+  // Date picker state — defaults to today (local date, not UTC)
+  const getLocalDateStr = (offsetDays = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toLocaleDateString('en-CA'); // YYYY-MM-DD local
+  };
+  const todayStr = getLocalDateStr(0);
   const [selectedDate, setSelectedDate] = useState(todayStr);
 
-  // Date limits: 7 days back, 3 days forward
-  const minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-  const maxDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  // Date limits: 7 days back, 3 days forward (local dates)
+  const minDate = getLocalDateStr(-7);
+  const maxDate = getLocalDateStr(3);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetchWeatherByDate(selectedDate);
-        setRawData(res?.data || {});
-        setDataSource(res?.source || "");
-        setActiveTimeSlot(null); // Reset time slot when date changes
+
+        if (selectedDate >= todayStr) {
+          // For today/future: use same endpoint as WeatherTable, filter client-side by local date
+          const res = await fetchWeatherForecast();
+          const allData: Record<string, any[]> = res?.data || {};
+
+          // Filter each kecamatan's forecasts to only include entries matching the selected LOCAL date
+          const filtered: Record<string, any[]> = {};
+          for (const [kecamatan, forecasts] of Object.entries(allData)) {
+            const matching = forecasts.filter((f: any) => {
+              const { date } = parseWaktuLokal(f.waktu_lokal);
+              return date === selectedDate;
+            });
+            if (matching.length > 0) {
+              filtered[kecamatan] = matching;
+            }
+          }
+
+          setRawData(filtered);
+          setDataSource("forecast");
+        } else {
+          // For past dates: use by-date endpoint (historical data)
+          const res = await fetchWeatherByDate(selectedDate);
+          setRawData(res?.data || {});
+          setDataSource(res?.source || "");
+        }
+
+        setActiveTimeSlot(null);
       } catch (error) {
         console.error("Gagal memuat data cuaca:", error);
       } finally {
@@ -76,22 +105,22 @@ export default function PrediksiCuacaPage() {
     };
 
     loadData();
-  }, [selectedDate]);
+  }, [selectedDate, todayStr]);
 
-  // Extract unique times dynamically from data
+  // Extract unique times from already-filtered data
   const uniqueTimes = useMemo(() => {
     const timesMap = new Map<number, string>();
     Object.values(rawData).forEach(forecasts => {
       forecasts.forEach((f: any) => {
-        const { date, timestamp } = parseWaktuLokal(f.waktu_lokal);
-        if (date === selectedDate) {
+        const { timestamp } = parseWaktuLokal(f.waktu_lokal);
+        if (timestamp > 0) {
           timesMap.set(timestamp, f.waktu_lokal);
         }
       });
     });
     const sortedTimestamps = Array.from(timesMap.keys()).sort((a, b) => a - b);
     return sortedTimestamps.map(ts => timesMap.get(ts) as string);
-  }, [rawData, selectedDate]);
+  }, [rawData]);
 
   const selectedSlotLabel = useMemo(() => {
     if (!activeTimeSlot) return "Semua Jam";
@@ -257,8 +286,8 @@ export default function PrediksiCuacaPage() {
                   <tbody>
                     {isLoading ? (
                       Array.from({ length: 5 }).map((_, idx) => (
-                        <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"} animate-pulse`}>
-                          <td className="px-5 py-4 sticky left-0 bg-inherit z-10">
+                        <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"} animate-pulse`}>
+                          <td className={`px-5 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
                             <div className="h-6 bg-slate-200 rounded w-32"></div>
                           </td>
                           {visibleTimes.length === 0 && (
@@ -289,11 +318,13 @@ export default function PrediksiCuacaPage() {
                         return (
                           <tr
                             key={kecamatanName}
-                            className={`border-b border-border/50 hover:bg-accent/30 transition-colors ${
-                              idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-                            }`}
+                            className={`group border-b border-border/50 transition-colors ${
+                              idx % 2 === 0 ? "bg-white" : "bg-slate-50"
+                            } hover:bg-slate-100`}
                           >
-                            <td className="px-5 py-4 sticky left-0 bg-inherit z-10">
+                            <td className={`px-5 py-4 sticky left-0 z-10 transition-colors ${
+                              idx % 2 === 0 ? "bg-white" : "bg-slate-50"
+                            } group-hover:bg-slate-100`}>
                               <Link
                                 href={`/prediksi-cuaca/${encodeURIComponent(kecamatanName.toLowerCase())}`}
                                 className="flex items-center group"

@@ -1,64 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { WiDayCloudyGusts } from "react-icons/wi";
-import { HiOutlineGlobeAlt, HiOutlineEnvelope, HiOutlinePhone } from "react-icons/hi2";
-import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {/* Brand */}
-          <div>
-            <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 flex items-center justify-center">
-                <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
-              </div>
-              <span className="font-bold text-lg">
-                Jember <span className="text-secondary-light">Siaga</span>
-              </span>
-            </Link>
-            <p className="text-white/60 text-sm leading-relaxed mb-5 max-w-sm">
-              Platform pusat informasi dan koordinasi penanggulangan bencana
-              Kabupaten Jember. Kami berkomitmen untuk memberikan data akurat
-              demi keselamatan seluruh warga.
-            </p>
-            <div className="flex gap-3">
-              {[
-                { icon: HiOutlineGlobeAlt, href: "#" },
-                { icon: HiOutlineEnvelope, href: "#" },
-                { icon: HiOutlinePhone, href: "#" },
-              ].map((social, i) => (
-                <a
-                  key={i}
-                  href={social.href}
-                  className="w-9 h-9 bg-white/10 hover:bg-secondary rounded-lg flex items-center justify-center transition-all duration-200"
-                  aria-label="Social media"
-                >
-                  <social.icon className="text-base" />
-                </a>
-              ))}
+    <footer className="bg-[#0f1b2d] text-white">
+      {/* Top bar: Logo + Social Icons */}
+      <div className="bg-[#0f1b2d] border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
             </div>
-          </div>
+            <span className="font-bold text-lg tracking-wide uppercase">
+              Jember Siaga
+            </span>
+          </Link>
 
-          {/* Navigasi Cepat */}
+        </div>
+      </div>
+
+      {/* Main Content: 3 Columns */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Akses Cepat */}
           <div>
-            <h4 className="font-semibold text-sm mb-4 text-white/90">
-              Navigasi Cepat
+            <h4 className="font-semibold text-sm mb-4 text-white">
+              Akses Cepat
             </h4>
             <ul className="space-y-2.5">
               {[
                 { name: "Beranda", href: "/" },
-                { name: "Prediksi Cuaca", href: "/prediksi-cuaca" },
-                { name: "Prediksi Banjir", href: "/prediksi-banjir" },
-                { name: "Berita", href: "/berita" },
+                { name: "Data", href: "/prediksi-cuaca" },
+                { name: "Peta Informasi Banjir", href: "/peta" },
+                { name: "Peta Banjir Berbasiskan RT", href: "/prediksi-banjir" },
               ].map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/50 hover:text-white text-sm transition-colors"
+                    className="text-white/60 hover:text-white text-sm transition-colors duration-200"
                   >
                     {link.name}
                   </Link>
@@ -67,24 +48,38 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Dukungan */}
+          {/* Alamat */}
           <div>
-            <h4 className="font-semibold text-sm mb-4 text-white/90">
-              Dukungan
+            <h4 className="font-semibold text-sm mb-4 text-white">
+              Alamat
+            </h4>
+            <p className="text-white/60 text-sm leading-relaxed">
+              Jl. Mastrip No.164, Lingkungan Panji,<br />
+              Tegalgede, Kec. Sumbersari,<br />
+              Kabupaten Jember, Jawa Timur 68121
+            </p>
+          </div>
+
+          {/* Laman Terkait */}
+          <div>
+            <h4 className="font-semibold text-sm mb-4 text-white">
+              Laman terkait
             </h4>
             <ul className="space-y-2.5">
               {[
-                { name: "Peta Bencana", href: "/peta" },
-                { name: "Pengaduan Bencana", href: "/pengaduan-bencana" },
-                { name: "FAQ", href: "/faq" },
+                { name: "Pantau Banjir Jakarta", href: "https://pantaubanjir.jakarta.go.id" },
+                { name: "BMKG", href: "https://www.bmkg.go.id" },
+                { name: "BPBD", href: "https://bpbd.jemberkab.go.id" },
               ].map((link) => (
                 <li key={link.name}>
-                  <Link
+                  <a
                     href={link.href}
-                    className="text-white/50 hover:text-white text-sm transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white text-sm transition-colors duration-200"
                   >
                     {link.name}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -94,19 +89,10 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-white/40">
-            <p>© 2024 Jember Siaga. Seluruh Hak Cipta Dilindungi.</p>
-            <button
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-secondary flex items-center justify-center transition-all"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              aria-label="Back to top"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 11V3M7 3L3 7M7 3l4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4">
+          <p className="text-center text-xs text-white/40">
+            Hak cipta © 2026 Anything.
+          </p>
         </div>
       </div>
     </footer>

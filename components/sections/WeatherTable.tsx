@@ -144,8 +144,8 @@ export default function WeatherTable() {
               <tbody>
                 {showSkeleton ? (
                   Array.from({ length: 5 }).map((_, idx) => (
-                    <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"} animate-pulse`}>
-                      <td className="px-5 py-4 sticky left-0 bg-inherit z-10">
+                    <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"} animate-pulse`}>
+                      <td className={`px-5 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
                         <div className="h-6 bg-slate-200 rounded w-32"></div>
                       </td>
                       {uniqueTimes.length === 0 && (
@@ -177,11 +177,13 @@ export default function WeatherTable() {
                     return (
                       <tr
                         key={kecamatanName}
-                        className={`border-b border-border/50 hover:bg-accent/30 transition-colors ${
-                          idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-                        }`}
+                        className={`group border-b border-border/50 transition-colors ${
+                          idx % 2 === 0 ? "bg-white" : "bg-slate-50"
+                        } hover:bg-slate-100`}
                       >
-                        <td className="px-5 py-4 sticky left-0 bg-inherit z-10">
+                        <td className={`px-5 py-4 sticky left-0 z-10 transition-colors ${
+                          idx % 2 === 0 ? "bg-white" : "bg-slate-50"
+                        } group-hover:bg-slate-100`}>
                           <Link
                             href={`/prediksi-cuaca/${encodeURIComponent(kecamatanName.toLowerCase())}`}
                             className="inline-flex items-center group"

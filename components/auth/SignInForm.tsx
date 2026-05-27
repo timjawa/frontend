@@ -43,7 +43,7 @@ export default function SignInForm() {
       <div className="w-full max-w-[480px] sm:pt-6 mx-auto mb-5">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm dark:bg-white/10 dark:text-white dark:border-slate-700 dark:hover:bg-white/20"
         >
           <ChevronLeftIcon />
           Kembali ke Beranda
