@@ -40,26 +40,26 @@ export default function SignInForm() {
   };
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
-        <div className="w-full max-w-[480px] sm:pt-6 mx-auto mb-5">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            <ChevronLeftIcon />
-            Kembali ke Beranda
-          </Link>
-        </div>
-        <div className="flex flex-col justify-center flex-1 w-full max-w-[480px] mx-auto">
-          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/50 dark:shadow-none">
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-slate-800 dark:text-white/90 mb-2">
-                Selamat Datang Kembali!
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Silakan masukkan kredensial Anda untuk masuk ke sistem manajemen bencana.
-              </p>
-            </div>
-            <div>
+      <div className="w-full max-w-[480px] sm:pt-6 mx-auto mb-5">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          <ChevronLeftIcon />
+          Kembali ke Beranda
+        </Link>
+      </div>
+      <div className="flex flex-col justify-center flex-1 w-full max-w-[480px] mx-auto">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/50 dark:shadow-none">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-white/90 mb-2">
+              Selamat Datang Kembali!
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Silakan masukkan kredensial Anda untuk masuk ke sistem manajemen bencana.
+            </p>
+          </div>
+          <div>
 
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
