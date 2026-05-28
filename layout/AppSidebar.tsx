@@ -15,7 +15,7 @@ import {
   FolderIcon,
   GroupIcon,
 } from "../icons/index";
-import { HiOutlineMap, HiOutlineCloud, HiOutlineBellAlert, HiOutlineHomeModern } from "react-icons/hi2";
+import { HiOutlineMap, HiOutlineCloud, HiOutlineBellAlert, HiOutlineHomeModern, HiOutlineHeart } from "react-icons/hi2";
 import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
@@ -76,6 +76,16 @@ const operasionalItems: NavItem[] = [
       { name: "Kontak Darurat", path: "/admin/kontak-darurat" },
     ],
   },
+  {
+    icon: <HiOutlineHeart className="w-5 h-5" />,
+    name: "Donasi",
+    subItems: [
+      { name: "Kampanye Donasi", path: "/admin/donasi/kampanye" },
+      { name: "Transaksi Donasi", path: "/admin/donasi/transaksi" },
+      { name: "Penyaluran Donasi", path: "/admin/donasi/penyaluran" },
+      { name: "Notifikasi Midtrans", path: "/admin/donasi/notifikasi-midtrans" },
+    ],
+  },
   
 ];
 
@@ -109,7 +119,7 @@ const AppSidebar: React.FC = () => {
 
   const getFilteredItems = (items: NavItem[]) => {
     if (!isBPBD) return items;
-    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Pos Pengungsian", "Peringatan Dini", "Manajemen Pengaduan", "Laporan"];
+    const allowedForBPBD = ["Dashboard", "Peta Bencana", "Pos Pengungsian", "Peringatan Dini", "Manajemen Pengaduan", "Laporan", "Donasi"];
     return items.filter(item => allowedForBPBD.includes(item.name));
   };
 
