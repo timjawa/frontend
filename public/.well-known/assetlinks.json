@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.siaga_banjir",
+      "sha256_cert_fingerprints": [
+        "85:AF:20:A5:05:90:62:B5:E5:A7:A5:BB:CB:52:26:E5:D0:64:B2:FA:9D:82:D9:1F:40:94:DC:C5:69:75:8F:4F",
+        "3C:48:A8:41:11:A5:34:85:68:FE:9B:23:F8:95:CB:0E:57:9C:94:11:63:1E:F3:F2:AC:08:22:72:B0:22:4D:EA",
+        "9F:C5:4C:96:EA:F9:B0:DF:1F:EA:4B:D9:FB:D4:54:01:35:A3:2F:4F:F8:01:A4:0B:45:47:BB:2E:3C:BC:54:FC"
+      ]
+    }
+  }
+]
