@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#1f2a56] text-white">
       {/* Top bar: Logo + Social Icons */}
-      <div className="bg-[#1f2a56] border-b border-white/10">
+      <div className="bg-[#1f2a56] border-b-2 border-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center justify-center">
@@ -108,9 +108,9 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-white/10">
+      <div className="border-t-2 border-white bg-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4">
-          <p className="text-center text-xs text-white/40">
+          <p className="text-center text-sm font-bold text-black/80">
             Hak cipta © 2026 Anything.
           </p>
         </div>
