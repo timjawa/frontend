@@ -427,7 +427,7 @@ export default function PetaBencanaPage() {
   };
 
   const activeLaporan = useMemo(() => {
-    return laporan.filter((l) => l.status === "baru");
+    return laporan.filter((l) => l.status === "diverifikasi");
   }, [laporan]);
 
   return (
