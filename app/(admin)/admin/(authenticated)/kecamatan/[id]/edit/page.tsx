@@ -6,8 +6,8 @@ import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineExclamationTriangle, HiMapPin } from "react-icons/hi2";
 import { useRouter, useParams } from "next/navigation";
 import MapPicker from "@/components/ui/map/MapPicker";
-
-const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");
+import axios from "axios";
+import api from "@/lib/api";
 
 export default function EditKecamatanPage() {
   const router = useRouter();
@@ -36,9 +36,7 @@ export default function EditKecamatanPage() {
       setLoadingData(true);
       setFetchError(null);
       try {
-        const res = await fetch(`${getApiBase()}/kecamatan/${id}`);
-        if (!res.ok) throw new Error("Data kecamatan tidak ditemukan.");
-        const json = await res.json();
+        const { data: json } = await api.get(`/api/kecamatan/${id}`);
         const k = json.data;
         setFormData({
           nama: k.nama ?? "",
@@ -64,7 +62,6 @@ export default function EditKecamatanPage() {
     setServerError(null);
 
       try {
-        const token = localStorage.getItem("auth_token");
         const payload: Record<string, unknown> = {
           nama: formData.nama,
           kode_wilayah: formData.kode_wilayah,
@@ -74,16 +71,11 @@ export default function EditKecamatanPage() {
           elevasi: formData.elevasi !== "" ? parseFloat(formData.elevasi) : null,
         };
 
-        const { default: api } = await import("@/lib/api");
-        // token is added automatically via interceptor or withCredentials if cookie based
-        if (token) {
-           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
         await api.put(`/api/kecamatan/${id}`, payload);
 
-        router.push(`/admin/kecamatan/${id}`);
-      } catch (err: any) {
-        if (err.response?.status === 422) {
+        router.push("/admin/kecamatan");
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.status === 422) {
           const json = err.response.data;
           const errs: Record<string, string> = {};
           if (json.errors) {
@@ -95,7 +87,13 @@ export default function EditKecamatanPage() {
           return;
         }
 
-        setServerError(err.response?.data?.message || err.message || "Gagal memperbarui data kecamatan.");
+        setServerError(
+          axios.isAxiosError(err)
+            ? err.response?.data?.message || "Gagal memperbarui data kecamatan."
+            : err instanceof Error
+              ? err.message
+              : "Gagal memperbarui data kecamatan."
+        );
       } finally {
         setLoadingSubmit(false);
       }

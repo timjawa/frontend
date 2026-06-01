@@ -97,13 +97,34 @@ export default function EditPosPengungsiPage() {
       return;
     }
 
+    const kapasitas = Number.parseInt(formData.kapasitas, 10);
+    const terisi = formData.terisi.trim() === "" ? 0 : Number.parseInt(formData.terisi, 10);
+
+    if (!Number.isFinite(kapasitas) || kapasitas < 0) {
+      setErrors({ kapasitas: "Kapasitas harus berupa angka minimal 0." });
+      setLoadingSubmit(false);
+      return;
+    }
+
+    if (!Number.isFinite(terisi) || terisi < 0) {
+      setErrors({ terisi: "Jumlah terisi harus berupa angka minimal 0." });
+      setLoadingSubmit(false);
+      return;
+    }
+
+    if (terisi > kapasitas) {
+      setErrors({ terisi: "Jumlah terisi tidak boleh melebihi kapasitas." });
+      setLoadingSubmit(false);
+      return;
+    }
+
     try {
       const payload = {
         ...formData,
         latitude,
         longitude,
-        kapasitas: parseInt(formData.kapasitas) || 0,
-        terisi: parseInt(formData.terisi) || 0,
+        kapasitas,
+        terisi,
         fasilitas: formData.fasilitas ? formData.fasilitas.split(",").map((s) => s.trim()).filter(Boolean) : [],
       };
 
@@ -129,7 +150,11 @@ export default function EditPosPengungsiPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const value = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
     setFormData({ ...formData, [e.target.name]: value });
-    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    setErrors((prev) => ({
+      ...prev,
+      [e.target.name]: "",
+      ...(e.target.name === "kapasitas" ? { terisi: "" } : {}),
+    }));
   };
 
   const inputClass = (field: string) =>
@@ -346,6 +371,7 @@ export default function EditPosPengungsiPage() {
                   value={formData.kapasitas}
                   onChange={handleChange}
                   required
+                  min={0}
                   className={inputClass("kapasitas")}
                 />
                 {errors.kapasitas && <p className="text-xs text-red-500">{errors.kapasitas}</p>}
@@ -362,6 +388,8 @@ export default function EditPosPengungsiPage() {
                   name="terisi"
                   value={formData.terisi}
                   onChange={handleChange}
+                  min={0}
+                  max={formData.kapasitas || undefined}
                   className={inputClass("terisi")}
                 />
                 {errors.terisi && <p className="text-xs text-red-500">{errors.terisi}</p>}

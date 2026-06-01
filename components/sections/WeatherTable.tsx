@@ -6,6 +6,7 @@ import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiArrowTopRightOnSquare } from "react-icons/hi2";
 
 const tabs = ["Hari Ini", "Besok", "Lusa"];
+const skeletonTimes = ["00:00 WIB", "01:00 WIB", "02:00 WIB", "03:00 WIB", "04:00 WIB", "05:00 WIB", "06:00 WIB"];
 
 const mapConditionToIcon = (description: string) => {
   const desc = description?.toLowerCase() || '';
@@ -91,6 +92,7 @@ export default function WeatherTable() {
 
   const isPending = activeTab !== deferredActiveTab;
   const showSkeleton = isLoading || isPending;
+  const displayTimes = showSkeleton && uniqueTimes.length === 0 ? skeletonTimes : uniqueTimes;
 
   return (
     <section className="py-10" style={{ backgroundColor: '#F3F8FF' }}>
@@ -125,13 +127,13 @@ export default function WeatherTable() {
             <table className="w-full">
               <thead>
                 <tr className="bg-[#1f2a56] text-white">
-                  <th className="text-left px-5 py-3.5 text-sm font-semibold sticky left-0 bg-[#1f2a56] z-10 min-w-[140px]">
+                  <th className="text-left px-6 py-3.5 text-sm font-semibold sticky left-0 bg-[#1f2a56] z-10 min-w-[190px] md:min-w-[200px]">
                     Kecamatan
                   </th>
-                  {uniqueTimes.length === 0 && (
+                  {!showSkeleton && uniqueTimes.length === 0 && (
                      <th className="text-center px-4 py-3.5 text-sm font-semibold">Data Jam</th>
                   )}
-                  {uniqueTimes.map((waktu) => (
+                  {displayTimes.map((waktu) => (
                     <th
                       key={waktu}
                       className="text-center px-4 py-3.5 text-sm font-semibold min-w-[130px]"
@@ -145,15 +147,10 @@ export default function WeatherTable() {
                 {showSkeleton ? (
                   Array.from({ length: 5 }).map((_, idx) => (
                     <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"} animate-pulse`}>
-                      <td className={`px-5 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
-                        <div className="h-6 bg-slate-200 rounded w-32"></div>
+                      <td className={`px-6 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
+                        <div className="h-6 bg-slate-200 rounded w-36"></div>
                       </td>
-                      {uniqueTimes.length === 0 && (
-                        <td className="text-center py-4">
-                          <div className="h-6 bg-slate-200 rounded w-8 mx-auto"></div>
-                        </td>
-                      )}
-                      {uniqueTimes.map((waktu, wIdx) => (
+                      {displayTimes.map((waktu, wIdx) => (
                         <td key={`skeleton-td-${wIdx}`} className="px-4 py-4 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <div className="w-8 h-8 bg-slate-200 rounded-full"></div>
@@ -177,18 +174,18 @@ export default function WeatherTable() {
                     return (
                       <tr
                         key={kecamatanName}
-                        className={`group border-b border-border/50 transition-colors ${
+                    className={`group border-b border-border/50 transition-colors ${
                           idx % 2 === 0 ? "bg-white" : "bg-slate-50"
                         } hover:bg-slate-100`}
                       >
-                        <td className={`px-5 py-4 sticky left-0 z-10 transition-colors ${
+                        <td className={`px-6 py-4 sticky left-0 z-10 transition-colors ${
                           idx % 2 === 0 ? "bg-white" : "bg-slate-50"
                         } group-hover:bg-slate-100`}>
                           <Link
                             href={`/prediksi-cuaca/${encodeURIComponent(kecamatanName.toLowerCase())}`}
                             className="inline-flex items-center group"
                           >
-                            <span className="text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors group-hover:underline underline-offset-2">
+                            <span className="text-base font-bold text-blue-600 hover:text-blue-700 transition-colors group-hover:underline underline-offset-2">
                               {kecamatanName}
                             </span>
                           </Link>

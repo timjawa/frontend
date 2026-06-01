@@ -6,8 +6,8 @@ import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck, HiMapPin } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
 import MapPicker from "@/components/ui/map/MapPicker";
-
-const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");
+import axios from "axios";
+import api from "@/lib/api";
 
 export default function CreateKecamatanPage() {
   const router = useRouter();
@@ -30,7 +30,6 @@ export default function CreateKecamatanPage() {
     setServerError(null);
 
     try {
-      const token = localStorage.getItem("auth_token");
       const payload: Record<string, unknown> = {
         nama: formData.nama,
         kode_wilayah: formData.kode_wilayah,
@@ -42,28 +41,11 @@ export default function CreateKecamatanPage() {
         payload.elevasi = parseFloat(formData.elevasi);
       }
 
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
-        return '';
-      };
-      const xsrfToken = getCookie('XSRF-TOKEN');
-
-      const res = await fetch(`${getApiBase()}/kecamatan`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "X-XSRF-TOKEN": xsrfToken,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 422) {
-        const json = await res.json();
+      await api.post("/api/kecamatan", payload);
+      router.push("/admin/kecamatan");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.status === 422) {
+        const json = err.response.data;
         const errs: Record<string, string> = {};
         if (json.errors) {
           for (const key in json.errors) {
@@ -73,15 +55,13 @@ export default function CreateKecamatanPage() {
         setErrors(errs);
         return;
       }
-
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal menyimpan data kecamatan.");
-      }
-
-      router.push("/admin/kecamatan");
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+      setServerError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || "Gagal menyimpan data kecamatan."
+          : err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan."
+      );
     } finally {
       setLoading(false);
     }

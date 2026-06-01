@@ -63,11 +63,6 @@ const operasionalItems: NavItem[] = [
     path: "/admin/pengaduan",
   },
   {
-    icon: <DocsIcon />,
-    name: "Laporan",
-    path: "/admin/laporan",
-  },
-  {
     icon: <FolderIcon />,
     name: "Informasi Publik",
     subItems: [
@@ -83,8 +78,12 @@ const operasionalItems: NavItem[] = [
       { name: "Kampanye Donasi", path: "/admin/donasi/kampanye" },
       { name: "Transaksi Donasi", path: "/admin/donasi/transaksi" },
       { name: "Penyaluran Donasi", path: "/admin/donasi/penyaluran" },
-      { name: "Notifikasi Midtrans", path: "/admin/donasi/notifikasi-midtrans" },
     ],
+  },
+  {
+    icon: <DocsIcon />,
+    name: "Laporan",
+    path: "/admin/laporan",
   },
   
 ];

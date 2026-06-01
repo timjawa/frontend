@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import AdminBadge from "@/components/admin/ui/AdminBadge";
-import { HiMagnifyingGlass, HiPlus, HiOutlineNewspaper, HiOutlineCheckCircle, HiOutlineDocumentText, HiOutlineArchiveBox, HiOutlineExclamationTriangle } from "react-icons/hi2";
+import { HiMagnifyingGlass, HiPlus, HiOutlineNewspaper, HiOutlineCheckCircle, HiOutlineDocumentText, HiOutlineArchiveBox, HiOutlineExclamationTriangle, HiOutlineTrash } from "react-icons/hi2";
 import Link from "next/link";
 import Image from "next/image";
 import BeritaTableAction from "./BeritaTableAction";
@@ -34,6 +34,13 @@ const statusVariants: Record<string, string> = {
   draft: "warning",
   archived: "info",
 } as const;
+
+const formatKategori = (value: string) =>
+  value
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 
 export default function AdminBeritaPage() {
   const [data, setData] = useState<Berita[]>([]);
@@ -207,7 +214,7 @@ export default function AdminBeritaPage() {
       </div>
 
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-3 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-8">
-        <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 dark:ring-gray-800 shadow-sm overflow-hidden">
+        <div className="relative bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl ring-1 ring-slate-100 dark:ring-gray-800 shadow-sm overflow-hidden">
           {/* Table header bar */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-gray-800">
             <div>
@@ -215,16 +222,6 @@ export default function AdminBeritaPage() {
               <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">Kelola konten berita dan informasi publik</p>
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <div className="relative">
-                <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Cari berita..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all w-48 text-gray-700 dark:text-gray-200"
-                />
-              </div>
               <select
                 value={statusFilter}
                 onChange={(e) => {
@@ -238,6 +235,16 @@ export default function AdminBeritaPage() {
                 <option value="draft">Draft</option>
                 <option value="archived">Archived</option>
               </select>
+              <div className="relative">
+                <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Cari berita..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-9 pr-4 py-2 text-sm rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all w-48 text-gray-700 dark:text-gray-200"
+                />
+              </div>
               <Link
                 href="/admin/berita/create"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 dark:shadow-none whitespace-nowrap"
@@ -320,7 +327,7 @@ export default function AdminBeritaPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-xs font-medium text-slate-600 dark:text-gray-400">
-                          {row.kategori}
+                          {formatKategori(row.kategori || "")}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -339,8 +346,8 @@ export default function AdminBeritaPage() {
                           id={row.id} 
                           onDelete={(id) => {
                             triggerConfirm(
-                              "Hapus Berita",
-                              "Apakah Anda yakin ingin menghapus berita ini? Berita yang dihapus akan hilang secara permanen dari publik dan dashboard.",
+                              "Hapus Berita?",
+                              "Tindakan ini tidak dapat dibatalkan. Berita akan dihapus permanen.",
                               async () => {
                                 try {
                                   await api.delete(`/api/berita/${id}`);
@@ -407,6 +414,47 @@ export default function AdminBeritaPage() {
               </button>
             </div>
           </div>
+
+          {confirmModal && confirmModal.isOpen && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center p-4 rounded-2xl bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
+              <div className="absolute inset-0" onClick={() => setConfirmModal(null)} />
+
+              <div
+                className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-150"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-col items-center text-center gap-3 mb-5">
+                  <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+                    <HiOutlineExclamationTriangle className="w-7 h-7 text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white">{confirmModal.title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                      {confirmModal.message}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmModal(null)}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmModal.onConfirm}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-95 transition-all shadow-sm"
+                  >
+                    <HiOutlineTrash className="w-4 h-4" />
+                    Ya, Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -423,66 +471,6 @@ export default function AdminBeritaPage() {
         document.body
       )}
 
-      {/* Custom Confirmation Dialog - Portaled to Body */}
-      {mounted && confirmModal && confirmModal.isOpen && typeof window !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
-          {/* Backdrop click */}
-          <div className="absolute inset-0" onClick={() => setConfirmModal(null)} />
-
-          <div 
-            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-150 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col items-center text-center gap-3 mb-5">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                confirmModal.type === "danger" 
-                  ? "bg-red-50 dark:bg-red-500/10" 
-                  : confirmModal.type === "success" 
-                  ? "bg-emerald-50 dark:bg-emerald-500/10" 
-                  : "bg-yellow-50 dark:bg-yellow-500/10"
-              }`}>
-                {confirmModal.type === "danger" ? (
-                  <HiOutlineExclamationTriangle className="w-7 h-7 text-red-500" />
-                ) : confirmModal.type === "success" ? (
-                  <HiOutlineCheckCircle className="w-7 h-7 text-emerald-500" />
-                ) : (
-                  <HiOutlineExclamationTriangle className="w-7 h-7 text-yellow-500" />
-                )}
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">{confirmModal.title}</h3>
-                <p className="text-sm text-gray-550 dark:text-gray-400 mt-1 leading-relaxed">
-                  {confirmModal.message}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmModal(null)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={confirmModal.onConfirm}
-                className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl active:scale-95 transition-all shadow-sm ${
-                  confirmModal.type === "danger"
-                    ? "bg-red-600 hover:bg-red-700"
-                    : confirmModal.type === "success"
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                Lanjutkan
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 }

@@ -5,8 +5,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
 import { useRouter, useParams } from "next/navigation";
-
-const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");
+import axios from "axios";
+import api from "@/lib/api";
 
 export default function EditKontakDaruratPage() {
   const router = useRouter();
@@ -26,9 +26,7 @@ export default function EditKontakDaruratPage() {
 
   const fetchDetail = useCallback(async () => {
     try {
-      const res = await fetch(`${getApiBase()}/kontak-darurat/${id}`);
-      if (!res.ok) throw new Error("Gagal mengambil data kontak darurat.");
-      const json = await res.json();
+      const { data: json } = await api.get(`/api/kontak-darurat/${id}`);
       const data = json.data;
 
       setFormData({
@@ -56,34 +54,16 @@ export default function EditKontakDaruratPage() {
     setServerError(null);
 
     try {
-      const token = localStorage.getItem("auth_token");
       const payload = {
         ...formData,
         is_active: formData.is_active === "1",
       };
 
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
-        return '';
-      };
-      const xsrfToken = getCookie('XSRF-TOKEN');
-
-      const res = await fetch(`${getApiBase()}/kontak-darurat/${id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "X-XSRF-TOKEN": xsrfToken,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 422) {
-        const json = await res.json();
+      await api.put(`/api/kontak-darurat/${id}`, payload);
+      router.push("/admin/kontak-darurat");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.status === 422) {
+        const json = err.response.data;
         const errs: Record<string, string> = {};
         if (json.errors) {
           for (const key in json.errors) {
@@ -93,22 +73,21 @@ export default function EditKontakDaruratPage() {
         setErrors(errs);
         return;
       }
-
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal memperbarui data kontak darurat.");
-      }
-
-      router.push("/admin/kontak-darurat");
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+      setServerError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || "Gagal memperbarui data kontak darurat."
+          : err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.name === "nomor" ? e.target.value.replace(/[^0-9-]/g, "") : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
     setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
@@ -213,6 +192,9 @@ export default function EditKontakDaruratPage() {
                 value={formData.nomor}
                 onChange={handleChange}
                 required
+                inputMode="numeric"
+                pattern="[0-9-]*"
+                maxLength={30}
                 placeholder="Contoh: 112 atau 0331-XXXXXX"
                 className={inputClass("nomor")}
               />

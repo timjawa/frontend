@@ -201,12 +201,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
         }
       });
 
-      showToast(`Berita berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, "success");
-      
-      // Delay redirect to let user see premium toast transition
-      setTimeout(() => {
-        window.location.href = '/admin/berita'; // Redirect ke halaman list
-      }, 1200);
+      window.location.href = '/admin/berita';
 
     } catch (error: any) {
       console.error('API Error:', error);
@@ -233,7 +228,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
           id="title"
           name="title"
           placeholder="Masukkan judul berita"
-          defaultValue={formData.title}
+          value={formData.title}
           onChange={handleTitleChange}
         />
       </div>
@@ -245,7 +240,7 @@ const BeritaForm: React.FC<BeritaFormProps> = ({ isEdit = false, initialData }) 
           id="slug"
           name="slug"
           placeholder="Slug akan otomatis terisi"
-          defaultValue={formData.slug}
+          value={formData.slug}
           onChange={handleSlugChange}
           hint="Slug akan otomatis dibuat dari judul berita"
         />

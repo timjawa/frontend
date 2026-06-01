@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { fetchWeatherForecast } from "@/services/weather";
-import InfoBanner from "@/components/ui/InfoBanner";
+
 import { WeatherIcon } from "@/utils/weatherIcons";
 import { HiOutlineSearch, HiChevronDown } from "react-icons/hi";
 
@@ -44,6 +44,7 @@ const formatJamIndonesia = (waktu: string) => {
 };
 
 const tabs = ["Hari Ini", "Besok", "Lusa"];
+const skeletonTimes = ["00:00 WIB", "01:00 WIB", "02:00 WIB", "03:00 WIB", "04:00 WIB", "05:00 WIB", "06:00 WIB"];
 
 export default function PrediksiCuacaPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,6 +118,7 @@ export default function PrediksiCuacaPage() {
 
   const isPending = activeTab !== deferredActiveTab;
   const showSkeleton = isLoading || isPending;
+  const displayTimes = showSkeleton && visibleTimes.length === 0 ? skeletonTimes : visibleTimes;
 
   return (
     <>
@@ -254,14 +256,14 @@ export default function PrediksiCuacaPage() {
               <div className="overflow-x-auto">
                 <table className="w-full" id="weather-prediction-table">
                   <thead>
-                    <tr className="bg-primary text-white">
-                      <th className="text-left px-5 py-3.5 text-sm font-semibold sticky left-0 bg-primary z-10 min-w-[160px]">
+                    <tr className="bg-[#1f2a56] text-white">
+                      <th className="text-left px-6 py-3.5 text-sm font-semibold sticky left-0 bg-[#1f2a56] z-10 min-w-[190px] md:min-w-[200px]">
                         Kecamatan
                       </th>
-                      {visibleTimes.length === 0 && (
+                      {!showSkeleton && visibleTimes.length === 0 && (
                         <th className="text-center px-4 py-3.5 text-sm font-semibold">Data Jam</th>
                       )}
-                      {visibleTimes.map((waktu) => (
+                      {displayTimes.map((waktu) => (
                         <th key={waktu} className="text-center px-4 py-3.5 text-sm font-semibold min-w-[160px]">
                           {formatJamIndonesia(waktu)}
                         </th>
@@ -272,15 +274,10 @@ export default function PrediksiCuacaPage() {
                     {showSkeleton ? (
                       Array.from({ length: 5 }).map((_, idx) => (
                         <tr key={`skeleton-${idx}`} className={`border-b border-border/50 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"} animate-pulse`}>
-                          <td className={`px-5 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
-                            <div className="h-6 bg-slate-200 rounded w-32"></div>
+                          <td className={`px-6 py-4 sticky left-0 z-10 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50"}`}>
+                            <div className="h-6 bg-slate-200 rounded w-36"></div>
                           </td>
-                          {visibleTimes.length === 0 && (
-                            <td className="text-center py-4">
-                              <div className="h-6 bg-slate-200 rounded w-8 mx-auto"></div>
-                            </td>
-                          )}
-                          {visibleTimes.map((waktu, wIdx) => (
+                          {displayTimes.map((waktu, wIdx) => (
                             <td key={`skeleton-td-${wIdx}`} className="px-4 py-4 text-center">
                               <div className="flex flex-col items-center gap-2">
                                 <div className="w-8 h-8 bg-slate-200 rounded-full"></div>
@@ -307,14 +304,14 @@ export default function PrediksiCuacaPage() {
                               idx % 2 === 0 ? "bg-white" : "bg-slate-50"
                             } hover:bg-slate-100`}
                           >
-                            <td className={`px-5 py-4 sticky left-0 z-10 transition-colors ${
+                            <td className={`px-6 py-4 sticky left-0 z-10 transition-colors ${
                               idx % 2 === 0 ? "bg-white" : "bg-slate-50"
                             } group-hover:bg-slate-100`}>
                               <Link
                                 href={`/prediksi-cuaca/${encodeURIComponent(kecamatanName.toLowerCase())}`}
                                 className="flex items-center group"
                               >
-                                <span className="text-lg font-bold text-blue-600 group-hover:text-blue-700 transition-colors group-hover:underline underline-offset-2">
+                                <span className="text-base font-bold text-blue-600 group-hover:text-blue-700 transition-colors group-hover:underline underline-offset-2">
                                   {kecamatanName}
                                 </span>
                               </Link>
@@ -366,9 +363,7 @@ export default function PrediksiCuacaPage() {
           </div>
         </section>
 
-        <div className="pb-12">
-          <InfoBanner />
-        </div>
+
       </main>
       <Footer />
     </>

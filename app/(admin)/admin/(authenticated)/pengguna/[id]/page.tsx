@@ -18,6 +18,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineChatBubbleLeftRight,
   HiOutlineArrowTrendingUp,
+  HiOutlineBanknotes,
   HiOutlineExclamationCircle,
   HiOutlineExclamationTriangle,
   HiOutlineArrowPath,
@@ -33,12 +34,14 @@ const aktivitasIcon: Record<string, React.ReactNode> = {
   laporan:    <HiOutlineDocumentText className="w-4 h-4 text-blue-500" />,
   komentar:   <HiOutlineChatBubbleLeftRight className="w-4 h-4 text-slate-400" />,
   poin:       <HiOutlineArrowTrendingUp className="w-4 h-4 text-emerald-500" />,
+  donasi:     <HiOutlineBanknotes className="w-4 h-4 text-emerald-500" />,
 };
 
 const aktivitasBadge: Record<string, { label: string; variant: "info" | "warning" | "success" | "danger" | "default" }> = {
   laporan:    { label: "Laporan",    variant: "info" },
   komentar:   { label: "Komentar",   variant: "default" },
   poin:       { label: "Poin",       variant: "success" },
+  donasi:     { label: "Donasi",     variant: "success" },
 };
 
 function Avatar({ name, foto }: { name: string; foto: string | null }) {
