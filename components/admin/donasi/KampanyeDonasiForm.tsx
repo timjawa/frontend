@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineCheckCircle, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import api from "@/lib/api";
+import api, { getImageUrl } from "@/lib/api";
+
+// Import premium UI components
+import InputField from "@/components/form/input/InputField";
+import TextArea from "@/components/form/input/TextArea";
+import Select from "@/components/form/Select";
+import Label from "@/components/form/Label";
+import AdminButton from "@/components/admin/ui/AdminButton";
 
 type KampanyeFormState = {
   judul: string;
@@ -16,7 +24,7 @@ type KampanyeFormState = {
   target_donasi: string;
   tanggal_mulai: string;
   tanggal_selesai: string;
-  status: string;
+  status: "" | "draft" | "aktif" | "ditutup";
 };
 
 type KecamatanOption = { id: string; nama: string };
@@ -32,7 +40,7 @@ const emptyForm: KampanyeFormState = {
   target_donasi: "",
   tanggal_mulai: "",
   tanggal_selesai: "",
-  status: "draft",
+  status: "",
 };
 
 const toLocalInput = (value?: string | null) => {
@@ -42,6 +50,10 @@ const toLocalInput = (value?: string | null) => {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
+
+function SkeletonBox({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-slate-100 dark:bg-gray-700 ${className}`} />;
+}
 
 export default function KampanyeDonasiForm({ id }: { id?: string }) {
   const router = useRouter();
@@ -53,6 +65,30 @@ export default function KampanyeDonasiForm({ id }: { id?: string }) {
   const [fetching, setFetching] = useState(!!id);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+
+  // States for Image Upload Drag & Drop and Preview
+  const [dragActive, setDragActive] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Toast Notification State
+  const [mounted, setMounted] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const statusOptions = [
+    { value: "draft", label: "Draft" },
+    { value: "aktif", label: "Aktif" },
+    { value: "ditutup", label: "Ditutup" }
+  ];
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -89,8 +125,11 @@ export default function KampanyeDonasiForm({ id }: { id?: string }) {
           target_donasi: data.target_donasi ?? "",
           tanggal_mulai: toLocalInput(data.tanggal_mulai),
           tanggal_selesai: toLocalInput(data.tanggal_selesai),
-          status: data.status ?? "draft",
+          status: data.status ?? "",
         });
+        if (data.gambar) {
+          setPreviewImage(getImageUrl(data.gambar));
+        }
       } catch (err: unknown) {
         setServerError(getApiMessage(err, "Gagal memuat kampanye donasi."));
       } finally {
@@ -101,14 +140,54 @@ export default function KampanyeDonasiForm({ id }: { id?: string }) {
     loadDetail();
   }, [id]);
 
-  const inputClass = (field: string) =>
-    `w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:bg-gray-800/50 dark:text-white ${
-      errors[field] ? "border-red-400 bg-red-50" : "border-gray-200 dark:border-gray-700"
-    }`;
+  const handleInputChange = (field: keyof KampanyeFormState, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
-    setErrors((prev) => ({ ...prev, [event.target.name]: "" }));
+  // Image upload selection and drag drop handlers
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setGambar(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        setGambar(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const triggerUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -142,23 +221,81 @@ export default function KampanyeDonasiForm({ id }: { id?: string }) {
           nextErrors[key] = value[0];
         });
         setErrors(nextErrors);
+        showToast("Mohon periksa kembali isian formulir Anda.", "error");
       } else {
-        setServerError(getApiMessage(err, "Gagal menyimpan kampanye donasi."));
+        const msg = getApiMessage(err, "Gagal menyimpan kampanye donasi.");
+        setServerError(msg);
+        showToast(msg, "error");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  // Map lists to select format
+  const kecamatanOptions = kecamatanList.map((item) => ({
+    value: item.id,
+    label: item.nama
+  }));
+
+  const laporanOptions = laporanList.map((item) => ({
+    value: item.id,
+    label: `${item.jenis_bencana} - ${item.kecamatan?.nama ?? item.alamat_lengkap ?? "Laporan"}`
+  }));
+
   if (fetching) {
-    return <div className="p-8 text-sm text-gray-500">Memuat form kampanye...</div>;
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <PageBreadcrumb pageTitle={id ? "Edit Kampanye Donasi" : "Tambah Kampanye Donasi"} className="mb-0" />
+          <Link href="/admin/donasi/kampanye" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+            <HiOutlineArrowLeft className="w-4 h-4" />
+            Kembali
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+            <SkeletonBox className="h-5 w-44 mb-2" />
+            <SkeletonBox className="h-4 w-96 max-w-full" />
+          </div>
+
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index}>
+                  <SkeletonBox className="h-4 w-32 mb-2" />
+                  <SkeletonBox className="h-11 w-full" />
+                  {index === 4 || index === 7 ? <SkeletonBox className="h-3 w-56 mt-2" /> : null}
+                </div>
+              ))}
+
+              <div className="md:col-span-2">
+                <SkeletonBox className="h-4 w-40 mb-2" />
+                <SkeletonBox className="h-48 w-full" />
+              </div>
+
+              <div className="md:col-span-2">
+                <SkeletonBox className="h-4 w-48 mb-2" />
+                <SkeletonBox className="h-44 w-full" />
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <SkeletonBox className="h-10 w-20" />
+              <SkeletonBox className="h-10 w-40" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <PageBreadcrumb pageTitle={id ? "Edit Kampanye Donasi" : "Tambah Kampanye Donasi"} className="mb-0" />
-        <Link href="/admin/donasi/kampanye" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+        <Link href="/admin/donasi/kampanye" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
           <HiOutlineArrowLeft className="w-4 h-4" />
           Kembali
         </Link>
@@ -167,84 +304,245 @@ export default function KampanyeDonasiForm({ id }: { id?: string }) {
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">Data Kampanye Donasi</h3>
-          <p className="text-sm text-gray-500 mt-1">Kampanye aktif akan tampil di aplikasi mobile dan bisa menerima donasi.</p>
+          <p className="text-sm text-gray-500 mt-1">Kampanye aktif akan tampil di aplikasi mobile dan bisa menerima donasi secara transparan.</p>
         </div>
 
-        {serverError && <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{serverError}</div>}
+        {serverError && (
+          <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-650 text-xs flex items-center gap-2">
+            <HiOutlineExclamationTriangle className="w-4 h-4 shrink-0" />
+            <span>{serverError}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Judul <span className="text-red-500">*</span></label>
-              <input name="judul" value={form.judul} onChange={handleChange} className={inputClass("judul")} required />
-              {errors.judul && <p className="text-xs text-red-500">{errors.judul}</p>}
+            {/* Judul Kampanye */}
+            <div>
+              <Label htmlFor="judul">Judul Kampanye <span className="text-red-500">*</span></Label>
+              <InputField
+                id="judul"
+                name="judul"
+                placeholder="Masukkan judul kampanye donasi"
+                defaultValue={form.judul}
+                onChange={(e) => handleInputChange("judul", e.target.value)}
+                error={errors.judul}
+              />
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Jenis Bencana <span className="text-red-500">*</span></label>
-              <input name="jenis_bencana" value={form.jenis_bencana} onChange={handleChange} className={inputClass("jenis_bencana")} required placeholder="Banjir, Longsor, Kebakaran" />
-              {errors.jenis_bencana && <p className="text-xs text-red-500">{errors.jenis_bencana}</p>}
+
+            {/* Jenis Bencana */}
+            <div>
+              <Label htmlFor="jenis_bencana">Jenis Bencana <span className="text-red-500">*</span></Label>
+              <InputField
+                id="jenis_bencana"
+                name="jenis_bencana"
+                placeholder="Contoh: Banjir, Tanah Longsor, Kebakaran"
+                defaultValue={form.jenis_bencana}
+                onChange={(e) => handleInputChange("jenis_bencana", e.target.value)}
+                error={errors.jenis_bencana}
+              />
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kecamatan</label>
-              <select name="kecamatan_id" value={form.kecamatan_id} onChange={handleChange} className={inputClass("kecamatan_id")}>
-                <option value="">Pilih kecamatan</option>
-                {kecamatanList.map((item) => <option key={item.id} value={item.id}>{item.nama}</option>)}
-              </select>
-              {errors.kecamatan_id && <p className="text-xs text-red-500">{errors.kecamatan_id}</p>}
+
+            {/* Kecamatan */}
+            <div>
+              <Label htmlFor="kecamatan_id">Kecamatan</Label>
+              <Select
+                options={kecamatanOptions}
+                placeholder="Pilih kecamatan terdampak"
+                onChange={(value) => handleInputChange("kecamatan_id", value)}
+                defaultValue={form.kecamatan_id}
+                error={errors.kecamatan_id}
+              />
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Laporan Terkait</label>
-              <select name="laporan_bencana_id" value={form.laporan_bencana_id} onChange={handleChange} className={inputClass("laporan_bencana_id")}>
-                <option value="">Tanpa laporan terkait</option>
-                {laporanList.map((item) => <option key={item.id} value={item.id}>{item.jenis_bencana} - {item.kecamatan?.nama ?? item.alamat_lengkap ?? "Laporan"}</option>)}
-              </select>
-              {errors.laporan_bencana_id && <p className="text-xs text-red-500">{errors.laporan_bencana_id}</p>}
+
+            {/* Laporan Bencana Terkait */}
+            <div>
+              <Label htmlFor="laporan_bencana_id">Laporan Bencana Terkait</Label>
+              <Select
+                options={laporanOptions}
+                placeholder="Pilih laporan bencana terkait"
+                onChange={(value) => handleInputChange("laporan_bencana_id", value)}
+                defaultValue={form.laporan_bencana_id}
+                error={errors.laporan_bencana_id}
+              />
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Donasi</label>
-              <input type="number" name="target_donasi" value={form.target_donasi} onChange={handleChange} className={inputClass("target_donasi")} min="0" />
-              {errors.target_donasi && <p className="text-xs text-red-500">{errors.target_donasi}</p>}
+
+            {/* Target Donasi */}
+            <div>
+              <Label htmlFor="target_donasi">Target Donasi (Rp)</Label>
+              <InputField
+                id="target_donasi"
+                name="target_donasi"
+                type="number"
+                placeholder="Masukkan nominal target donasi (kosongkan jika tidak dibatasi)"
+                defaultValue={form.target_donasi}
+                onChange={(e) => handleInputChange("target_donasi", e.target.value)}
+                error={errors.target_donasi}
+                hint="Isikan angka saja tanpa tanda baca, contoh: 50000000"
+              />
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status <span className="text-red-500">*</span></label>
-              <select name="status" value={form.status} onChange={handleChange} className={inputClass("status")} required>
-                <option value="draft">Draft</option>
-                <option value="aktif">Aktif</option>
-                <option value="ditutup">Ditutup</option>
-              </select>
-              {errors.status && <p className="text-xs text-red-500">{errors.status}</p>}
+
+            {/* Status */}
+            <div>
+              <Label htmlFor="status">Status Kampanye</Label>
+              <Select
+                options={statusOptions}
+                placeholder="Pilih Status Kampanye"
+                onChange={(value) => handleInputChange("status", value as KampanyeFormState["status"])}
+                defaultValue={form.status}
+                error={errors.status}
+              />
+              {errors.status && <p className="text-xs text-red-500 mt-1.5">{errors.status}</p>}
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Mulai <span className="text-red-500">*</span></label>
-              <input type="datetime-local" name="tanggal_mulai" value={form.tanggal_mulai} onChange={handleChange} className={inputClass("tanggal_mulai")} required />
-              {errors.tanggal_mulai && <p className="text-xs text-red-500">{errors.tanggal_mulai}</p>}
+
+            {/* Tanggal Mulai */}
+            <div>
+              <Label htmlFor="tanggal_mulai">Tanggal Mulai <span className="text-red-500">*</span></Label>
+              <InputField
+                id="tanggal_mulai"
+                name="tanggal_mulai"
+                type="datetime-local"
+                defaultValue={form.tanggal_mulai}
+                onChange={(e) => handleInputChange("tanggal_mulai", e.target.value)}
+                error={errors.tanggal_mulai}
+              />
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Selesai</label>
-              <input type="datetime-local" name="tanggal_selesai" value={form.tanggal_selesai} onChange={handleChange} className={inputClass("tanggal_selesai")} />
-              {errors.tanggal_selesai && <p className="text-xs text-red-500">{errors.tanggal_selesai}</p>}
+
+            {/* Tanggal Selesai */}
+            <div>
+              <Label htmlFor="tanggal_selesai">Tanggal Selesai</Label>
+              <InputField
+                id="tanggal_selesai"
+                name="tanggal_selesai"
+                type="datetime-local"
+                defaultValue={form.tanggal_selesai}
+                onChange={(e) => handleInputChange("tanggal_selesai", e.target.value)}
+                error={errors.tanggal_selesai}
+                hint="Kosongkan apabila kampanye terus terbuka tanpa batas waktu"
+              />
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gambar Kampanye</label>
-              <input type="file" accept="image/*" onChange={(event) => setGambar(event.target.files?.[0] ?? null)} className={inputClass("gambar")} />
-              {errors.gambar && <p className="text-xs text-red-500">{errors.gambar}</p>}
+
+            {/* Cover Image Uploader (Matching BeritaForm.tsx drag and drop box) */}
+            <div className="md:col-span-2">
+              <Label>Gambar Cover Kampanye</Label>
+              <div
+                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  dragActive
+                    ? "border-brand-500 bg-brand-50 dark:bg-brand-500/10"
+                    : "border-gray-300 dark:border-gray-700"
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {previewImage ? (
+                  <div className="space-y-4">
+                    <div
+                      role="img"
+                      aria-label="Preview Gambar"
+                      className="mx-auto h-48 w-full max-w-xl rounded-lg bg-contain bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${previewImage})` }}
+                    />
+                    <button
+                      type="button"
+                      onClick={triggerUploadClick}
+                      className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium"
+                    >
+                      Ganti gambar cover
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                      <svg
+                        className="h-6 w-6 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={triggerUploadClick}
+                        className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium"
+                      >
+                        Klik untuk upload gambar
+                      </button>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        atau drag and drop gambar ke area ini
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        PNG, JPG, JPEG, WEBP (maks. 5MB)
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {errors.gambar && <p className="text-xs text-red-500 mt-1.5">{errors.gambar}</p>}
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Deskripsi <span className="text-red-500">*</span></label>
-              <textarea name="deskripsi" value={form.deskripsi} onChange={handleChange} rows={5} className={inputClass("deskripsi")} required />
-              {errors.deskripsi && <p className="text-xs text-red-500">{errors.deskripsi}</p>}
+
+            {/* Deskripsi */}
+            <div className="md:col-span-2">
+              <Label htmlFor="deskripsi">Deskripsi Detail Kampanye <span className="text-red-500">*</span></Label>
+              <TextArea
+                id="deskripsi"
+                placeholder="Tulis penjelasan lengkap detail kampanye donasi, tujuan penggalangan dana, serta peruntukan dana penyaluran di sini..."
+                rows={7}
+                value={form.deskripsi}
+                onChange={(value) => handleInputChange("deskripsi", value)}
+                error={errors.deskripsi}
+              />
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
-            <Link href="/admin/donasi/kampanye" className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Batal</Link>
-            <button type="submit" disabled={loading} className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200 disabled:opacity-60">
-              {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <HiOutlineCheck className="w-4 h-4" />}
-              {loading ? "Menyimpan..." : "Simpan Kampanye"}
-            </button>
+          {/* Action Buttons */}
+          <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <AdminButton
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              Batal
+            </AdminButton>
+            <AdminButton
+              type="submit"
+              variant="secondary"
+              loading={loading}
+            >
+              {id ? "Perbarui Kampanye" : "Simpan Kampanye"}
+            </AdminButton>
           </div>
         </form>
       </div>
+
+      {/* Toast Notification - Portaled to Body */}
+      {mounted && toast && typeof window !== "undefined" && createPortal(
+        <div className={`fixed top-6 right-6 z-[99999] px-6 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
+          toast.type === "success" 
+            ? "bg-emerald-500 border-emerald-400 text-white" 
+            : "bg-red-500 border-red-400 text-white"
+        }`}>
+          {toast.type === "success" ? <HiOutlineCheckCircle className="w-5 h-5 shrink-0" /> : <HiOutlineExclamationTriangle className="w-5 h-5 shrink-0" />}
+          <span className="font-bold text-sm">{toast.msg}</span>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

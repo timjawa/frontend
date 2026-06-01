@@ -3,13 +3,13 @@ import React from "react";
 interface AdminBadgeProps {
   children: React.ReactNode;
   variant?: "success" | "warning" | "danger" | "info" | "default" | "brand";
-  dot?: boolean;
+  dot?: boolean; // kept for backwards compatibility but not rendered
 }
 
 export default function AdminBadge({
   children,
   variant = "default",
-  dot = false,
+  dot = false, // kept for backwards compatibility
 }: AdminBadgeProps) {
   const styles = {
     success: "bg-emerald-50 text-emerald-700 ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20",
@@ -20,24 +20,10 @@ export default function AdminBadge({
     brand: "bg-brand-50 text-brand-700 ring-brand-600/10 dark:bg-brand-500/10 dark:text-brand-400 dark:ring-brand-500/20",
   };
 
-  const dotColors = {
-    success: "bg-emerald-500",
-    warning: "bg-amber-500",
-    danger: "bg-rose-500",
-    info: "bg-sky-500",
-    default: "bg-slate-400",
-    brand: "bg-brand-500",
-  };
-
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${styles[variant]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase ring-1 ring-inset ${styles[variant]}`}
     >
-      {dot && (
-        <span
-          className={`h-1.5 w-1.5 rounded-full ${dotColors[variant]}`}
-        />
-      )}
       {children}
     </span>
   );

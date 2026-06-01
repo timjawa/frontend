@@ -5,8 +5,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineCheck } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
-
-const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");
+import api from "@/lib/api";
 
 interface Kecamatan {
   id: string;
@@ -30,11 +29,8 @@ export default function CreatePeringatanDiniPage() {
   useEffect(() => {
     const fetchKecamatan = async () => {
       try {
-        const res = await fetch(`${getApiBase()}/kecamatan?per_page=100`);
-        if (res.ok) {
-          const json = await res.json();
-          setKecamatanList(json.data || []);
-        }
+        const res = await api.get("/api/kecamatan", { params: { per_page: 100 } });
+        setKecamatanList(res.data.data || []);
       } catch (err) {
         console.error("Gagal mengambil data kecamatan:", err);
       } finally {
@@ -51,52 +47,25 @@ export default function CreatePeringatanDiniPage() {
     setServerError(null);
 
     try {
-      const token = localStorage.getItem("auth_token");
       const payload = {
         ...formData,
         is_active: formData.is_active === "1",
       };
 
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
-        return '';
-      };
-      const xsrfToken = getCookie('XSRF-TOKEN');
-
-      const res = await fetch(`${getApiBase()}/peringatan-dini`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "X-XSRF-TOKEN": xsrfToken,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 422) {
-        const json = await res.json();
+      await api.post("/api/peringatan-dini", payload);
+      router.push("/admin/peringatan-dini");
+    } catch (err: any) {
+      if (err.response?.status === 422) {
         const errs: Record<string, string> = {};
-        if (json.errors) {
-          for (const key in json.errors) {
-            errs[key] = json.errors[key][0];
+        if (err.response.data.errors) {
+          for (const key in err.response.data.errors) {
+            errs[key] = err.response.data.errors[key][0];
           }
         }
         setErrors(errs);
-        return;
+      } else {
+        setServerError(err.response?.data?.message || "Gagal menyimpan data peringatan dini.");
       }
-
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal menyimpan data peringatan dini.");
-      }
-
-      router.push("/admin/peringatan-dini");
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
       setLoading(false);
     }

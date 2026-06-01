@@ -321,6 +321,22 @@ export default function PrediksiCuacaPage() {
               <p className="text-xs text-slate-400 dark:text-gray-400 mt-0.5">Rangkuman cuaca harian — BMKG</p>
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Date Selector Dropdown */}
+              <div className="relative">
+                <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
+                <select
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="pl-9 pr-8 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 outline-none transition-all cursor-pointer font-medium appearance-none w-36"
+                >
+                  <option value="">Semua Hari</option>
+                  <option value={getLocalDateString(0)}>Hari Ini</option>
+                  <option value={getLocalDateString(1)}>Besok</option>
+                  <option value={getLocalDateString(2)}>Lusa</option>
+                </select>
+                <HiChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
+              </div>
+
               {/* Kecamatan Search */}
               <div className="relative" ref={dropdownRef}>
                 <div className="relative">
@@ -363,22 +379,6 @@ export default function PrediksiCuacaPage() {
                     )}
                   </div>
                 )}
-              </div>
-
-              {/* Date Selector Dropdown */}
-              <div className="relative">
-                <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
-                <select
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="pl-9 pr-8 py-2 text-sm rounded-lg bg-slate-50 border border-slate-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 outline-none transition-all cursor-pointer font-medium appearance-none w-36"
-                >
-                  <option value="">Semua Hari</option>
-                  <option value={getLocalDateString(0)}>Hari Ini</option>
-                  <option value={getLocalDateString(1)}>Besok</option>
-                  <option value={getLocalDateString(2)}>Lusa</option>
-                </select>
-                <HiChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-400 pointer-events-none" />
               </div>
 
               <button onClick={handleRefresh} disabled={refreshing || loading}

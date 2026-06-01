@@ -9,8 +9,8 @@ import {
   HiOutlineTrash,
   HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
-
-const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && ["localhost", "127.0.0.1"].includes(window.location.hostname) ? `${window.location.protocol}//${window.location.hostname}:8000/api` : "https://api.jembersiaga.my.id/api");
+import axios from "axios";
+import api from "@/lib/api";
 
 interface Props {
   id: string;
@@ -27,35 +27,17 @@ export default function KontakDaruratTableAction({ id, onDeleted }: Props) {
     setDeleting(true);
     setDeleteError(null);
     try {
-      const token = localStorage.getItem("auth_token");
-      
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
-        return '';
-      };
-      const xsrfToken = getCookie('XSRF-TOKEN');
-
-      const res = await fetch(`${getApiBase()}/kontak-darurat/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "X-XSRF-TOKEN": xsrfToken,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        throw new Error(json.message || "Gagal menghapus kontak darurat.");
-      }
-
+      await api.delete(`/api/kontak-darurat/${id}`);
       setShowConfirm(false);
       onDeleted?.(id);
     } catch (err: unknown) {
-      setDeleteError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+      setDeleteError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || "Gagal menghapus kontak darurat."
+          : err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan."
+      );
     } finally {
       setDeleting(false);
     }

@@ -119,7 +119,31 @@ export default function KecamatanDetailPage({
     loadData();
   }, []);
 
-  // Filter weather data for this kecamatan on the target date, sorted by hour
+  // Today's date for current card
+  const todayDateString = useMemo(() => {
+    const d = new Date();
+    return d.toLocaleDateString('en-CA');
+  }, []);
+
+  // Today's weather data (static for current weather card)
+  const todayWeatherData = useMemo(() => {
+    const key = Object.keys(allData).find(
+      (k) => k.toLowerCase() === kecamatanName.toLowerCase()
+    );
+    if (!key) return [];
+    const forecasts = allData[key] || [];
+    return forecasts
+      .filter((f: any) => {
+        const d = new Date(f.waktu_lokal);
+        if (isNaN(d.getTime())) return false;
+        return d.toLocaleDateString('en-CA') === todayDateString;
+      })
+      .sort((a: any, b: any) => {
+        return new Date(a.waktu_lokal).getTime() - new Date(b.waktu_lokal).getTime();
+      });
+  }, [allData, kecamatanName, todayDateString]);
+
+  // Filter weather data for this kecamatan on the target date, sorted by hour (for the table)
   const weatherData = useMemo(() => {
     const key = Object.keys(allData).find(
       (k) => k.toLowerCase() === kecamatanName.toLowerCase()
@@ -162,19 +186,19 @@ export default function KecamatanDetailPage({
     }
   };
 
-  const warningText = showSkeleton ? "Memuat data cuaca..." : generateWarning(weatherData);
+  const warningText = isLoading ? "Memuat data cuaca..." : generateWarning(todayWeatherData);
 
-  // Find current weather prediction closest to current time
+  // Find current weather prediction closest to current time (always today)
   const currentCuaca = useMemo(() => {
-    if (!weatherData || weatherData.length === 0) return null;
+    if (!todayWeatherData || todayWeatherData.length === 0) return null;
     const now = new Date();
     const currentHour = now.getHours();
-    let closestItem = weatherData[0];
+    let closestItem = todayWeatherData[0];
     let minDiff = Infinity;
-    weatherData.forEach((item: any) => {
+    todayWeatherData.forEach((item: any) => {
       const d = new Date(item.waktu_lokal);
       if (!isNaN(d.getTime())) {
-        const diff = Math.abs(d.getHours() - (activeTab === 0 ? currentHour : 12));
+        const diff = Math.abs(d.getHours() - currentHour);
         if (diff < minDiff) {
           minDiff = diff;
           closestItem = item;
@@ -182,7 +206,7 @@ export default function KecamatanDetailPage({
       }
     });
     return closestItem;
-  }, [weatherData, activeTab]);
+  }, [todayWeatherData]);
 
   // Other kecamatan (exclude current)
   const otherKecamatan = allKecamatanNames.filter(
@@ -206,7 +230,7 @@ export default function KecamatanDetailPage({
               </p>
             </div>
 
-            {showSkeleton ? (
+            {isLoading ? (
               <div
                 className="relative rounded-2xl overflow-hidden shadow-sm border border-slate-100 animate-pulse"
                 style={{ backgroundColor: "#DFEAF6" }}

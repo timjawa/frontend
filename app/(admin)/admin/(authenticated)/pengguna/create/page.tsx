@@ -246,9 +246,9 @@ export default function CreatePenggunaPage() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  minLength={6}
+                  minLength={8}
                   className={`${inputClass("password")} pr-12`}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Minimal 8 karakter"
                 />
                 <button
                   type="button"
@@ -278,7 +278,7 @@ export default function CreatePenggunaPage() {
                   value={formData.password_confirmation}
                   onChange={handleChange}
                   required
-                  minLength={6}
+                  minLength={8}
                   className={`${inputClass("password_confirmation")} pr-12`}
                   placeholder="Ulangi password"
                 />

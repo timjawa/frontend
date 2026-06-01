@@ -6,6 +6,7 @@ interface AdminButtonProps
   size?: "sm" | "md" | "lg";
   children: React.ReactNode;
   icon?: React.ReactNode;
+  loading?: boolean;
 }
 
 export default function AdminButton({
@@ -13,7 +14,9 @@ export default function AdminButton({
   size = "md",
   children,
   icon,
+  loading = false,
   className = "",
+  disabled,
   ...props
 }: AdminButtonProps) {
   const base =
@@ -40,10 +43,15 @@ export default function AdminButton({
 
   return (
     <button
-      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${loading || disabled ? "opacity-70 cursor-not-allowed active:scale-100" : ""} ${className}`}
+      disabled={loading || disabled}
       {...props}
     >
-      {icon && <span className="flex-shrink-0">{icon}</span>}
+      {loading ? (
+        <span className="h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      ) : icon ? (
+        <span className="flex-shrink-0">{icon}</span>
+      ) : null}
       {children}
     </button>
   );

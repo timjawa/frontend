@@ -1,17 +1,19 @@
 import React from "react";
 
 interface TextareaProps {
+  id?: string; // Textarea id
   placeholder?: string; // Placeholder text
   rows?: number; // Number of rows
   value?: string; // Current value
   onChange?: (value: string) => void; // Change handler
   className?: string; // Additional CSS classes
   disabled?: boolean; // Disabled state
-  error?: boolean; // Error state
+  error?: boolean | string; // Error state
   hint?: string; // Hint text to display
 }
 
 const TextArea: React.FC<TextareaProps> = ({
+  id,
   placeholder = "Enter your message", // Default placeholder
   rows = 3, // Default number of rows
   value = "", // Default value
@@ -40,6 +42,7 @@ const TextArea: React.FC<TextareaProps> = ({
   return (
     <div className="relative">
       <textarea
+        id={id}
         placeholder={placeholder}
         rows={rows}
         value={value}

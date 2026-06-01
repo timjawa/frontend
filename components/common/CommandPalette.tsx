@@ -15,6 +15,9 @@ import {
   HiOutlineMapPin,
   HiOutlinePlus,
   HiOutlinePencil,
+  HiOutlineHeart,
+  HiOutlineBanknotes,
+  HiOutlineArrowPathRoundedSquare,
   HiMagnifyingGlass,
 } from "react-icons/hi2";
 import { GridIcon } from "@/icons";
@@ -128,6 +131,52 @@ const allCommands: CommandItem[] = [
     icon: <HiOutlineDocumentText className="w-5 h-5" />,
     keywords: ["laporan", "bencana", "report"],
     category: "Operasional",
+  },
+  // Donasi
+  {
+    id: "kampanye-donasi",
+    label: "Kampanye Donasi",
+    description: "Kelola kampanye donasi bencana",
+    path: "/admin/donasi/kampanye",
+    icon: <HiOutlineHeart className="w-5 h-5" />,
+    keywords: ["donasi", "kampanye", "bantuan", "dana", "fundraising"],
+    category: "Donasi",
+  },
+  {
+    id: "tambah-kampanye-donasi",
+    label: "Tambah Kampanye Donasi",
+    description: "Buat kampanye donasi baru",
+    path: "/admin/donasi/kampanye/create",
+    icon: <HiOutlinePlus className="w-5 h-5" />,
+    keywords: ["tambah", "donasi", "kampanye", "baru", "create", "bantuan"],
+    category: "Donasi",
+  },
+  {
+    id: "transaksi-donasi",
+    label: "Transaksi Donasi",
+    description: "Pantau pembayaran donasi",
+    path: "/admin/donasi/transaksi",
+    icon: <HiOutlineBanknotes className="w-5 h-5" />,
+    keywords: ["donasi", "transaksi", "pembayaran", "midtrans", "donatur", "bayar"],
+    category: "Donasi",
+  },
+  {
+    id: "penyaluran-donasi",
+    label: "Penyaluran Donasi",
+    description: "Kelola penyaluran dana donasi",
+    path: "/admin/donasi/penyaluran",
+    icon: <HiOutlineArrowPathRoundedSquare className="w-5 h-5" />,
+    keywords: ["donasi", "penyaluran", "disalurkan", "transparansi", "dana"],
+    category: "Donasi",
+  },
+  {
+    id: "tambah-penyaluran-donasi",
+    label: "Tambah Penyaluran Donasi",
+    description: "Catat penyaluran dana donasi",
+    path: "/admin/donasi/penyaluran/create",
+    icon: <HiOutlinePlus className="w-5 h-5" />,
+    keywords: ["tambah", "donasi", "penyaluran", "baru", "create", "transparansi"],
+    category: "Donasi",
   },
   // Berita
   {
@@ -274,6 +323,7 @@ const categoryColors: Record<string, string> = {
   Monitoring: "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10",
   Operasional: "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10",
   "Informasi Publik": "text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-500/10",
+  Donasi: "text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/10",
   Data: "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10",
   Akun: "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-700",
 };

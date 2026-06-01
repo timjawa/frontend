@@ -11,19 +11,19 @@ export const metadata: Metadata = {
 
 const mobileScreens = [
   {
-    src: "/images/mobile/gambar_1.jpg",
+    src: "/images/mobile/gambar_1.jpeg",
     alt: "Tampilan beranda aplikasi mobile Jember Siaga",
     title: "Beranda Siaga",
     description: "Akses peta bencana, pencarian insiden, cuaca, donasi, laporan warga, dan kontak darurat.",
   },
   {
-    src: "/images/mobile/gambar_2.jpg",
+    src: "/images/mobile/gambar_2.jpeg",
     alt: "Tampilan fitur pengaduan bencana di aplikasi mobile Jember Siaga",
     title: "Berita Bencana",
     description: "Ikuti informasi terbaru seperti banjir, longsor, dan cuaca ekstrem di Jember.",
   },
   {
-    src: "/images/mobile/gambar_3.jpg",
+    src: "/images/mobile/gambar_3.jpeg",
     alt: "Tampilan formulir laporan bencana di aplikasi mobile Jember Siaga",
     title: "Profil Pengguna",
     description: "Pantau jumlah laporan, laporan terverifikasi, dan poin kontribusi pengguna.",
@@ -94,22 +94,22 @@ export default function PengaduanBencanaPage() {
                 Dapatkan di Play Store dan App Store
               </p>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-                <div className="relative block h-[48px] w-[160px] overflow-hidden rounded-lg">
+                <a href="#" className="relative block h-[48px] w-[160px] overflow-hidden rounded-lg hover:opacity-80 transition-opacity duration-200">
                   <Image
                     src="/images/playstore.png"
                     alt="Dapatkan di Google Play"
                     fill
                     className="object-cover scale-[1.1]"
                   />
-                </div>
-                <div className="relative block h-[48px] w-[160px] overflow-hidden rounded-lg">
+                </a>
+                <a href="#" className="relative block h-[48px] w-[160px] overflow-hidden rounded-lg hover:opacity-80 transition-opacity duration-200">
                   <Image
                     src="/images/appstore.png"
                     alt="Unduh di App Store"
                     fill
                     className="object-cover"
                   />
-                </div>
+                </a>
               </div>
             </div>
           </div>

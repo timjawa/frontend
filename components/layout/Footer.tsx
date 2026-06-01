@@ -1,13 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { FaInstagram, FaYoutube } from "react-icons/fa";
 
+const socialLinks = [
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/",
+    icon: FaInstagram,
+  },
+  {
+    name: "YouTube",
+    href: "https://www.youtube.com/",
+    icon: FaYoutube,
+  },
+];
 
 export default function Footer() {
   return (
     <footer className="bg-[#1f2a56] text-white">
       {/* Top bar: Logo + Social Icons */}
-      <div className="bg-[#1f2a56] border-b border-white/10">
+      <div className="bg-[#1f2a56] border-b-2 border-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center justify-center">
@@ -18,6 +31,21 @@ export default function Footer() {
             </span>
           </Link>
 
+          <div className="flex items-center gap-3">
+            {socialLinks.map(({ name, href, icon: Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={name}
+                title={name}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white/80 transition-colors duration-200 hover:border-white hover:bg-white hover:text-[#1f2a56]"
+              >
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -108,9 +136,9 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4">
-          <p className="text-center text-xs text-white/40">
+      <div className="border-t-2 border-white bg-[#f8f9fa]">
+        <div className="max-w-7xl mx-auto px-6 flex justify-center items-center h-10">
+          <p className="text-center text-xs font-semibold text-slate-500">
             Hak cipta © 2026 Anything.
           </p>
         </div>

@@ -21,7 +21,7 @@ export default async function Home() {
   let peringatanDiniData = [];
   
   try {
-    const peringatanRes = await fetchPeringatanDini({ is_active: true, per_page: 5 });
+    const peringatanRes = await fetchPeringatanDini({ is_active: true, per_page: 100 });
     peringatanDiniData = peringatanRes?.data || [];
   } catch (error) {
     console.error("Gagal memuat data di halaman Home", error);

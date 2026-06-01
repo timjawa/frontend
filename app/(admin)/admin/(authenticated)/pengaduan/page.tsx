@@ -269,7 +269,6 @@ export default function PengaduanPage() {
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Waktu</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 min-w-[180px]">Jenis Bencana</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Lokasi</th>
-                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-center">Media</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Pelapor</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">Status</th>
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500 text-right">Aksi</th>
@@ -279,7 +278,7 @@ export default function PengaduanPage() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      {Array.from({ length: 8 }).map((__, j) => (
+                      {Array.from({ length: 7 }).map((__, j) => (
                         <td key={j} className="px-6 py-4">
                           <div className="h-4 bg-slate-100 dark:bg-gray-800 rounded-md w-full" />
                         </td>
@@ -288,14 +287,14 @@ export default function PengaduanPage() {
                   ))
                 ) : error ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-red-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-red-500">
                       <HiOutlineXCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       <p>{error}</p>
                     </td>
                   </tr>
                 ) : data.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500">
                       <HiOutlineDocumentText className="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-gray-600" />
                       <p>Tidak ada pengaduan ditemukan.</p>
                     </td>
@@ -328,11 +327,6 @@ export default function PengaduanPage() {
                           <div className="text-xs text-slate-500 dark:text-gray-400 max-w-[150px] truncate" title={item.alamat_lengkap ?? undefined}>
                             {item.alamat_lengkap}
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 font-semibold text-xs border border-slate-200 dark:border-gray-700 shadow-sm">
-                            {item.media?.length ?? 0}
-                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-medium text-[#1B2E4B] dark:text-gray-200">

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import InfoBanner from "@/components/ui/InfoBanner";
 import {
   HiArrowPath,
   HiMagnifyingGlass,
@@ -157,20 +156,19 @@ export default function PrediksiBanjirPage() {
     <>
       <Navbar />
       <main className="min-h-screen bg-[#F3F8FF]">
-        <section className="pt-36 pb-8">
+        <section className="pt-28 pb-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 mb-3">
-                Sistem Prediksi Risiko
-              </p>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 tracking-tight">
-                Prediksi Banjir Jember
-              </h1>
-              <p className="text-slate-600 max-w-3xl mx-auto text-sm sm:text-[15px] leading-relaxed">
-                Tabel ini memakai data cuaca realtime, level kerawanan kecamatan,
-                elevasi, dan laporan banjir 7 hari terakhir untuk memperkirakan
-                risiko banjir di setiap kecamatan.
-              </p>
+            <div className="relative p-6 sm:p-8">
+              <div className="relative z-10 text-center">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 tracking-tight">
+                  Prediksi Banjir Jember
+                </h1>
+                <p className="text-slate-600 max-w-2xl mx-auto text-sm sm:text-[15px] leading-relaxed">
+                  Tabel ini memakai data cuaca realtime, level kerawanan kecamatan,
+                  elevasi, dan laporan banjir 7 hari terakhir untuk memperkirakan
+                  risiko banjir di setiap kecamatan.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -371,7 +369,6 @@ export default function PrediksiBanjirPage() {
           </div>
         </section>
 
-        <InfoBanner />
       </main>
       <Footer />
     </>
