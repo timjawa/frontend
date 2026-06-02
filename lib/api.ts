@@ -1,13 +1,17 @@
 import axios from "axios";
 
 export const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    // Gunakan hostname yang sama dengan yang diakses di browser untuk menghindari masalah CORS/SameSite cookie
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
-  }
-
   if (process.env.NEXT_PUBLIC_BACKEND_URL) {
     return process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    const isLocalhost = ["localhost", "127.0.0.1"].includes(
+      window.location.hostname
+    );
+    if (isLocalhost) {
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
   }
 
   return "https://api.jembersiaga.my.id";
