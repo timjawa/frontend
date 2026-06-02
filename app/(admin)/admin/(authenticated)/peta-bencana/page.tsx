@@ -207,7 +207,9 @@ export default function PetaBencanaPage() {
     try {
       const res = await api.get("/api/admin/peta-marker");
       const data = res.data?.data || res.data;
-      setManualMarkers(Array.isArray(data) ? data : []);
+      // Abaikan marker laporan warga otomatis di frontend sesuai permintaan
+      const filtered = (Array.isArray(data) ? data : []).filter((m: any) => m.source !== "laporan");
+      setManualMarkers(filtered);
     } catch {
       setManualMarkers([]);
     } finally {
@@ -552,22 +554,48 @@ export default function PetaBencanaPage() {
                     const lng = Number(l.longitude);
                     const hasCoords = Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
 
+                    // Pengecekan apakah sudah ada marker manual dengan koordinat yang sama
+                    const latFixed = lat.toFixed(6);
+                    const lngFixed = lng.toFixed(6);
+                    const existingMarker = manualMarkers.find(
+                      (m) => Number(m.latitude).toFixed(6) === latFixed && Number(m.longitude).toFixed(6) === lngFixed
+                    );
+                    const isAlreadyCreated = !!existingMarker;
+
                     return (
                       <div 
                         key={l.id} 
                         onClick={() => {
-                          if (hasCoords) {
-                            useCoordFromLaporan(l);
-                          } else {
+                          if (!hasCoords) {
                             showToast("Laporan ini tidak memiliki koordinat lokasi yang valid.", "error");
+                            return;
+                          }
+                          
+                          if (isAlreadyCreated) {
+                            showToast("Marker untuk laporan ini sudah dibuat di peta!", "error");
+                            // Jika sudah dibuat, arahkan peta ke lokasi marker tersebut
+                            setPanToCoord([lat, lng]);
+                            setClickedCoord(null);
+                          } else {
+                            // Jika belum, alihkan ke form pembuatan marker
+                            useCoordFromLaporan(l);
                           }
                         }}
-                        className={`p-2.5 rounded-xl border transition-all cursor-pointer border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-blue-300 hover:bg-blue-50/5`}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          isAlreadyCreated
+                            ? "border-green-200 bg-green-50/50 dark:border-green-900/50 dark:bg-green-900/10"
+                            : "border-gray-200 dark:border-gray-700/50 bg-white dark:bg-white/[0.02] hover:border-blue-300 hover:bg-blue-50/5"
+                        }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight truncate pr-2">
                             {l.jenis_bencana} - {l.kecamatan?.nama || "Umum"}
                           </span>
+                          {isAlreadyCreated && (
+                            <span className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 px-1.5 py-0.5 rounded flex items-center font-bold shrink-0">
+                              Dibuat
+                            </span>
+                          )}
                         </div>
                       </div>
                     );

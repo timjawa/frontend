@@ -98,6 +98,9 @@ export default function CreateMapPickerComponent({
         if (!markerInstance.current) {
           markerInstance.current = L.marker([lat, lng], { draggable: true }).addTo(mapInstance.current);
           
+          // Arahkan & zoom peta secara otomatis ke titik koordinat awal
+          mapInstance.current.setView([lat, lng], 15, { animate: true });
+
           // Bind tooltip that shows the current coordinate
           markerInstance.current.bindTooltip(`Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}`, { 
             permanent: true, 
@@ -151,6 +154,11 @@ export default function CreateMapPickerComponent({
           weight: 4,
           opacity: 0.8,
         }).addTo(mapInstance.current);
+        
+        // Arahkan & zoom peta ke titik awal garis
+        if (pathPoints.length > 0) {
+          mapInstance.current.setView(pathPoints[0], 15, { animate: true });
+        }
       } else {
         polylineInstance.current.setLatLngs(pathPoints);
       }

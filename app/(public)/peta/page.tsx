@@ -66,7 +66,9 @@ export default function PetaPage() {
  setLoading(true);
  try {
  const res = await api.get("/api/peta-marker");
- setMarkers(res.data?.data || []);
+ // Abaikan otomatisasi laporan warga di frontend sesuai permintaan
+ const filteredMarkers = (res.data?.data || []).filter((m: any) => m.source !== "laporan");
+ setMarkers(filteredMarkers);
  } catch (err) {
  console.error("Gagal mengambil data marker peta:", err);
  } finally {
@@ -98,8 +100,8 @@ export default function PetaPage() {
  };
 
  // Membagi markers berdasarkan source dari API PetaMarkerController
- const laporanList = useMemo(() => {
- return markers.filter((m) => m.source ==="laporan");
+ const bencanaList = useMemo(() => {
+ return markers.filter((m) => m.source ==="manual");
  }, [markers]);
 
  const posPengungsianList = useMemo(() => {
@@ -198,7 +200,7 @@ export default function PetaPage() {
  {/* KANAN: Tiga Dropdown Sidebar (1 Kolom) */}
  <div className="xl:col-span-1 flex flex-col gap-4 p-4 h-full overflow-hidden z-10 border-l border-gray-200">
 
- {/* SECTION 1: LAPORAN WARGA (Diverifikasi) */}
+ {/* SECTION 1: LOKASI BENCANA (Marker Resmi) */}
  <div className="bg-white rounded-2xl border border-gray-150 shadow-sm flex flex-col transition-all duration-300 overflow-hidden flex-none">
  <div
  onClick={() => setOpenCard(openCard ==="laporan"? null :"laporan")}
@@ -210,7 +212,7 @@ export default function PetaPage() {
  <div className="flex-1">
  <div className="text-sm font-medium text-gray-600 leading-snug mb-1.5">Lokasi Bencana</div>
  <div className="text-[28px] font-bold text-gray-900 leading-none tracking-tight">
- {loading ?"-": laporanList.length}
+ {loading ?"-": bencanaList.length}
  </div>
  </div>
  <div className="shrink-0 pl-1">
@@ -229,10 +231,10 @@ export default function PetaPage() {
  </div>
  ))}
  </div>
- ) : laporanList.length === 0 ? (
- <p className="text-center text-xs text-gray-400 py-6">Belum ada laporan terverifikasi.</p>
+ ) : bencanaList.length === 0 ? (
+ <p className="text-center text-xs text-gray-400 py-6">Belum ada titik bencana yang dicatat BPBD.</p>
  ) : (
- laporanList.map((l) => {
+ bencanaList.map((l) => {
  const isSelected = selectedMarkerId === l.id;
  return (
  <div
